@@ -516,7 +516,13 @@ belle_sip_error_code belle_sdp_media_marshal(belle_sdp_media_t* media, char* buf
 	error=belle_sip_snprintf(buff,buff_size,offset," %s",media->protocol);
 	if (error!=BELLE_SIP_OK) return error;
 	for(;list!=NULL;list=list->next){
-		error=belle_sip_snprintf(buff,buff_size,offset," %li",(long)(intptr_t)list->data);
+		/* The "TCP/MSRP" and "TCP/TLS/MSRP" protocol values allow only one value */
+		/* in the format field (fmt), which is a single occurrence of "*". */
+		if (strstr(media->protocol, "MSRP") && !list->data) {
+			error=belle_sip_snprintf(buff,buff_size,offset," *");
+		} else {
+			error=belle_sip_snprintf(buff,buff_size,offset," %li",(long)(intptr_t)list->data);
+		}
 		if (error!=BELLE_SIP_OK) return error;
 	}
 	return error;

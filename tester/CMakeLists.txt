@@ -89,6 +89,7 @@ else()
 	endif()
 
 	add_executable(belle_sip_tester ${USE_BUNDLE} ${SOURCE_FILES_C} ${SOURCE_FILES_OBJC})
+	add_executable(belle_msrp_tester ${USE_BUNDLE} belle_msrp_tester.c)
 
 	if(NOT "${LINK_FLAGS_STR}" STREQUAL "")
 		set_target_properties(belle_sip_tester PROPERTIES LINK_FLAGS "${LINK_FLAGS_STR}")
@@ -98,6 +99,10 @@ else()
 	endif()
 	target_include_directories(belle_sip_tester PUBLIC ${BCTOOLBOX_TESTER_INCLUDE_DIRS})
 	target_link_libraries(belle_sip_tester ${BCTOOLBOX_LIBRARIES} ${PROJECT_LIBS})
+
+	target_include_directories(belle_msrp_tester PUBLIC ${BCTOOLBOX_TESTER_INCLUDE_DIRS})
+	target_link_libraries(belle_msrp_tester ${BCTOOLBOX_LIBRARIES} ${PROJECT_LIBS})
+
 	add_test(NAME belle_sip_tester COMMAND belle_sip_tester --verbose)
 	if(NOT IOS)
 		install(TARGETS belle_sip_tester

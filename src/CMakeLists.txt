@@ -131,6 +131,7 @@ set(BELLE_SIP_SOURCE_FILES_C
 	md5.c
 	md5.h
 	message.c
+	msrp-message.c
 	nict.c
 	nist.c
 	parserutils.h

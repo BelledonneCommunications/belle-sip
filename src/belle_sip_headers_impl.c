@@ -19,6 +19,7 @@
 
 
 #include "belle-sip/headers.h"
+#include "belle-sip/msrp-headers.h"
 #include "belle-sip/parameters.h"
 #include <stdlib.h>
 #include <string.h>
@@ -2022,3 +2023,62 @@ GET_SET_STRING(belle_sip_header_accept,type);
 GET_SET_STRING(belle_sip_header_accept,subtype);
 
 
+/* MSRP */
+
+
+struct _belle_sip_header_msrp_to_path {
+	belle_sip_header_t header;
+	const char* uri;
+};
+static void belle_sip_header_msrp_to_path_clone(belle_sip_header_msrp_to_path_t *msrp_to_path, const belle_sip_header_msrp_to_path_t *orig){
+	CLONE_STRING(belle_sip_header_msrp_to_path,uri,msrp_to_path,orig)
+}
+static void belle_sip_header_msrp_to_path_destroy(belle_sip_header_msrp_to_path_t* to_path) {
+	if (to_path->uri) belle_sip_free((void*)to_path->uri);
+}
+belle_sip_error_code belle_sip_header_msrp_to_path_marshal(belle_sip_header_msrp_to_path_t* msrp_to_path, char* buff, size_t buff_size, size_t *offset) {
+	belle_sip_error_code error=belle_sip_header_marshal(BELLE_SIP_HEADER(msrp_to_path), buff, buff_size, offset);
+	if (error!=BELLE_SIP_OK) return error;
+	error=belle_sip_snprintf(buff,buff_size,offset,"%s",msrp_to_path->uri);
+	if (error!=BELLE_SIP_OK) return error;
+	return error;
+}
+
+BELLE_SIP_NEW_HEADER(header_msrp_to_path, header, "To-Path")
+
+// BELLE_SIP_PARSE(header_msrp_to_path)
+belle_sip_header_msrp_to_path_t* belle_sip_header_msrp_to_path_create (const char* uri) {
+	belle_sip_header_msrp_to_path_t* msrp_to_path = belle_sip_header_msrp_to_path_new();
+	belle_sip_header_msrp_to_path_set_uri(msrp_to_path,uri);
+	return msrp_to_path;
+}
+GET_SET_STRING(belle_sip_header_msrp_to_path,uri);
+
+
+struct _belle_sip_header_msrp_from_path {
+	belle_sip_header_t header;
+	const char* uri;
+};
+static void belle_sip_header_msrp_from_path_clone(belle_sip_header_msrp_from_path_t *msrp_from_path, const belle_sip_header_msrp_from_path_t *orig){
+	CLONE_STRING(belle_sip_header_msrp_from_path,uri,msrp_from_path,orig)
+}
+static void belle_sip_header_msrp_from_path_destroy(belle_sip_header_msrp_from_path_t* from_path) {
+	if (from_path->uri) belle_sip_free((void*)from_path->uri);
+}
+belle_sip_error_code belle_sip_header_msrp_from_path_marshal(belle_sip_header_msrp_from_path_t* msrp_from_path, char* buff, size_t buff_size, size_t *offset) {
+	belle_sip_error_code error=belle_sip_header_marshal(BELLE_SIP_HEADER(msrp_from_path), buff, buff_size, offset);
+	if (error!=BELLE_SIP_OK) return error;
+	error=belle_sip_snprintf(buff,buff_size,offset,"%s",msrp_from_path->uri);
+	if (error!=BELLE_SIP_OK) return error;
+	return error;
+}
+
+BELLE_SIP_NEW_HEADER(header_msrp_from_path, header, "From-Path")
+
+// BELLE_SIP_PARSE(header_msrp_from_path)
+belle_sip_header_msrp_from_path_t* belle_sip_header_msrp_from_path_create (const char* uri) {
+	belle_sip_header_msrp_from_path_t* msrp_from_path = belle_sip_header_msrp_from_path_new();
+	belle_sip_header_msrp_from_path_set_uri(msrp_from_path,uri);
+	return msrp_from_path;
+}
+GET_SET_STRING(belle_sip_header_msrp_from_path,uri);

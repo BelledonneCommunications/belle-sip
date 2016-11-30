@@ -84,6 +84,7 @@ typedef struct belle_sip_channel_input_stream{
 
 typedef struct belle_sip_stream_channel belle_sip_stream_channel_t;
 typedef struct belle_sip_tls_channel belle_sip_tls_channel_t;
+typedef void (*belle_channel_parse_stream_fn)(belle_sip_channel_t *obj, int end_of_stream);
 
 struct belle_sip_channel{
 	belle_sip_source_t base;
@@ -123,6 +124,7 @@ struct belle_sip_channel{
 	unsigned char srv_overrides_port; /*set when this channel was connected to destination port provided by SRV resolution*/
 	unsigned char soft_error; /*set when this channel enters ERROR state because of error detected in upper layer */
 	int stop_logging_buffer; /*log buffer content only if this is non binary data, and stop it at the first occurence*/
+	belle_channel_parse_stream_fn custom_parse_stream;
 };
 
 #define BELLE_SIP_CHANNEL(obj)		BELLE_SIP_CAST(obj,belle_sip_channel_t)
@@ -198,6 +200,8 @@ int belle_sip_channel_notify_timeout(belle_sip_channel_t *obj);
 
 /*Used by transaction layer to report a server having internal errors, so that we can retry with another IP (in case of DNS SRV)*/
 void belle_sip_channel_notify_server_error(belle_sip_channel_t *obj);
+
+void belle_sip_channel_set_custom_stream_parse_fn(belle_sip_channel_t *obj, belle_channel_parse_stream_fn f);
 
 BELLE_SIP_END_DECLS
 
