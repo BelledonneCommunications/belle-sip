@@ -125,14 +125,19 @@ BELLE_SIP_DECLARE_TYPES_BEGIN(belle_sip,1)
 	BELLE_SIP_TYPE_ID(belle_sip_dns_srv_t),
 	BELLE_SIP_TYPE_ID(belle_sip_simple_resolver_context_t),
 	BELLE_SIP_TYPE_ID(belle_sip_combined_resolver_context_t),
-	BELLE_SIP_TYPE_ID(belle_sip_dict_t),	
+	BELLE_SIP_TYPE_ID(belle_sip_dict_t),
 	BELLE_SIP_TYPE_ID(belle_sip_dual_resolver_context_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_provider_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_channel_context_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_request_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_response_t),
 	BELLE_SIP_TYPE_ID(belle_http_provider_t),
 	BELLE_SIP_TYPE_ID(belle_http_request_t),
 	BELLE_SIP_TYPE_ID(belle_http_response_t),
 	BELLE_SIP_TYPE_ID(belle_http_channel_context_t),
 	BELLE_SIP_TYPE_ID(belle_generic_uri_t),
 	BELLE_SIP_TYPE_ID(belle_http_callbacks_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_callbacks_t),
 	BELLE_SIP_TYPE_ID(belle_tls_crypto_config_t),
 	BELLE_SIP_TYPE_ID(belle_http_header_authorization_t),
 	BELLE_SIP_TYPE_ID(belle_sip_body_handler_t),
@@ -143,7 +148,10 @@ BELLE_SIP_DECLARE_TYPES_BEGIN(belle_sip,1)
 	BELLE_SIP_TYPE_ID(belle_sip_header_event_t),
 	BELLE_SIP_TYPE_ID(belle_sip_header_supported_t),
 	BELLE_SIP_TYPE_ID(belle_sip_header_content_disposition_t),
-	BELLE_SIP_TYPE_ID(belle_sip_header_accept_t)
+	BELLE_SIP_TYPE_ID(belle_sip_header_accept_t),
+	BELLE_SIP_TYPE_ID(belle_msrp_impl_t),
+	BELLE_SIP_TYPE_ID(belle_sip_header_msrp_to_path_t),
+	BELLE_SIP_TYPE_ID(belle_sip_header_msrp_from_path_t),
 BELLE_SIP_DECLARE_TYPES_END
 
 
@@ -161,6 +169,10 @@ typedef struct belle_sip_tls_listening_point belle_sip_tls_listening_point_t;
 typedef struct belle_sip_stack belle_sip_stack_t;
 typedef struct belle_sip_provider belle_sip_provider_t;
 typedef struct belle_http_provider belle_http_provider_t;
+typedef struct belle_msrp_stack belle_msrp_stack_t;
+typedef struct belle_msrp_provider belle_msrp_provider_t;
+typedef struct _belle_msrp_request belle_msrp_request_t;
+typedef struct belle_msrp_response belle_msrp_response_t;
 typedef struct belle_sip_dialog belle_sip_dialog_t;
 typedef struct belle_sip_transaction belle_sip_transaction_t;
 typedef struct belle_sip_server_transaction belle_sip_server_transaction_t;

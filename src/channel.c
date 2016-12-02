@@ -249,6 +249,7 @@ static int get_message_start_pos(char *buff, size_t bufflen) {
 		buff[saved_char1_index]='\0';
 		res=sscanf(buff+i,"SIP/2.0 %d ",&status_code);
 		if (res!=1) res=sscanf(buff+i,"HTTP/1.%*i %d ",&status_code); /*might be HTTP ?*/
+		if (res!=1) res = strncmp(buff+i, "MSRP", 4) == 0;
 		if (res!=1) {
 			res= sscanf(buff+i,"%16s %*s %9s\r\n",method,sip_version)==2
 					&& is_token(method,sizeof(method))
@@ -595,6 +596,7 @@ void belle_sip_channel_parse_stream(belle_sip_channel_t *obj, int end_of_stream)
 						continue;
 					}
 				}else{
+					// TODO MSRP: try to parse as a MSRP message
 					belle_sip_error("Could not parse [%s], on channel [%p] skipping to [%s]",obj->input_stream.read_ptr
 														,obj
 														,end_of_message);
@@ -612,7 +614,15 @@ void belle_sip_channel_parse_stream(belle_sip_channel_t *obj, int end_of_stream)
 }
 
 static void belle_sip_channel_process_stream(belle_sip_channel_t *obj, int eos){
-	belle_sip_channel_parse_stream(obj,eos);
+	// possible way to implement different parsing strategy (e.g MSRP)
+	// but most of belle_sip_channel_parse_stream is compatible with MSRP, so it's probably
+	// not a good idea (probably want a finer specialization)
+	if (obj->custom_parse_stream) {
+		obj->custom_parse_stream(obj, eos);
+	} else {
+		belle_sip_channel_parse_stream(obj,eos);
+	}
+
 	if (obj->incoming_messages) {
 		if (obj->simulated_recv_return == 1500) {
 			belle_sip_list_t *elem;
@@ -760,6 +770,7 @@ void belle_sip_channel_init(belle_sip_channel_t *obj, belle_sip_stack_t *stack,c
 	}
 	belle_sip_channel_input_stream_reset(&obj->input_stream);
 	update_inactivity_timer(obj,FALSE);
+	obj->custom_parse_stream = NULL;
 }
 
 /*constructor for channels created by incoming connections*/
@@ -792,6 +803,11 @@ static bool_t is_state_only_listener(const belle_sip_channel_listener_t *listene
 	methods=BELLE_SIP_INTERFACE_GET_METHODS(listener,belle_sip_channel_listener_t);
 	return methods->on_state_changed && !(methods->on_message_headers || methods->on_message || methods->on_sending || methods->on_auth_requested);
 }
+
+void belle_sip_channel_set_custom_stream_parse_fn(belle_sip_channel_t *obj, belle_channel_parse_stream_fn f){
+	obj->custom_parse_stream = f;
+}
+
 static void channel_remove_listener(belle_sip_channel_t *obj, belle_sip_channel_listener_t *l){
 	if (is_state_only_listener(l))
 		obj->state_listeners=belle_sip_list_remove(obj->state_listeners,l);
@@ -1247,7 +1263,7 @@ static void _send_message(belle_sip_channel_t *obj){
 
 	if (obj->out_state==OUTPUT_STREAM_SENDING_HEADERS){
 		BELLE_SIP_CHANNEL_INVOKE_SENDING_LISTENERS(obj,msg);
-		check_content_length(msg,body_len);
+		check_content_length(msg,body_len); // TODO MSRP
 		error=belle_sip_object_marshal((belle_sip_object_t*)msg,buffer,sizeof(buffer)-1,&len);
 		if (error!=BELLE_SIP_OK) {
 			belle_sip_error("channel [%p] _send_message: marshaling failed.",obj);

@@ -30,6 +30,7 @@ set(HEADER_FILES
 	dict.h
 	generic-uri.h
 	headers.h
+	msrp-headers.h
 	http-listener.h
 	http-message.h
 	http-provider.h

@@ -207,10 +207,19 @@ BELLE_SIP_DECLARE_VPTR(belle_generic_uri_t);
 BELLE_SIP_DECLARE_VPTR(belle_http_callbacks_t);
 BELLE_SIP_DECLARE_VPTR(belle_tls_crypto_config_t);
 BELLE_SIP_DECLARE_VPTR(belle_http_header_authorization_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_provider_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_channel_context_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_request_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_response_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_callbacks_t);
 BELLE_SIP_DECLARE_VPTR(belle_sip_header_event_t);
 BELLE_SIP_DECLARE_VPTR(belle_sip_header_supported_t);
 BELLE_SIP_DECLARE_VPTR(belle_sip_header_content_disposition_t);
 BELLE_SIP_DECLARE_VPTR(belle_sip_header_accept_t);
+BELLE_SIP_DECLARE_VPTR(belle_msrp_impl_t);
+BELLE_SIP_DECLARE_VPTR(belle_sip_header_msrp_to_path_t);
+BELLE_SIP_DECLARE_VPTR(belle_sip_header_msrp_from_path_t);
+
 
 BELLE_SIP_DECLARE_CUSTOM_VPTR_BEGIN(belle_sip_resolver_context_t,belle_sip_source_t)
 	void (*cancel)(belle_sip_resolver_context_t *);
@@ -622,6 +631,14 @@ struct _belle_sip_request {
 	belle_sip_dialog_t *dialog;/*set if request was created by a dialog to avoid to search in dialog list*/
 	char *rfc2543_branch; /*computed 'branch' id in case we receive this request from an old RFC2543 stack*/
 	unsigned char dialog_queued;
+};
+
+/** MSRP request**/
+
+struct _belle_msrp_request{
+	belle_sip_message_t base;
+	char* transaction_id;
+	char* method;
 };
 
 
