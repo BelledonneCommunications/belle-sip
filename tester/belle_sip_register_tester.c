@@ -167,7 +167,7 @@ const char* belle_sip_tester_private_key =
 const char* belle_sip_tester_private_key_passwd="secret";
 
 
-const char *belle_sip_tester_root_ca = 
+const char *belle_sip_tester_root_ca =
 "-----BEGIN CERTIFICATE-----\n"
 "MIIDRjCCAq+gAwIBAgIJAJ3nFcA7qFrOMA0GCSqGSIb3DQEBBQUAMIG7MQswCQYD\n"
 "VQQGEwJGUjETMBEGA1UECAwKU29tZS1TdGF0ZTERMA8GA1UEBwwIR3Jlbm9ibGUx\n"
@@ -230,7 +230,7 @@ static void process_auth_requested(void *user_ctx, belle_sip_auth_event_t *event
         belle_sip_auth_event_set_signing_key(event,key);
         distinguished_name = belle_sip_auth_event_get_distinguished_name(event);
         belle_sip_message("process_auth_requested requested for  DN[%s]",distinguished_name?distinguished_name:"");
-        
+
     } else {
         belle_sip_error("Unexpected auth mode");
     }
@@ -262,7 +262,7 @@ static void process_auth_requested_for_algorithm(void *user_ctx, belle_sip_auth_
         belle_sip_auth_event_set_signing_key(event,key);
         distinguished_name = belle_sip_auth_event_get_distinguished_name(event);
         belle_sip_message("process_auth_requested requested for  DN[%s]",distinguished_name?distinguished_name:"");
-        
+
     } else {
         belle_sip_error("Unexpected auth mode");
     }
@@ -270,11 +270,11 @@ static void process_auth_requested_for_algorithm(void *user_ctx, belle_sip_auth_
 
 int register_before_all(void) {
 	belle_sip_listening_point_t *lp;
-	stack=belle_sip_stack_new(NULL);
     const char* client[2] = {NULL, NULL};
+	stack=belle_sip_stack_new(NULL);
 	if (userhostsfile)
 		belle_sip_stack_set_dns_user_hosts_file(stack,userhostsfile);
-	
+
 	lp=belle_sip_stack_create_listening_point(stack,"0.0.0.0",7060,"UDP");
 	prov=belle_sip_stack_create_provider(stack,lp);
 
@@ -283,7 +283,7 @@ int register_before_all(void) {
 	lp=belle_sip_stack_create_listening_point(stack,"0.0.0.0",7061,"TLS");
 	if (lp) {
 		belle_tls_crypto_config_t *crypto_config=belle_tls_crypto_config_new();
-	
+
 		belle_tls_crypto_config_set_root_ca_data(crypto_config, belle_sip_tester_root_ca);
 		belle_sip_tls_listening_point_set_crypto_config(BELLE_SIP_TLS_LISTENING_POINT(lp), crypto_config);
 		belle_sip_provider_add_listening_point(prov,lp);
@@ -298,7 +298,7 @@ int register_before_all(void) {
 	listener_callbacks.process_transaction_terminated=process_transaction_terminated;
 	listener_callbacks.process_auth_requested=process_auth_requested_for_algorithm;
 	listener_callbacks.listener_destroyed=NULL;
-    
+
 	listener=belle_sip_listener_create_from_callbacks(&listener_callbacks,client);
 	return 0;
 }
@@ -504,7 +504,7 @@ static void stateful_register_tls(void){
 
 static void stateful_register_tls_with_wrong_cname(void){
 	belle_sip_request_t *req;
-	
+
 	req = try_register_user_at_domain(stack, prov, "tls", 1, "tester",test_domain, test_with_wrong_cname, 0);
 	if (req) belle_sip_object_unref(req);
 }
@@ -644,10 +644,10 @@ static void test_channel_moving_to_error_and_cleaned(void){
 		belle_sip_client_transaction_t *tr;
 		char identity[128];
 		char uri[128];
-		
+
 		belle_sip_listening_point_clean_channels(lp);
 		BC_ASSERT_EQUAL(belle_sip_listening_point_get_channel_count(lp),0,int,"%d");
-		
+
 		snprintf(identity,sizeof(identity),"Tester <sip:%s@%s>","bellesip",test_domain);
 		snprintf(uri,sizeof(uri),"sip:%s",test_domain);
 		req = belle_sip_request_create(
@@ -670,7 +670,7 @@ static void test_channel_moving_to_error_and_cleaned(void){
 		/*we just want to verify that it doesn't crash*/
 		belle_sip_stack_sleep(stack, 1000);
 		belle_sip_object_unref(tr);
-		
+
 	}
 }
 
@@ -842,12 +842,12 @@ static void reuse_nonce_base(const char* outbound) {
 	char outbound_uri[256];
 	/*reset auth context*/
 	prov->auth_contexts = belle_sip_list_free_with_data(prov->auth_contexts,(void(*)(void*))belle_sip_authorization_destroy);
-	
+
 	if (outbound)
 		snprintf(outbound_uri, sizeof(outbound_uri),"sip:%s",outbound);
-	
+
 	register_request=register_user_at_domain(stack, prov, "tcp",1,"marie",outbound,NULL);
-	
+
 	if (register_request) {
 		belle_sip_header_authorization_t * h = NULL;
 		belle_sip_request_t *message_request;
@@ -907,7 +907,7 @@ static void reuse_nonce_base(const char* outbound) {
 
 		/*first nonce created should be reused. this test is only for qop = auth*/
 		message_request=send_message_to(register_request, auth_domain,outbound?belle_sip_uri_parse(outbound_uri):NULL);
-		
+
 		h = BELLE_SIP_HEADER_AUTHORIZATION(belle_sip_message_get_header_by_type(
 				BELLE_SIP_MESSAGE(message_request), belle_sip_header_proxy_authorization_t
 			));
@@ -935,11 +935,11 @@ void register_process_request_event(char *nonce, const belle_sip_request_event_t
 	char *uri_as_string= belle_sip_uri_to_string(belle_sip_request_get_uri(req));
 	belle_sip_response_t * response_msg;
 	belle_sip_server_transaction_t *trans=belle_sip_provider_create_server_transaction(prov, req);
-	
+
 	if (strcasecmp(belle_sip_request_get_method(req), "REGISTER") == 0) {
 		response_code=401;
 	}
-	
+
 	if (	(authorization = belle_sip_message_get_header_by_type(req,belle_sip_header_authorization_t))
 		 || (authorization = BELLE_SIP_HEADER_AUTHORIZATION(belle_sip_message_get_header_by_type(req,belle_sip_header_proxy_authorization_t)))) {
 		 char ha1[33], ha2[33], response[33];
@@ -958,14 +958,14 @@ void register_process_request_event(char *nonce, const belle_sip_request_event_t
 			}
 		}
 	}
-	
+
 	belle_sip_random_token((nonce), NONCE_SIZE);
 	response_msg = belle_sip_response_create_from_request(req, response_code);
-	
+
 	if (response_code == 407 || response_code == 401 ) {
 		belle_sip_header_www_authenticate_t *www_authenticate = 401?belle_sip_header_www_authenticate_new():BELLE_SIP_HEADER_WWW_AUTHENTICATE(belle_sip_header_proxy_authenticate_new());
-	
-		
+
+
 		belle_sip_header_www_authenticate_set_realm(www_authenticate, "sip.linphone.org");
 		belle_sip_header_www_authenticate_set_domain(www_authenticate, "sip:sip.linphone.org");
 		belle_sip_header_www_authenticate_set_scheme(www_authenticate, "Digest");
@@ -976,7 +976,7 @@ void register_process_request_event(char *nonce, const belle_sip_request_event_t
 		belle_sip_header_authentication_info_set_next_nonce(authentication_info, nonce);
 		belle_sip_message_add_header(BELLE_SIP_MESSAGE(response_msg), BELLE_SIP_HEADER(authentication_info));
 	}
-	
+
 	belle_sip_server_transaction_send_response(trans,response_msg);
 }
 
@@ -987,7 +987,7 @@ static void test_register_with_next_nonce(void) {
 	char listening_uri[256];
 	belle_sip_listener_callbacks_t cbs;
 	belle_sip_random_token((nonce), sizeof(nonce));
-	
+
 	cbs.process_dialog_terminated=NULL;
 	cbs.process_io_error=NULL;
 	cbs.process_request_event=(void (*)(void *user_ctx, const belle_sip_request_event_t *event))register_process_request_event;
