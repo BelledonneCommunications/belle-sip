@@ -68,8 +68,8 @@ set(SDP_GENERATED_SOURCE_FILES_C
 	${CMAKE_CURRENT_BINARY_DIR}/grammars/belle_sdpParser.c
 	${CMAKE_CURRENT_BINARY_DIR}/grammars/belle_sdpParser.h
 )
-add_custom_command(
-	OUTPUT ${SDP_GENERATED_SOURCE_FILES_C}
+add_custom_target(
+	generate-bell-sgp
 	COMMAND ${ANTLR3_COMMAND} -make -Xmultithreaded -Xconversiontimeout 10000 -fo ${CMAKE_CURRENT_BINARY_DIR}/grammars ${CMAKE_CURRENT_SOURCE_DIR}/grammars/belle_sdp.g
 	DEPENDS grammars/belle_sdp.g
 )
@@ -80,8 +80,8 @@ set(SIP_MESSAGE_GENERATED_SOURCE_FILES_C
 	${CMAKE_CURRENT_BINARY_DIR}/grammars/belle_sip_messageParser.c
 	${CMAKE_CURRENT_BINARY_DIR}/grammars/belle_sip_messageParser.h
 )
-add_custom_command(
-	OUTPUT ${SIP_MESSAGE_GENERATED_SOURCE_FILES_C}
+add_custom_target(
+	generate-bell-sip-message
 	COMMAND ${ANTLR3_COMMAND} -make -Xmultithreaded -Xconversiontimeout 10000 -fo ${CMAKE_CURRENT_BINARY_DIR}/grammars ${CMAKE_CURRENT_SOURCE_DIR}/grammars/belle_sip_message.g
 	DEPENDS grammars/belle_sip_message.g
 )
@@ -204,6 +204,8 @@ if(ENABLE_STATIC)
 	set_target_properties(bellesip-static PROPERTIES OUTPUT_NAME bellesip)
 	target_include_directories(bellesip-static PUBLIC ${INCLUDES})
 	target_link_libraries(bellesip-static INTERFACE ${LIBS})
+	add_dependencies(bellesip-static generate-bell-sgp)
+	add_dependencies(bellesip-static generate-bell-sip-message)
 	if(NOT "${LINK_FLAGS_STR}" STREQUAL "")
 		set_target_properties(bellesip-static PROPERTIES LINK_FLAGS "${LINK_FLAGS_STR}")
 	endif()
@@ -219,6 +221,8 @@ if(ENABLE_SHARED)
 	set_target_properties(bellesip PROPERTIES LINKER_LANGUAGE CXX)
 	target_include_directories(bellesip PUBLIC ${INCLUDES})
 	target_link_libraries(bellesip PRIVATE ${LIBS})
+	add_dependencies(bellesip generate-bell-sgp)
+	add_dependencies(bellesip generate-bell-sip-message)
 	if(NOT "${LINK_FLAGS_STR}" STREQUAL "")
 		set_target_properties(bellesip PROPERTIES LINK_FLAGS "${LINK_FLAGS_STR}")
 	endif()
