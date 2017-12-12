@@ -51,7 +51,7 @@ AM_LDFLAGS=-no-undefined -export-dynamic
 #AM_LDFLAGS+=-Wl,-rpath -Wl,$(libdir)
 
 
-AM_CFLAGS=$(STRICT_OPTIONS) $(STRICT_OPTIONS_CC)
+AM_CFLAGS=$(STRICT_OPTIONS) $(STRICT_OPTIONS_CC) $(BCTOOLBOX_CFLAGS)
 
 
 test: belle_sip_tester

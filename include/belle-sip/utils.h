@@ -25,8 +25,8 @@
 #include <errno.h>
 #include "belle-sip/defs.h"
 
-#include "bctoolbox/logging.h"
-#include "bctoolbox/vconnect.h"
+#include <bctoolbox/logging.h>
+#include <bctoolbox/vconnect.h>
 
 #define BELLE_SIP_LOG_DOMAIN "belle-sip"
 

@@ -52,6 +52,7 @@ static void test_authentication_sha256(void) {
     belle_sip_header_authorization_set_nonce_count(authorization,1);
     belle_sip_header_authorization_set_qop(authorization,"auth");
     belle_sip_header_authorization_set_cnonce(authorization,"8302210f"); /*for testing purpose*/
+    {
     const char *algo = belle_sip_header_authorization_get_algorithm(authorization);
     BC_ASSERT_EQUAL(0,belle_sip_auth_helper_compute_ha1_for_algorithm("Mufasa","http-auth@example.org","Circle of Life",ha1,size,algo), int, "%d");
     BC_ASSERT_EQUAL(0,belle_sip_auth_helper_fill_authorization(authorization,"REGISTER",ha1), int, "%d");
@@ -60,6 +61,7 @@ static void test_authentication_sha256(void) {
     BC_ASSERT_EQUAL(belle_sip_header_authorization_get_nonce_count(authorization),1, int, "%d");
     belle_sip_object_unref(www_authenticate);
     belle_sip_object_unref(authorization);
+    }
 }
 
 

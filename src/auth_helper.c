@@ -95,16 +95,14 @@ int belle_sip_auth_define_size(const char* algo) {
 }
 
 int belle_sip_auth_helper_compute_ha1_for_algorithm(const char* userid,const char* realm,const char* password, char *ha1, size_t size, const char* algo) {
-    size_t compared_size;
+    size_t di, compared_size, length_byte = (size-1)/2;
+    uint8_t out[length_byte];
+    char *ask;
     compared_size = belle_sip_auth_define_size(algo);
     if (compared_size!= size) {
         belle_sip_error("belle_sip_fill_authorization_header, size of ha1 must be 33 when MD5 or 65 when SHA-256 ");
         return -1;
     }
-    size_t length_byte = (size-1)/2;
-    uint8_t out[length_byte];
-    size_t di;
-    char *ask;
     if (!userid) {
         belle_sip_error("belle_sip_fill_authorization_header, username not found ");
         return -1;
@@ -133,16 +131,14 @@ int belle_sip_auth_helper_compute_ha1(const char* userid,const char* realm,const
 }
 
 int belle_sip_auth_helper_compute_ha2_for_algorithm(const char* method,const char* uri, char *ha2, size_t size, const char* algo) {
-    size_t compared_size;
+    size_t compared_size, length_byte = (size-1)/2, di;
+    uint8_t out[length_byte];
+    char *ask;
     compared_size = belle_sip_auth_define_size(algo);
     if (compared_size!= size) {
         belle_sip_error("belle_sip_fill_authorization_header, size of ha1 must be 33 when MD5 or 65 when SHA-256 ");
         return -1;
     }
-    size_t length_byte = (size-1)/2;
-    uint8_t out[length_byte];
-    size_t di;
-    char *ask;
 	ha2[length_byte*2]='\0';
 	/*HA2=MD5(method:uri)*/
     
@@ -160,16 +156,14 @@ int belle_sip_auth_helper_compute_ha2(const char* method,const char* uri, char h
 }
 
 int belle_sip_auth_helper_compute_response_for_algorithm(const char* ha1,const char* nonce, const char* ha2, char *response, size_t size, const char* algo) {
-    size_t compared_size;
+    size_t di, compared_size, length_byte = (size-1)/2;
+    uint8_t out[length_byte];
+    char *ask;
     compared_size = belle_sip_auth_define_size(algo);
     if (compared_size!= size) {
         belle_sip_error("belle_sip_fill_authorization_header, size of ha1 must be 33 when MD5 or 65 when SHA-256 ");
         return -1;
     }
-    size_t length_byte = (size-1)/2;
-    uint8_t out[length_byte];
-    size_t di;
-    char *ask;
 	response[length_byte*2]='\0';
     
     ask = bctbx_strdup_printf("%s:%s:%s", ha1, nonce, ha2);
@@ -195,17 +189,15 @@ int belle_sip_auth_helper_compute_response_qop_auth_for_algorithm(const char* ha
 													, const char* ha2
                                                     , char *response
                                                     , size_t size, const char* algo) {
-    size_t compared_size;
+    size_t di, compared_size, length_byte = (size-1)/2;
+    uint8_t out[length_byte];
+    char *ask;
+	char nounce_count_as_string[9];
     compared_size = belle_sip_auth_define_size(algo);
     if (compared_size!= size) {
         belle_sip_error("belle_sip_fill_authorization_header, size of ha1 must be 33 when MD5 or 65 when SHA-256 ");
         return -1;
     }
-    size_t length_byte = (size-1)/2;
-    uint8_t out[length_byte];
-    size_t di;
-    char *ask;
-	char nounce_count_as_string[9];
 
 	response[length_byte*2]='\0';
 
@@ -234,19 +226,18 @@ int belle_sip_auth_helper_compute_response_qop_auth(const char* ha1
 int belle_sip_auth_helper_fill_authorization(belle_sip_header_authorization_t* authorization
 											,const char* method
 											,const char* ha1) {
-    size_t size;
+	int auth_mode=0;
+	char* uri;
+	char cnonce[BELLE_SIP_CNONCE_LENGTH + 1];
     const char *algo = belle_sip_header_authorization_get_algorithm(authorization);
-    size = belle_sip_auth_define_size(algo);
+    size_t size = belle_sip_auth_define_size(algo);
     if(!size) {
         belle_sip_error("Algorithm [%s] is not correct ", algo);
         return -1;
-    }
+    }else{
 
-	int auth_mode=0;
-	char* uri;
 	char ha2[size];
 	char response[size];
-	char cnonce[BELLE_SIP_CNONCE_LENGTH + 1];
 
 	response[size-1]=ha2[size-1]='\0';
 
@@ -310,6 +301,7 @@ int belle_sip_auth_helper_fill_authorization(belle_sip_header_authorization_t* a
 	}
 	belle_sip_header_authorization_set_response(authorization,(const char*)response);
 	return 0;
+  }
 }
 
 

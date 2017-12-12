@@ -173,6 +173,7 @@ static void server_process_request_event(void *obj, const belle_sip_request_even
         belle_sip_error("Algorithm of server must be MD5, SHA-256 or MD_SHA, can not be %s", endpoint->algo);
         return;
     }
+    { /* stack-allocation scope */
 
 	belle_sip_header_www_authenticate_t* www_authenticate=NULL;
     belle_sip_header_www_authenticate_t* two_www_authenticate=NULL;
@@ -207,7 +208,7 @@ static void server_process_request_event(void *obj, const belle_sip_request_even
             if (!size) {
                 belle_sip_error("Algorithm [%s] is not correct ", algo);
                 return;
-            }
+            }else{
             char local_resp[size];
 			if (qop && strcmp(qop,"auth")==0) {
 				compute_response_auth_qop(	belle_sip_header_authorization_get_username(authorization)
@@ -237,6 +238,7 @@ static void server_process_request_event(void *obj, const belle_sip_request_even
 			}
 			belle_sip_free((void*)auth_uri);
 			auth_ok=strcmp(belle_sip_header_authorization_get_response(authorization),local_resp)==0;
+			}
 		}
 		if (auth_ok && endpoint->nonce_count < endpoint->max_nc_count ) {/*revoke nonce after MAX_NC_COUNT uses*/
 			if (endpoint->auth == digest || endpoint->auth == digest_with_next_nonce || endpoint->auth == digest_auth_with_next_nonce) {
@@ -286,9 +288,9 @@ static void server_process_request_event(void *obj, const belle_sip_request_even
 				authentication_info = BELLE_SIP_HEADER(belle_sip_header_authentication_info_new());
 				belle_sip_header_authentication_info_set_next_nonce(BELLE_SIP_HEADER_AUTHENTICATION_INFO(authentication_info), endpoint->nonce);
 			} else {
-				authentication_info = BELLE_SIP_HEADER(belle_sip_header_extension_create(BELLE_SIP_AUTHENTICATION_INFO,"nonce=\"nimporte quoi\" nc=")); 
+				authentication_info = BELLE_SIP_HEADER(belle_sip_header_extension_create(BELLE_SIP_AUTHENTICATION_INFO,"nonce=\"nimporte quoi\" nc="));
 			}
-				
+
 			belle_sip_message_add_header(BELLE_SIP_MESSAGE(resp), BELLE_SIP_HEADER(authentication_info));
 		}
 		belle_sip_message_add_header(BELLE_SIP_MESSAGE(resp),BELLE_SIP_HEADER(contact));
@@ -338,6 +340,7 @@ static void server_process_request_event(void *obj, const belle_sip_request_even
 		endpoint->number_of_body_found++;
 	}
 	belle_sip_server_transaction_send_response(server_transaction,resp);
+  }
 }
 
 static void client_process_dialog_terminated(void *obj, const belle_sip_dialog_terminated_event_t *event){
@@ -479,8 +482,8 @@ static belle_sip_refresher_t*  refresher_base_with_body2( endpoint_t* client
 	uint64_t begin;
 	uint64_t end;
 	if (client->expire_in_contact) belle_sip_header_contact_set_expires(contact,1);
-    
-    
+
+
 	dest_uri=(belle_sip_uri_t*)belle_sip_object_clone((belle_sip_object_t*)belle_sip_listening_point_get_uri(server->lp));
 	if (client->connection_family==AF_INET6)
 		belle_sip_uri_set_host(dest_uri,"::1");
@@ -512,10 +515,10 @@ static belle_sip_refresher_t*  refresher_base_with_body2( endpoint_t* client
 	if (client->realm
 		&&
 		belle_sip_provider_add_authorization(client->provider, req, NULL, NULL,NULL, client->realm)) {
-		
+
 	}
 	trans=belle_sip_provider_create_client_transaction(client->provider,req);
-	
+
 	belle_sip_object_ref(trans);/*to avoid trans from being deleted before refresher can use it*/
 	belle_sip_client_transaction_send_request(trans);
 	if (client->early_refresher) {
@@ -539,12 +542,12 @@ static belle_sip_refresher_t*  refresher_base_with_body2( endpoint_t* client
 			belle_sip_client_transaction_send_request(trans);
 			BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.twoHundredOk,1,1000));
 		}
-		client->refresher= refresher = belle_sip_client_transaction_create_refresher(trans);       
+		client->refresher= refresher = belle_sip_client_transaction_create_refresher(trans);
 	}
 	if (BC_ASSERT_PTR_NOT_NULL(refresher)) {
 		belle_sip_object_unref(trans);
 		belle_sip_refresher_set_listener(refresher,belle_sip_refresher_listener,client);
-        
+
 		begin = belle_sip_time_ms();
 		BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.refreshOk,client->register_count+(client->early_refresher?1:0),client->register_count*1000 + 1000));
 		end = belle_sip_time_ms();
@@ -567,7 +570,7 @@ static void refresher_base_with_body(endpoint_t* client
 	BC_ASSERT_EQUAL(client->stat.refreshOk,client->register_count+1,int,"%d");
 	belle_sip_refresher_stop(refresher);
     belle_sip_object_unref(refresher);
-	
+
 
 }
 static void refresher_base(endpoint_t* client,endpoint_t *server, const char* method) {
@@ -734,7 +737,7 @@ static void subscribe_base(int with_resource_lists) {
 	/*let the transaction timeout*/
 	wait_for(server->stack,client->stack, &dummy, 1, 32000);
 	belle_sip_stack_set_send_error(client->stack, 0);
-	
+
 
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.refreshOk,4,4000));
 	BC_ASSERT_EQUAL(client->stat.dialogTerminated, 0, int, "%i");
@@ -744,23 +747,23 @@ static void subscribe_base(int with_resource_lists) {
 	BC_ASSERT_STRING_NOT_EQUAL(call_id, belle_sip_header_call_id_get_call_id(belle_sip_dialog_get_call_id(belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(belle_sip_refresher_get_transaction(refresher))))));
 	belle_sip_free(call_id);
 	belle_sip_object_unref(client_dialog);
-	
+
 	belle_sip_message("simulating dialog terminated server side and recovery");
-	
+
 	client_dialog = belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(belle_sip_refresher_get_transaction(refresher)));
 	call_id = belle_sip_strdup(belle_sip_header_call_id_get_call_id(belle_sip_dialog_get_call_id(client_dialog)));
 	belle_sip_object_ref(client_dialog);
-	
+
 	belle_sip_provider_enable_unconditional_answer(server->provider,TRUE);
 	belle_sip_provider_set_unconditional_answer(server->provider,481);
 	belle_sip_refresher_refresh(refresher, 10);
-	
+
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.fourHundredEightyOne,2,4000));
 	belle_sip_provider_enable_unconditional_answer(server->provider,FALSE);
 
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.refreshOk,5,4000));
 	BC_ASSERT_EQUAL(client->stat.dialogTerminated, 0, int, "%i");
-	
+
 	/*make sure dialog has changed*/
 	BC_ASSERT_PTR_NOT_EQUAL(client_dialog, belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(belle_sip_refresher_get_transaction(refresher))));
 	BC_ASSERT_STRING_NOT_EQUAL(call_id, belle_sip_header_call_id_get_call_id(belle_sip_dialog_get_call_id(belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(belle_sip_refresher_get_transaction(refresher))))));
@@ -771,14 +774,14 @@ static void subscribe_base(int with_resource_lists) {
 
 	belle_sip_refresher_stop(refresher);
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&server->stat.dialogTerminated,3,4000));
-	
+
 	belle_sip_object_unref(refresher);
 
 	if (with_resource_lists) {
 		BC_ASSERT_EQUAL(server->number_of_body_found, (server->auth == none ?1:2), int, "%i");
 	}
 
-	
+
 	destroy_endpoint(client);
 	destroy_endpoint(server);
 }
@@ -1042,7 +1045,7 @@ static void register_and_publish(void) {
 	belle_sip_refresher_t *register_refresher;
 	belle_sip_refresher_t *publish_refresher;
 	belle_sip_header_content_type_t* content_type=belle_sip_header_content_type_create("application","pidf+xml");
-	
+
 	memset(&client_callbacks,0,sizeof(belle_sip_listener_callbacks_t));
 	memset(&server_callbacks,0,sizeof(belle_sip_listener_callbacks_t));
 	client_callbacks.process_response_event=client_process_response_event;
@@ -1055,27 +1058,27 @@ static void register_and_publish(void) {
 	client->early_refresher=TRUE;
 	client->realm = SIPDOMAIN;
 	register_refresher = refresher_base_with_body2(client,server,"REGISTER",NULL,NULL,1);
-	
+
 	client->register_count = 2 * client->register_count;
 	client->stat.refreshOk = 0;
 	/*to make sure we can still use same nonce*/
 	client->nonce_count -=2;
-	
+
 	publish_refresher = refresher_base_with_body2(client,server,"PUBLISH",content_type,publish_body,2);
-	
+
 	belle_sip_refresher_refresh(register_refresher,0);
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.refreshOk,client->register_count+1,1000));
 	BC_ASSERT_EQUAL(client->stat.refreshOk,client->register_count+1,int,"%d");
 	belle_sip_refresher_stop(register_refresher);
 	belle_sip_object_unref(register_refresher);
-	
-	
+
+
 	belle_sip_refresher_refresh(publish_refresher,0);
 	BC_ASSERT_TRUE(wait_for(server->stack,client->stack,&client->stat.refreshOk,client->register_count+1,1000));
 	BC_ASSERT_EQUAL(client->stat.refreshOk,client->register_count+1,int,"%d");
 	belle_sip_refresher_stop(publish_refresher);
 	belle_sip_object_unref(publish_refresher);
-	
+
 	destroy_endpoint(client);
 	destroy_endpoint(server);
 }
@@ -1141,7 +1144,7 @@ test_t refresher_tests[] = {
 	TEST_NO_TAG("REGISTER, digest with next nonce", register_digest_with_next_nonce),
 	TEST_NO_TAG("REGISTER, digest auth with next nonce", register_digest_auth_with_next_nonce),
 	TEST_NO_TAG("REGISTER, digest auth with bad next nonce", register_digest_auth_with_bad_next_nonce)
-	
+
 };
 
 test_suite_t refresher_test_suite = {"Refresher", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,

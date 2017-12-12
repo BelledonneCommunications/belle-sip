@@ -1313,8 +1313,9 @@ int belle_sip_provider_add_authorization(belle_sip_provider_t *p, belle_sip_requ
 		/*provides auth info in any cases, usefull even if found because auth info can contain wrong password*/
         if (auth_infos) {
             /*stored to give user information on realm/username which requires authentications*/
+            belle_sip_list_t* elem;
             *auth_infos=belle_sip_list_append(*auth_infos,auth_event);
-            belle_sip_list_t* elem=belle_sip_list_find_double_events(*auth_infos,auth_event);
+            elem=belle_sip_list_find_double_events(*auth_infos,auth_event);
             if(elem!=NULL)
                 *auth_infos=belle_sip_list_delete_link(*auth_infos,elem);
         } else {
