@@ -1,19 +1,19 @@
 /*
 	belle-sip - SIP (RFC3261) library.
-    Copyright (C) 2010  Belledonne Communications SARL
+	Copyright (C) 2010-2018  Belledonne Communications SARL
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "belle_sip_internal.h"
@@ -988,7 +988,19 @@ static void process_srv_results(void *data, const char *name, belle_sip_list_t *
 		/* take a ref of each srv_results because the last A resolution may terminate synchronously
 		 and destroy the list before the loop terminate */
 		ctx->srv_results = belle_sip_list_copy(srv_results);
+
+		/* FIXME: Temporary workaround for -Wcast-function-type. */
+		#if __GNUC__ >= 8
+			_Pragma("GCC diagnostic push")
+			_Pragma("GCC diagnostic ignored \"-Wcast-function-type\"")
+		#endif // if __GNUC__ >= 8
+
 		belle_sip_list_for_each(srv_results, (void(*)(void *))belle_sip_object_ref);
+
+		#if __GNUC__ >= 8
+			_Pragma("GCC diagnostic pop")
+		#endif // if __GNUC__ >= 8
+
 		for(elem=srv_results;elem!=NULL;elem=elem->next){
 			belle_sip_dns_srv_t *srv=(belle_sip_dns_srv_t*)elem->data;
 			srv_resolve_a(ctx,srv);

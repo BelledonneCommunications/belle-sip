@@ -1,6 +1,6 @@
 /*
 	belle-sip - SIP (RFC3261) library.
-	Copyright (C) 2010  Belledonne Communications SARL
+	Copyright (C) 2010-2018  Belledonne Communications SARL
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -162,7 +162,7 @@ static void belle_sip_provider_dispatch_request(belle_sip_provider_t* prov, bell
 				ev.dialog=belle_sip_provider_create_dialog_internal(prov,BELLE_SIP_TRANSACTION(sub),FALSE);
 			}
 		}
-	
+
 		if (prov->unconditional_answer_enabled && strcmp("ACK",method)!=0) { /*always answer predefined value (I.E 480 by default)*/
 			belle_sip_server_transaction_t *tr=belle_sip_provider_create_server_transaction(prov,req);
 			belle_sip_server_transaction_send_response(tr,belle_sip_response_create_from_request(req,prov->unconditional_answer));
@@ -242,7 +242,7 @@ static void belle_sip_provider_dispatch_response(belle_sip_provider_t* p, belle_
 				if (authorization_lst)
 					belle_sip_list_free(authorization_lst);
 			}
-			
+
 	}
 	if (t){ /*In some re-connection case, specially over udp, transaction may be found, but without associated channel*/
 		if (t->base.channel == NULL) {
@@ -256,7 +256,7 @@ static void belle_sip_provider_dispatch_response(belle_sip_provider_t* p, belle_
 			}
 		}
 	}
-		
+
 	/*
 	 * If a transaction is found and have a channel, pass it to the transaction and let it decide what to do.
 	 * Else notifies directly.
@@ -689,11 +689,11 @@ belle_sip_dialog_t * belle_sip_provider_create_dialog_internal(belle_sip_provide
 belle_sip_dialog_t* belle_sip_provider_find_dialog(const belle_sip_provider_t *prov, const char* call_id, const char* local_tag, const char* remote_tag) {
 	belle_sip_list_t* iterator;
 	belle_sip_dialog_t*returned_dialog=NULL;
-	
+
 	if (call_id == NULL || local_tag == NULL || remote_tag == NULL) {
 		return NULL;
 	}
-	
+
 	for(iterator=prov->dialogs;iterator!=NULL;iterator=iterator->next) {
 		belle_sip_dialog_t* dialog=(belle_sip_dialog_t*)iterator->data;
 		dialog=(belle_sip_dialog_t*)iterator->data;
@@ -803,7 +803,7 @@ belle_sip_server_transaction_t *belle_sip_provider_create_server_transaction(bel
 		t=(belle_sip_server_transaction_t*)belle_sip_ist_new(prov,req);
 		/*create a 100 Trying response to immediately stop client retransmissions*/
 		resp=belle_sip_response_create_from_request(req,100);
-		
+
 	}else if (strcmp(belle_sip_request_get_method(req),"ACK")==0){
 		belle_sip_error("Creating a server transaction for an ACK is not a good idea, probably");
 		return NULL;
