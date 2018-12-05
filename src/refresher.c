@@ -789,6 +789,11 @@ belle_sip_refresher_t* belle_sip_refresher_new(belle_sip_client_transaction_t* t
 
 	if (belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(transaction))) {
 		set_or_update_dialog(refresher, belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(transaction)));
+		/*if dialog is already in state confirmed, store initial request to be able to re-create dialog in case of expired when trying to refresh again*/
+		if (belle_sip_dialog_get_state(belle_sip_transaction_get_dialog(BELLE_SIP_TRANSACTION(transaction))) == BELLE_SIP_DIALOG_CONFIRMED) {
+			if (!refresher->first_acknoleged_request)
+				belle_sip_object_ref(refresher->first_acknoleged_request = request);
+		}
 	}
 	belle_sip_provider_add_internal_sip_listener(transaction->base.provider,BELLE_SIP_LISTENER(refresher), is_register);
 	if (set_expires_from_trans(refresher)==-1){
