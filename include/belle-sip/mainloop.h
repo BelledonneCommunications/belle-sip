@@ -144,6 +144,11 @@ BELLESIP_EXPORT void belle_sip_source_set_user_data(belle_sip_source_t *s, void 
 BELLESIP_EXPORT belle_sip_source_t *belle_sip_main_loop_find_source(belle_sip_main_loop_t *ml, unsigned long id);
 
 /**
+ * Executes the main loop
+**/
+BELLESIP_EXPORT void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml);
+
+/**
  * Executes the main loop forever (or until belle_sip_main_loop_quit() is called)
 **/
 BELLESIP_EXPORT void belle_sip_main_loop_run(belle_sip_main_loop_t *ml);

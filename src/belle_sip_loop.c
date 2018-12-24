@@ -500,7 +500,7 @@ void belle_sip_main_loop_cancel_source(belle_sip_main_loop_t *ml, unsigned long 
 	if (s) belle_sip_source_cancel(s);
 }
 
-static void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml){
+void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml){
 	size_t pfd_size = (ml->nsources + 1) * sizeof(belle_sip_pollfd_t);
 	belle_sip_pollfd_t *pfd=(belle_sip_pollfd_t*)belle_sip_malloc0(pfd_size);
 	int i=0;
