@@ -106,6 +106,7 @@ set(BELLE_SIP_SOURCE_FILES_C
 	belle_sip_loop.c
 	belle_sip_mdns_register.c
 	belle_sip_object.c
+	object++.cc
 	belle_sip_parameters.c
 	belle_sip_resolver.c
 	belle_sip_uri_impl.c
