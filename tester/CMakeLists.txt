@@ -44,6 +44,7 @@ set(SOURCE_FILES_C
 	belle_sip_fast_uri_tester.c
 	cast_test.c
 	register_tester.h
+	object_tester.cc
 )
 
 set(OTHER_FILES
