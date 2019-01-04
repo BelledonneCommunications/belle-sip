@@ -19,7 +19,7 @@ class ObjectCAccessors{
 		}
 };
 
-Object::Object(){
+void Object::init(){
 	static bool offsetDefined = false;
 	belle_sip_object_vptr_t *vptr = belle_sip_cpp_object_t_vptr_get();
 	if (!offsetDefined){
@@ -28,6 +28,15 @@ Object::Object(){
 	}
 	memset(&mObject, 0, sizeof(mObject)); /*the new allocator does not zero the memory*/
 	_belle_sip_object_init(&mObject, vptr);
+}
+
+Object::Object(){
+	init();
+}
+
+Object::Object(const Object &other){
+	init();
+	mObject.vptr->get_parent()->clone(&mObject, &other.mObject); /*belle_sip_object_t own's clone method*/
 }
 
 Object::~Object(){
@@ -48,7 +57,11 @@ void Object::unref(){
 }
 
 belle_sip_error_code Object::marshal(char* buff, size_t buff_size, size_t *offset){
-	return mObject.vptr->marshal(&mObject, buff, buff_size, offset); /*default to belle_sip_object_t's implementation*/
+	return mObject.vptr->get_parent()->marshal(&mObject, buff, buff_size, offset); /*default to belle_sip_object_t's implementation*/
+}
+
+Object *Object::clone()const{
+	return new Object(*this);
 }
 
 belle_sip_object_t *Object::getCObject(){

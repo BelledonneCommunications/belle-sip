@@ -31,6 +31,7 @@ static void on_object_destroyed(void *userpointer, belle_sip_object_t *obj_being
 static void basic_test(void){
 	int object_destroyed = FALSE;
 	Object *obj = new Object();
+	
 	belle_sip_object_t *c_obj = obj->getCObject();
 	BC_ASSERT_PTR_NOT_NULL(c_obj);
 	if (c_obj){
@@ -38,15 +39,100 @@ static void basic_test(void){
 	}
 	/*we put a weak ref to this object in order to know when it is destroyed*/
 	obj->ref();
+	Object *clone = obj->clone();
+
 	obj->unref();
 	BC_ASSERT_FALSE(object_destroyed);
 	obj->unref(); /*this unref will destroy the object*/
 	BC_ASSERT_TRUE(object_destroyed);
+	object_destroyed = false;
+
+
+	c_obj = clone->getCObject();
+	BC_ASSERT_PTR_NOT_NULL(c_obj);
+	if (c_obj){
+		belle_sip_object_weak_ref(c_obj, on_object_destroyed, &object_destroyed);
+	}
+	clone->unref();
+	BC_ASSERT_TRUE(object_destroyed);	
 };
 
+typedef struct _LinphoneEvent LinphoneEvent;
+
+typedef enum _LinphoneEventState{
+	LinphoneEventIdle,
+	LinphoneEventSubscribed
+}LinphoneEventState;
+
+namespace Linphone{
+
+class Event : public HybridObject<LinphoneEvent, Event>{
+	public:
+		enum State{
+			Idle,
+			Subscribed
+		};
+		Event() : mState(Idle){
+		}
+		void sendSubscribe(const std::string& dest){
+			mState = Subscribed;
+		}
+		State getState()const{
+			return mState;
+		}
+	private:
+		State mState;
+};
+
+}//end of namespace
+
+extern "C"{
+
+using namespace Linphone;
+
+LinphoneEvent *linphone_event_new(void){
+	return (new Event())->toC();
+}
+
+void linphone_event_send_subscribe(LinphoneEvent *obj, const char *dest){
+	Event::toCpp(obj)->sendSubscribe(dest);
+}
+
+LinphoneEventState linphone_event_get_state(const LinphoneEvent *obj){
+	return (LinphoneEventState)Event::toCpp(obj)->getState(); /*enum conversion should be performed better*/
+}
+
+void linphone_event_ref(LinphoneEvent *obj){
+	Event::toCpp(obj)->ref();
+}
+
+void linphone_event_unref(LinphoneEvent *obj){
+	Event::toCpp(obj)->unref();
+}
+
+}//end of extern "C"
+
+
+static void dual_object(void){
+	int object_destroyed = 0;
+	/*in this test we use the C Api */
+	LinphoneEvent *ev = linphone_event_new();
+	BC_ASSERT_TRUE(linphone_event_get_state(ev) == LinphoneEventIdle);
+	linphone_event_send_subscribe(ev, "sip:1234@sip.linphone.org");
+	BC_ASSERT_TRUE(linphone_event_get_state(ev) == LinphoneEventSubscribed);
+
+	belle_sip_object_t *c_obj = Linphone::Event::toCpp(ev)->getCObject();
+	BC_ASSERT_PTR_NOT_NULL(c_obj);
+	if (c_obj){
+		belle_sip_object_weak_ref(c_obj, on_object_destroyed, &object_destroyed);
+	}
+	linphone_event_unref(ev);
+	BC_ASSERT_TRUE(object_destroyed);
+}
 
 static test_t object_tests[] = {
         TEST_NO_TAG("Basic test", basic_test),
+		TEST_NO_TAG("Dual C/C++ object", dual_object)
 };
 
 test_suite_t object_test_suite = {"Object", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
