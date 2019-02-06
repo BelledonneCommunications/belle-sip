@@ -20,6 +20,7 @@
 #include "belle_sip_tester.h"
 
 #include "belle-sip/object++.hh"
+#include "bctoolbox/exception.hh"
 
 using namespace bellesip;
 
@@ -66,7 +67,7 @@ typedef enum _LinphoneEventState{
 
 namespace Linphone{
 
-class Event : public HybridObject<LinphoneEvent, Event>{
+class Event : public HybridObject<LinphoneEvent, Event>, public std::enable_shared_from_this<Event>{
 	public:
 		enum State{
 			Idle,
@@ -80,6 +81,12 @@ class Event : public HybridObject<LinphoneEvent, Event>{
 		State getState()const{
 			return mState;
 		}
+		void doSomething(){
+			throw BctbxException("Unimplemented");
+		}
+	protected:
+		//~Event() = default; //we shouls have the destructor private but in order to test the delete exception
+		//we'll make it public.
 	private:
 		State mState;
 };
@@ -130,9 +137,40 @@ static void dual_object(void){
 	BC_ASSERT_TRUE(object_destroyed);
 }
 
+static void dual_object_shared_ptr(void){
+	int object_destroyed = 0;
+	std::shared_ptr<Event> ev = bellesip::make_shared<Event>();
+	belle_sip_object_t *c_obj = ev->getCObject();
+	BC_ASSERT_PTR_NOT_NULL(c_obj);
+	if (c_obj){
+		belle_sip_object_weak_ref(c_obj, on_object_destroyed, &object_destroyed);
+	}
+	ev.reset();
+	BC_ASSERT_TRUE(object_destroyed);
+}
+
+static void dual_object_shared_from_this(void){
+	int object_destroyed = 0;
+	std::shared_ptr<Event> ev = bellesip::make_shared<Event>();
+	std::shared_ptr<Event> otherptr;
+	belle_sip_object_t *c_obj = ev->getCObject();
+	BC_ASSERT_PTR_NOT_NULL(c_obj);
+	if (c_obj){
+		belle_sip_object_weak_ref(c_obj, on_object_destroyed, &object_destroyed);
+	}
+	otherptr = ev->shared_from_this();
+	ev.reset();
+	BC_ASSERT_FALSE(object_destroyed);
+	otherptr.reset();
+	BC_ASSERT_TRUE(object_destroyed);
+}
+
+
 static test_t object_tests[] = {
         TEST_NO_TAG("Basic test", basic_test),
-		TEST_NO_TAG("Dual C/C++ object", dual_object)
+		TEST_NO_TAG("Hybrid C/C++ object", dual_object),
+		TEST_NO_TAG("Hybrid C/C++ object with shared_ptr", dual_object_shared_ptr),
+		TEST_NO_TAG("Hybrid C/C++ object with shared_from_this", dual_object_shared_from_this)
 };
 
 test_suite_t object_test_suite = {"Object", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,

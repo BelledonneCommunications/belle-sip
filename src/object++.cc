@@ -1,8 +1,6 @@
 #include "belle-sip/object++.hh"
 #include "belle_sip_internal.h"
 
-
-
 struct _belle_sip_cpp_object{
 	belle_sip_object_t base;
 };
@@ -41,6 +39,7 @@ Object::Object(const Object &other){
 
 Object::~Object(){
 	if (mObject.ref != -1){
+		/*note: throwing an exception here does not work*/
 		belle_sip_fatal("bellesip::Object [%p] has been destroyed directly with delete operator. This is prohibited, use unref() instead.", this);
 	}
 	belle_sip_object_uninit(&mObject);

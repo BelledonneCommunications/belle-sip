@@ -93,7 +93,7 @@ static BELLE_SIP_OBJECT_VPTR_TYPE(object_type) BELLE_SIP_OBJECT_VPTR_NAME(object
 	(belle_sip_object_on_first_ref_t)on_first_ref,\
 	(belle_sip_object_on_last_ref_t)on_last_ref,\
 	BELLE_SIP_DEFAULT_BUFSIZE_HINT,\
-	is_cpp\
+	is_cpp, 0\
 	}; \
 	BELLE_SIP_OBJECT_VPTR_TYPE(object_type) * BELLE_SIP_OBJECT_GET_VPTR_FUNC(object_type)(void){\
 		return &BELLE_SIP_OBJECT_VPTR_NAME(object_type); \
