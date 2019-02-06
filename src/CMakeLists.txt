@@ -161,6 +161,7 @@ endif()
 set(BELLE_SIP_SOURCE_FILES_CXX
 	${TUNNEL_SOURCE_FILES_CXX}
 	object++.cc
+	cpp_utils.cc
 )
 if(APPLE)
 	set(BELLE_SIP_SOURCE_FILES_OBJC
