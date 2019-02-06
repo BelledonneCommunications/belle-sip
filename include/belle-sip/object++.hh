@@ -53,7 +53,7 @@ class Object{
  * class Example : public HybridObject<CExample, Example>{
  * ...
  * }
- * The C object can be obtained with toC() method, directly cast in the expected type.
+ * The C object can be obtained with toC() method, directly casted in the expected type.
  * The C++ object can be obtained from C object with static method toCpp().
  * The destructor must be kept protected so that no one can call delete operator on the object. Instead unref() must be used.
  *
@@ -61,6 +61,7 @@ class Object{
  * - You have an existing library in C where all C objects are inheriting from belle_sip_object_t (for refcounting, data_set etc...).
  * - You want to use C++ in your library without making any disruption in the API.
  * If you don't care about belle_sip_object_t inheritance in your C api, don't use this.
+ * An usage example is shown in tester/object_tester.cc .
 **/
 template <typename _CType, typename _CppType>
 class HybridObject : public Object{

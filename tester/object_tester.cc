@@ -165,12 +165,25 @@ static void dual_object_shared_from_this(void){
 	BC_ASSERT_TRUE(object_destroyed);
 }
 
+static void main_loop_cpp_do_later(void){
+	int test = 0;
+	belle_sip_main_loop_t *ml = belle_sip_main_loop_new();
+	
+	belle_sip_main_loop_cpp_do_later(ml, [&test](){ test = 44; });
+	BC_ASSERT_TRUE(test == 0);
+	belle_sip_main_loop_sleep(ml, 10);
+	BC_ASSERT_TRUE(test == 44);
+	belle_sip_object_unref(ml);
+	
+}
+
 
 static test_t object_tests[] = {
         TEST_NO_TAG("Basic test", basic_test),
-		TEST_NO_TAG("Hybrid C/C++ object", dual_object),
-		TEST_NO_TAG("Hybrid C/C++ object with shared_ptr", dual_object_shared_ptr),
-		TEST_NO_TAG("Hybrid C/C++ object with shared_from_this", dual_object_shared_from_this)
+	TEST_NO_TAG("Hybrid C/C++ object", dual_object),
+	TEST_NO_TAG("Hybrid C/C++ object with shared_ptr", dual_object_shared_ptr),
+	TEST_NO_TAG("Hybrid C/C++ object with shared_from_this", dual_object_shared_from_this),
+	TEST_NO_TAG("Mainloop's do_later in c++", main_loop_cpp_do_later) 
 };
 
 test_suite_t object_test_suite = {"Object", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
