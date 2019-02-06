@@ -167,7 +167,9 @@ BELLE_SIP_END_DECLS
 #ifndef BELLE_SIP_USE_STL
 #define BELLE_SIP_USE_STL 1
 #endif
-#if __cplusplus >= 201103L && BELLE_SIP_USE_STL
+
+#if ((defined(WIN32) && defined(__cplusplus)) || __cplusplus >= 201103L) && BELLE_SIP_USE_STL
+/*Only Visual Studio 2018 properly defines __cplusplus according to c++ level. */
 
 #include <functional>
 

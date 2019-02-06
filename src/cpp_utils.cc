@@ -25,7 +25,7 @@
 #endif
 
 
-#if __cplusplus >= 201103L && BELLE_SIP_USE_STL
+#if BELLE_SIP_USE_STL
 #include <functional>
 
 typedef std::function<int (unsigned int)> belle_sip_source_cpp_func_t;
