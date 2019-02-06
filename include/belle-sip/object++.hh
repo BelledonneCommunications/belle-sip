@@ -2,6 +2,8 @@
 
 #include "belle-sip/object.h"
 
+#include <memory>
+#include <functional>
 
 namespace bellesip{
 
@@ -29,8 +31,9 @@ class Object{
 		}
 		static Object *getCppObject(void *);
 		static const Object *getCppObject(const void *);
+
 	protected:
-		virtual ~Object();
+		virtual ~Object(); /*the destructor must be kept protected, never public, including for all classes inherting from this*/
 		Object(const Object &other);
 	private:
 		void init();
@@ -52,6 +55,12 @@ class Object{
  * }
  * The C object can be obtained with toC() method, directly cast in the expected type.
  * The C++ object can be obtained from C object with static method toCpp().
+ * The destructor must be kept protected so that no one can call delete operator on the object. Instead unref() must be used.
+ *
+ * Rational for using this template:
+ * - You have an existing library in C where all C objects are inheriting from belle_sip_object_t (for refcounting, data_set etc...).
+ * - You want to use C++ in your library without making any disruption in the API.
+ * If you don't care about belle_sip_object_t inheritance in your C api, don't use this.
 **/
 template <typename _CType, typename _CppType>
 class HybridObject : public Object{
@@ -71,12 +80,18 @@ class HybridObject : public Object{
 			return static_cast<const _CppType *>(getCppObject(ptr));
 		}
 	protected:
-		virtual ~HybridObject(){
-		}
+		virtual ~HybridObject() = default;
 		HybridObject(const HybridObject<_CType, _CppType> &other) : Object(other){
 		}
 };
 
+/**
+ * Convenience function to create a std::shared_ptr that calls Object::unref() instead of delete expression.
+ */
+template <typename _T, typename... _Args>
+std::shared_ptr<_T> make_shared(_Args&&... __args){
+	return std::shared_ptr<_T>(new _T(std::forward<_Args>(__args)...), std::mem_fun(&Object::unref));
+}
 
 }//end of namespace
 
