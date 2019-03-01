@@ -16,17 +16,21 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef belle_sip_object_plusplus_h
+#define belle_sip_object_plusplus_h
 
+#include "belle-sip/types.h"
 #include "belle-sip/object.h"
+#include "belle-sip/utils.h"
 
 #include <memory>
 #include <functional>
 
-namespace bellesip{
+namespace bellesip {
 
 class ObjectCAccessors;
 
-class BELLESIP_EXPORT Object{
+class BELLESIP_EXPORT Object {
 	friend ObjectCAccessors;
 	public:
 		Object();
@@ -38,8 +42,8 @@ class BELLESIP_EXPORT Object{
 			return ret;
 		}
 		virtual Object *clone()const;
-		belle_sip_object_t *getCObject();
-		const belle_sip_object_t *getCObject()const;
+		belle_sip_cpp_object_t *getCObject();
+		const belle_sip_cpp_object_t *getCObject()const;
 		void *getCPtr(){
 			return static_cast<void*>(getCObject());
 		}
@@ -54,9 +58,9 @@ class BELLESIP_EXPORT Object{
 		Object(const Object &other);
 	private:
 		void init();
-		belle_sip_object_t mObject;
-		static belle_sip_object_t *sClone(belle_sip_object_t *);
-		static belle_sip_error_code sMarshal(belle_sip_object_t* obj, char* buff, size_t buff_size, size_t *offset);
+		belle_sip_cpp_object_t mObject;
+		static belle_sip_cpp_object_t *sClone(belle_sip_cpp_object_t *);
+		static belle_sip_error_code sMarshal(belle_sip_cpp_object_t* obj, char* buff, size_t buff_size, size_t *offset);
 };
 
 /**
@@ -81,7 +85,7 @@ class BELLESIP_EXPORT Object{
  * An usage example is shown in tester/object_tester.cc .
 **/
 template <typename _CType, typename _CppType>
-class BELLESIP_EXPORT HybridObject : public Object{
+class BELLESIP_EXPORT HybridObject : public Object, public std::enable_shared_from_this<HybridObject<_CType, _CppType> > {
 	public:
 		HybridObject(){
 		}
@@ -97,10 +101,47 @@ class BELLESIP_EXPORT HybridObject : public Object{
 		static const _CppType *toCpp(const _CType *ptr){
 			return static_cast<const _CppType *>(getCppObject(ptr));
 		}
+
+		std::shared_ptr<const _CppType> getSharedFromThis() const {
+			try {
+				return std::dynamic_pointer_cast<const _CppType>(this->shared_from_this());
+			} catch (const std::exception &up) {
+				belle_sip_error("getSharedFromThis() exception: Object not created with 'make_shared'. Error: [%s].", up.what());
+				return nullptr;
+			}
+			return nullptr;
+		}
+		std::shared_ptr<_CppType> getSharedFromThis () {
+			return std::const_pointer_cast<_CppType>(static_cast<const _CppType *>(this)->getSharedFromThis());
+		}
+
+		std::shared_ptr<_CppType> toSharedPtr() {
+			return std::shared_ptr<_CppType>(static_cast<_CppType *>(this), std::mem_fun(&Object::unref));
+		}
+
+		std::shared_ptr<const _CppType> toSharedPtr() const {
+			return std::shared_ptr<const _CppType>(static_cast<const _CppType *>(this), std::mem_fun(&Object::unref));
+		}
+
+		//Convenience method for easy CType -> shared_ptr<CppType> conversion
+		static std::shared_ptr<_CppType> toSharedPtr(const _CType *ptr) {
+			return toCpp(const_cast<_CType *>(ptr))->toSharedPtr();
+		}
+
 	protected:
 		virtual ~HybridObject() = default;
 		HybridObject(const HybridObject<_CType, _CppType> &other) : Object(other){
 		}
+};
+
+class ObjectCAccessors{
+public:
+	static belle_sip_error_code sMarshal(belle_sip_object_t* obj, char* buff, size_t buff_size, size_t *offset){
+		return Object::getCppObject(obj)->marshal(buff, buff_size, offset);
+	}
+	static void doDelete(belle_sip_object_t* obj){
+		delete Object::getCppObject(obj);
+	}
 };
 
 /**
@@ -114,6 +155,7 @@ BELLESIP_EXPORT std::shared_ptr<_T> make_shared(_Args&&... __args){
 }//end of namespace
 
 extern "C" {
-BELLE_SIP_DECLARE_VPTR(belle_sip_cpp_object_t);
+	BELLE_SIP_DECLARE_VPTR(belle_sip_cpp_object_t);
 }
 
+#endif //belle_sip_object_plusplus_h
