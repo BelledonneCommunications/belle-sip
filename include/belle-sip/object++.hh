@@ -134,16 +134,6 @@ class BELLESIP_EXPORT HybridObject : public Object, public std::enable_shared_fr
 		}
 };
 
-class ObjectCAccessors{
-public:
-	static belle_sip_error_code sMarshal(belle_sip_object_t* obj, char* buff, size_t buff_size, size_t *offset){
-		return Object::getCppObject(obj)->marshal(buff, buff_size, offset);
-	}
-	static void doDelete(belle_sip_object_t* obj){
-		delete Object::getCppObject(obj);
-	}
-};
-
 /**
  * Convenience function to create a std::shared_ptr that calls Object::unref() instead of delete expression.
  */

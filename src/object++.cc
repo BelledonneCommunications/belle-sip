@@ -21,6 +21,15 @@
 
 namespace bellesip {
 
+class ObjectCAccessors {
+public:
+	static belle_sip_error_code sMarshal(belle_sip_object_t* obj, char* buff, size_t buff_size, size_t *offset) {
+		return Object::getCppObject(obj)->marshal(buff, buff_size, offset);
+	}
+	static void doDelete(belle_sip_object_t* obj) {
+		delete Object::getCppObject(obj);
+	}
+};
 
 void Object::init(){
 	static bool offsetDefined = false;
