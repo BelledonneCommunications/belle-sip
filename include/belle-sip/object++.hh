@@ -24,6 +24,7 @@
 #include "belle-sip/utils.h"
 
 #include <memory>
+#include <list>
 #include <functional>
 
 namespace bellesip {
@@ -67,7 +68,7 @@ class BELLESIP_EXPORT Object {
  * Template class to help define an Object usable in both C and C++
  * The template arguments are:
  * - _CType : the type used to represent this object in C
- * - _CppType : the type used in C++ to implement this object. _CppType is used to be set to the type 
+ * - _CppType : the type used in C++ to implement this object. _CppType is used to be set to the type
  *   of the class inheriting from HybridObject.
  * Example:
  * typedef struct _CExample CExample;
@@ -87,7 +88,17 @@ class BELLESIP_EXPORT Object {
 template <typename _CType, typename _CppType>
 class BELLESIP_EXPORT HybridObject : public Object, public std::enable_shared_from_this<HybridObject<_CType, _CppType> > {
 	public:
-		HybridObject(){
+		//Ref is managed by shared_ptr, unref will be called on last ref.
+		template <typename... _Args>
+		static inline std::shared_ptr<_CppType> create(_Args&&... __args) {
+			return std::shared_ptr<_CppType>(new _CppType(std::forward<_Args>(__args)...), std::mem_fun(&Object::unref));
+		}
+		//Convenience creator to get a C object. Automatically aquires a ref. Consumers have the responsibility to unref
+		template <typename... _Args>
+		static inline _CType *createCObject(_Args&&... __args) {
+			_CppType *obj = new _CppType(std::forward<_Args>(__args)...);
+			obj->ref();
+			return obj->toC();
 		}
 		_CType *toC(){
 			return static_cast<_CType*>(getCPtr());
@@ -122,14 +133,30 @@ class BELLESIP_EXPORT HybridObject : public Object, public std::enable_shared_fr
 		std::shared_ptr<const _CppType> toSharedPtr() const {
 			return std::shared_ptr<const _CppType>(static_cast<const _CppType *>(this), std::mem_fun(&Object::unref));
 		}
-
 		//Convenience method for easy CType -> shared_ptr<CppType> conversion
 		static std::shared_ptr<_CppType> toSharedPtr(const _CType *ptr) {
 			return toCpp(const_cast<_CType *>(ptr))->toSharedPtr();
 		}
+		//Convenience method for easy bctbx_list(_Ctype) -> std::list<_CppType> conversion
+		static std::list<_CppType> getCppListFromCList(const bctbx_list_t *cList) {
+			std::list<_CppType> result;
+			for (auto it = cList; it; it = bctbx_list_next(it))
+				result.push_back(toCpp(static_cast<_CType>(bctbx_list_get_data(it))));
+			return result;
+		}
+		//Convenience method for easy bctbx_list(_Ctype) -> std::list<_CppType> conversion
+		//Applies 'func' to get _CppType from _CType. Used in case we do not want to call  `toCpp` on _Ctype
+		static std::list<_CppType> getCppListFromCList(const bctbx_list_t *cList, const std::function<_CppType (_CType)> &func) {
+			std::list<_CppType> result;
+			for (auto it = cList; it; it = bctbx_list_next(it))
+			 	result.push_back(func(static_cast<_CType>(bctbx_list_get_data(it))));
+			return result;
+		}
 
 	protected:
 		virtual ~HybridObject() = default;
+		HybridObject() {
+		}
 		HybridObject(const HybridObject<_CType, _CppType> &other) : Object(other){
 		}
 };
