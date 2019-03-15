@@ -27,6 +27,12 @@
 #include <list>
 #include <functional>
 
+#ifdef _WIN32
+    // Disable C4251 triggered by the std::enabled_shared_from_this inheritance
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif // ifdef _WIN32
+
 namespace bellesip {
 
 class ObjectCAccessors;
