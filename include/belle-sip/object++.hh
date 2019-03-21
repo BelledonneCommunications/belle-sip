@@ -44,10 +44,8 @@ class BELLESIP_EXPORT Object {
 		Object *ref();
 		void unref();
 		virtual belle_sip_error_code marshal(char* buff, size_t buff_size, size_t *offset);
-		std::string toString()const{
-			std::string ret(belle_sip_object_to_string(&mObject));
-			return ret;
-		}
+		//Overrides should keep	the size of toString() lower than BELLE_SIP_MAX_TO_STRING_SIZE
+	        virtual std::string toString() const;
 		virtual Object *clone()const;
 		belle_sip_cpp_object_t *getCObject();
 		const belle_sip_cpp_object_t *getCObject()const;
