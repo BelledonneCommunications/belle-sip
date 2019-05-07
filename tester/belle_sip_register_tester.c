@@ -25,8 +25,8 @@
 
 const int RANDOM_PORT = -1;
 
-const char *test_domain="sip2.linphone.org";
-const char *auth_domain="sip.linphone.org";
+const char *test_domain="sipopen.example.org";
+const char *auth_domain="sip.example.org";
 const char *client_auth_domain="client.example.org";
 const char *client_auth_outbound_proxy="sips:sip2.linphone.org:5063";
 const char *no_server_running_here="sip:test.linphone.org:3;transport=tcp";
@@ -1089,6 +1089,87 @@ static void test_register_with_next_nonce(void) {
 	belle_sip_provider_remove_listening_point(prov, server_lp);
 }
 
+static void test_channel_load_process_response_event(void* user_ctx, const belle_sip_response_event_t *event){
+	
+	if (!BC_ASSERT_PTR_NOT_NULL(belle_sip_response_event_get_response(event))) {
+		return;
+	}
+	belle_sip_message("process_response_event [%i] [%s] number [%i]"
+					  ,belle_sip_response_get_status_code(belle_sip_response_event_get_response(event))
+					  ,belle_sip_response_get_reason_phrase(belle_sip_response_event_get_response(event))
+						,*(int*)user_ctx);
+	
+	(*(int*)user_ctx) ++;
+	
+	return;
+}
+
+#define NUMBER_OF_TRANS 20
+static void test_channel_load(void){
+	belle_sip_listening_point_t *lp=belle_sip_provider_get_listening_point(prov,"TCP");
+	BC_ASSERT_PTR_NOT_NULL(lp);
+	
+	if (lp) {
+		belle_sip_request_t *req;
+		belle_sip_client_transaction_t *tr[NUMBER_OF_TRANS];
+		char identity[128];
+		char uri[128];
+		
+		snprintf(identity,sizeof(identity),"Tester <sip:%s@%s>","bellesip",auth_domain);
+		snprintf(uri,sizeof(uri),"sip:%s;transport=tcp",auth_domain);
+		belle_sip_listener_callbacks_t listener_callbacks;
+		listener_callbacks.process_dialog_terminated = NULL;
+		listener_callbacks.process_io_error = NULL;
+		listener_callbacks.process_request_event = NULL;
+		listener_callbacks.process_response_event = test_channel_load_process_response_event;
+		listener_callbacks.process_timeout = NULL;
+		listener_callbacks.process_transaction_terminated = NULL;
+		listener_callbacks.process_auth_requested = NULL;
+		listener_callbacks.listener_destroyed = NULL;
+		
+		int number_of_response=0;
+		int i;
+		belle_sip_listener_t *listener = belle_sip_listener_create_from_callbacks(&listener_callbacks, (void *)&number_of_response);
+		belle_sip_provider_add_sip_listener(prov,listener);
+	
+		for (i = 0; i <NUMBER_OF_TRANS; i++ ) {
+			req = belle_sip_request_create(
+										   belle_sip_uri_parse(uri),
+										   "REGISTER",
+										   belle_sip_provider_create_call_id(prov),
+										   belle_sip_header_cseq_create(20,"REGISTER"),
+										   belle_sip_header_from_create2(identity,BELLE_SIP_RANDOM_TAG),
+										   belle_sip_header_to_create2(identity,NULL),
+										   belle_sip_header_via_new(),
+										   70);
+			tr[i] = belle_sip_provider_create_client_transaction(prov, req);
+			belle_sip_object_ref(tr[i]);
+
+		}
+		belle_sip_client_transaction_send_request(tr[0]);
+		for (int j=0; j < 10 && number_of_response < 1; j++) {
+			belle_sip_stack_sleep(stack, 500);
+		}
+		belle_sip_channel_t *chan = belle_sip_provider_get_channel(prov,tr[0]->next_hop);
+		belle_sip_socket_t sock = belle_sip_source_get_socket((belle_sip_source_t*)chan);
+		size_t sendbuff = 500;
+		int err = bctbx_setsockopt((bctbx_socket_t)sock, SOL_SOCKET, SO_SNDBUF, &sendbuff, sizeof(sendbuff));
+		if (err != 0){
+			belle_sip_error("bctbx_setsockopt SOL_SOCKET failed: [%s]",belle_sip_get_socket_error_string());
+		}
+
+		for (i = 1; i <NUMBER_OF_TRANS; i++ ) {
+			belle_sip_client_transaction_send_request(tr[i]);
+			belle_sip_object_ref(tr[i]);
+		}
+		
+		for (int j=0; j < 10 && number_of_response < NUMBER_OF_TRANS; j++) {
+			belle_sip_stack_sleep(stack, 500);
+		}
+		BC_ASSERT_EQUAL(number_of_response,NUMBER_OF_TRANS,int,"%d");
+	}
+}
+
 test_t register_tests[] = {
 	TEST_NO_TAG("Stateful UDP", stateful_register_udp),
 	TEST_NO_TAG("Stateful UDP with keep-alive", stateful_register_udp_with_keep_alive),
@@ -1118,7 +1199,8 @@ test_t register_tests[] = {
 	TEST_NO_TAG("Register with DNS SRV failover TLS with http proxy", register_dns_srv_tls_with_http_proxy),
 	TEST_NO_TAG("Register with DNS load-balancing", register_dns_load_balancing),
 	TEST_NO_TAG("Nonce reutilization", reuse_nonce),
-	TEST_NO_TAG("Next Nonce", test_register_with_next_nonce)
+	TEST_NO_TAG("Next Nonce", test_register_with_next_nonce),
+	TEST_NO_TAG("Channel load", test_channel_load)
 };
 
 test_suite_t register_test_suite = {"Register", register_before_all, register_after_all, NULL,
