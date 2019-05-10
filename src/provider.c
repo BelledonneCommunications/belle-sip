@@ -62,7 +62,9 @@ void belle_sip_authorization_destroy(authorization_context_t* object) {
 	belle_sip_object_unref(object->callid);
 	belle_sip_free(object);
 }
-
+const char *belle_sip_authorization_get_algorithm(const belle_sip_authorization_t* object) {
+	return authorization_context_get_algorithm(object);
+}
 static void finalize_transaction(belle_sip_transaction_t *tr){
 	belle_sip_transaction_state_t state=belle_sip_transaction_get_state(tr);
 	if (state!=BELLE_SIP_TRANSACTION_TERMINATED){
