@@ -85,12 +85,7 @@ if(ENABLE_RTP_MAP_ALWAYS_IN_SDP)
 	set(BELLE_SDP_FORCE_RTP_MAP 1)
 endif()
 
-if(LINPHONE_BUILDER_GROUP_EXTERNAL_SOURCE_PATH_BUILDERS)
-	set(BcToolbox_FIND_COMPONENTS tester)
-	include("${EP_bctoolbox_CONFIG_DIR}/BcToolboxConfig.cmake")
-else()
-	find_package(BcToolbox 0.5.0 REQUIRED OPTIONAL_COMPONENTS tester)
-endif()
+find_package(bctoolbox 0.5.0 REQUIRED OPTIONAL_COMPONENTS tester)
 
 if(ENABLE_TUNNEL)
 	if(LINPHONE_BUILDER_GROUP_EXTERNAL_SOURCE_PATH_BUILDERS)
@@ -240,6 +235,8 @@ endif()
 
 
 include(CMakePackageConfigHelpers)
+set(CONFIG_PACKAGE_LOCATION "${CMAKE_INSTALL_DATADIR}/BelleSIP/cmake")
+
 write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/BelleSIPConfigVersion.cmake"
 	VERSION ${PACKAGE_VERSION}
@@ -248,12 +245,12 @@ write_basic_package_version_file(
 export(EXPORT ${EXPORT_TARGETS_NAME}Targets
 	FILE "${CMAKE_CURRENT_BINARY_DIR}/BelleSIPTargets.cmake"
 )
-configure_file(cmake/BelleSIPConfig.cmake.in
+configure_package_config_file(cmake/BelleSIPConfig.cmake.in
 	"${CMAKE_CURRENT_BINARY_DIR}/BelleSIPConfig.cmake"
-	@ONLY
+  	INSTALL_DESTINATION ${CONFIG_PACKAGE_LOCATION}
+  	NO_SET_AND_CHECK_MACRO
 )
 
-set(CONFIG_PACKAGE_LOCATION "${CMAKE_INSTALL_DATADIR}/BelleSIP/cmake")
 install(EXPORT ${EXPORT_TARGETS_NAME}Targets
 	FILE BelleSIPTargets.cmake
 	DESTINATION ${CONFIG_PACKAGE_LOCATION}
