@@ -20,7 +20,7 @@
 #
 ############################################################################
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 project(belle-sip VERSION 1.6.3 LANGUAGES C CXX)
 
 
@@ -228,7 +228,7 @@ add_subdirectory(include)
 add_subdirectory(src)
 
 
-if(ENABLE_TESTS AND BCTOOLBOX_TESTER_FOUND)
+if(ENABLE_TESTS)
 	enable_testing()
 	add_subdirectory(tester)
 endif()
