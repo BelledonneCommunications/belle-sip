@@ -38,6 +38,7 @@ endfunction()
 set(PUBLIC_INCLUDE_DIRS
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/belle-sip>
 )
 set(PRIVATE_INCLUDE_DIRS
 	${CMAKE_CURRENT_SOURCE_DIR}/antlr3c/include
@@ -196,7 +197,7 @@ if(ENABLE_STATIC)
 	set_target_properties(bellesip-static PROPERTIES OUTPUT_NAME bellesip)
 	set_target_properties(bellesip-static PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
 	target_include_directories(bellesip-static INTERFACE ${PUBLIC_INCLUDE_DIRS} PRIVATE ${PRIVATE_INCLUDE_DIRS})
-	target_link_libraries(bellesip-static INTERFACE ${LIBS})
+	target_link_libraries(bellesip-static PRIVATE ${LIBS})
 	if(NOT "${LINK_FLAGS_STR}" STREQUAL "")
 		set_target_properties(bellesip-static PROPERTIES LINK_FLAGS "${LINK_FLAGS_STR}")
 	endif()

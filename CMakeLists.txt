@@ -119,27 +119,15 @@ set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix ${prefix}/bin)
 set(libdir ${prefix}/lib)
 set(includedir ${prefix}/include)
-get_filename_component(bctoolbox_library_path "${BCTOOLBOX_CORE_LIBRARIES}" PATH)
-set(LIBS_PRIVATE "${LIBS_PRIVATE} -L${bctoolbox_library_path} -lbctoolbox")
-if(ZLIB_FOUND)
-	set(REQUIRES_PRIVATE "${REQUIRES_PRIVATE} z")
-endif()
-if(HAVE_LIBDL)
-	set(LIBS_PRIVATE "${LIBS_PRIVATE} -ldl")
-endif()
-if(HAVE_LIBRT)
-	set(LIBS_PRIVATE "${LIBS_PRIVATE} -lrt")
-endif()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/belle-sip.pc.in ${CMAKE_CURRENT_BINARY_DIR}/belle-sip.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/belle-sip.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
 
 include_directories(
 	include
 	src
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/src
-	${BCTOOLBOX_CORE_INCLUDE_DIRS}
 )
 if(TUNNEL_FOUND)
 	include_directories(${TUNNEL_INCLUDE_DIRS})
