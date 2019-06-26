@@ -256,6 +256,7 @@ struct belle_sip_main_loop{
 	int nsources;
 	int run;
 	int in_loop;
+	int last_notified_count;
 	bctbx_mutex_t timer_sources_mutex;
 #ifndef _WIN32
 	int control_fds[2];
@@ -513,6 +514,8 @@ static void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml){
 	int can_clean=belle_sip_object_pool_cleanable(ml->pool); /*iterate might not be called by the thread that created the main loop*/
 	belle_sip_object_pool_t *tmp_pool=NULL;
 	bctbx_iterator_t *it,*end;
+	
+	ml->last_notified_count = 0;
 
 	if (!can_clean){
 		/*Push a temporary pool for the time of the iterate loop*/
@@ -629,6 +632,8 @@ static void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml){
 			}
 
 			ret=s->notify(s->data,s->revents);
+			ml->last_notified_count++;
+			
 			if (ret==BELLE_SIP_STOP || s->oneshot){
 				/*this source needs to be removed*/
 				belle_sip_main_loop_remove_source(ml,s);
@@ -696,22 +701,32 @@ int belle_sip_main_loop_quit(belle_sip_main_loop_t *ml){
 	return BELLE_SIP_STOP;
 }
 
+#define MAX_ITERATION_COUNT 10
+
 void belle_sip_main_loop_sleep(belle_sip_main_loop_t *ml, int milliseconds){
+	int iteration_count = 0;
 	/* FIXME: Temporary workaround for -Wcast-function-type. */
 	#if __GNUC__ >= 8
 		_Pragma("GCC diagnostic push")
 		_Pragma("GCC diagnostic ignored \"-Wcast-function-type\"")
 	#endif // if __GNUC__ >= 8
 
-	belle_sip_source_t * s=belle_sip_main_loop_create_timeout(ml,(belle_sip_source_func_t)belle_sip_main_loop_quit,ml,milliseconds,"Main loop sleep timer");
+	do{
+		belle_sip_source_t * s=belle_sip_main_loop_create_timeout(ml,(belle_sip_source_func_t)belle_sip_main_loop_quit,ml,milliseconds,"Main loop sleep timer");
 
-	#if __GNUC__ >= 8
-		_Pragma("GCC diagnostic pop")
-	#endif // if __GNUC__ >= 8
+		#if __GNUC__ >= 8
+			_Pragma("GCC diagnostic pop")
+		#endif // if __GNUC__ >= 8
 
-	belle_sip_main_loop_run(ml);
-	belle_sip_main_loop_remove_source(ml,s);
-	belle_sip_object_unref(s);
+		belle_sip_main_loop_run(ml);
+		belle_sip_main_loop_remove_source(ml,s);
+		belle_sip_object_unref(s);
+		iteration_count++;
+	}while (milliseconds == 0 && ml->last_notified_count > 1 && iteration_count < MAX_ITERATION_COUNT); /* Special case for a non-blocking call to belle_sip_main_loop_sleep()*/
+	if (iteration_count > 1) belle_sip_message("belle_sip_main_loop_sleep(): processed %i times.", iteration_count);
+	if (iteration_count == MAX_ITERATION_COUNT){
+		belle_sip_warning("belle_sip_main_loop_t is doing a lot of processing.");
+	}
 }
 
 #ifndef _WIN32
