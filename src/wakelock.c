@@ -68,7 +68,6 @@ void belle_sip_wake_lock_init(JNIEnv *env, jobject pm) {
 }
 
 void belle_sip_wake_lock_uninit(JNIEnv *env) {
-	ctx.jvm = NULL;
 	if(ctx.powerManager != NULL) {
 		(*env)->DeleteGlobalRef(env, ctx.powerManager);
 		ctx.powerManager = NULL;
