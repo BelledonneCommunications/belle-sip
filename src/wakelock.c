@@ -66,7 +66,7 @@ void belle_sip_wake_lock_init(JNIEnv *env, jobject pm) {
 	}
 
 	ctx.numberOfWakelocks++;
-	belle_sip_message("bellesip_wake_lock : Number of wake locks = %d", ctx.numberOfWakelocks);
+	belle_sip_debug("bellesip_wake_lock : Number of wake locks = %d", ctx.numberOfWakelocks);
 
 	if (ctx.powerManager == NULL) {
 		jclass powerManagerClass;
@@ -94,7 +94,7 @@ void belle_sip_wake_lock_uninit(JNIEnv *env) {
 	bctbx_mutex_lock(&wakeLockInitMutex);
 	if (ctx.powerManager != NULL) {
 		ctx.numberOfWakelocks--;
-		belle_sip_message("bellesip_wake_lock : Number of wake locks = %d", ctx.numberOfWakelocks);
+		belle_sip_debug("bellesip_wake_lock : Number of wake locks = %d", ctx.numberOfWakelocks);
 		if(ctx.numberOfWakelocks == 0){
 			(*env)->DeleteGlobalRef(env, ctx.powerManager);
 			ctx.powerManager = NULL;
@@ -165,7 +165,7 @@ unsigned long wake_lock_acquire(const char *tag) {
 				jobject lock2 = (*env)->NewGlobalRef(env, lock);
 				(*env)->DeleteLocalRef(env, lock);
 				ctx.numberOfWakelocksAcquired++;
-				belle_sip_message("bellesip_wake_lock : Number of wake locks ACQUIRED = %d", ctx.numberOfWakelocksAcquired);
+				belle_sip_debug("bellesip_wake_lock : Number of wake locks ACQUIRED = %d", ctx.numberOfWakelocksAcquired);
 				belle_sip_message("bellesip_wake_lock_acquire(): Android wake lock [%s] acquired [ref=%p]", tag, (void *)lock2);
 				unsigned long lock2value = (unsigned long)lock2;
 				belle_sip_message("bellesip_wake_lock_acquire(): cast long of wakelock %lu", lock2value);
@@ -197,7 +197,7 @@ void wake_lock_release(unsigned long id) {
 				(*env)->CallVoidMethod(env, lock, ctx.releaseID);
 				belle_sip_message("bellesip_wake_lock_release(): Android wake lock released [ref=%p]", (void *)lock);
 				ctx.numberOfWakelocksAcquired--;
-				belle_sip_message("bellesip_wake_lock : Number of wake locks ACQUIRED = %d", ctx.numberOfWakelocksAcquired);
+				belle_sip_debug("bellesip_wake_lock : Number of wake locks ACQUIRED = %d", ctx.numberOfWakelocksAcquired);
 				(*env)->DeleteGlobalRef(env, lock);
 			} else {
 				belle_sip_error("bellesip_wake_lock_release(): cannot attach current thread to the JVM");
