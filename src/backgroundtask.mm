@@ -24,79 +24,21 @@
 #if TARGET_OS_IPHONE
 
 #include <UIKit/UIApplication.h>
+#include "bctoolbox/ios_utils.hh"
 
 unsigned long belle_sip_begin_background_task(const char *name, belle_sip_background_task_end_callback_t cb, void *data){
-
-	__block UIBackgroundTaskIdentifier bgid = UIBackgroundTaskInvalid;
-
-	dispatch_block_t block = ^{
-		UIApplication *app=[UIApplication sharedApplication];
-
-		@try {
-			if (cb==NULL){
-				belle_sip_error("belle_sip_begin_background_task(): the callback must not be NULL. Application must be aware that the background task needs to be terminated.");
-				bgid = UIBackgroundTaskInvalid;
-				@throw [NSException new];
-			}
-
-			void (^handler)() = ^{
-				cb(data);
-			};
-
-			if([app respondsToSelector:@selector(beginBackgroundTaskWithName:expirationHandler:)]){
-				bgid = [app beginBackgroundTaskWithName:[NSString stringWithUTF8String:name] expirationHandler:handler];
-			} else {
-				bgid = [app beginBackgroundTaskWithExpirationHandler:handler];
-			}
-
-			if (bgid==UIBackgroundTaskInvalid){
-				belle_sip_error("Could not start background task %s.", name);
-				bgid = 0;
-				@throw [NSException new];
-			}
-
-			// backgroundTimeRemaining is properly set only when running background... but not immediately!
-			if (app.applicationState != UIApplicationStateBackground || (app.backgroundTimeRemaining == DBL_MAX)) {
-				belle_sip_message("Background task %s started. Unknown remaining time since application is not fully in background.", name);
-			} else {
-				belle_sip_message("Background task %s started. Remaining time %.1f secs", name, app.backgroundTimeRemaining);
-			}
-		}
-		@catch (NSException*) {
-			// do nothing
-		}
-	};
-
-	if( [NSThread isMainThread] ) {
-		block();
-	}
-	else {
-		dispatch_sync(dispatch_get_main_queue(), block);
-	}
-
-	return (unsigned long)bgid;
+	IOSUtils iOSUtils;
+    	return iOSUtils.beginBackgroundTask(name, cb, data);
 }
 
 void belle_sip_end_background_task(unsigned long id){
-	
-	dispatch_block_t block = ^{
-			UIApplication *app=[UIApplication sharedApplication];
-			if (id != UIBackgroundTaskInvalid){
-				[app endBackgroundTask:(UIBackgroundTaskIdentifier)id];
-			}
-	};
-	
-	if( [NSThread isMainThread] ) {
-		block();
-	}
-	else {
-		dispatch_sync(dispatch_get_main_queue(), block);
-	}
+    	IOSUtils iOSUtils;
+    	iOSUtils.endBackgroundTask(id);
 }
 
 #else
 /*mac*/
-@import Foundation;
+#import <Foundation/Foundation.h>
 
 static unsigned long dummy_id=0;
 static id activity_id=0;
