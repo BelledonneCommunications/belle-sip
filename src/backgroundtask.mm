@@ -26,14 +26,22 @@
 #include <UIKit/UIApplication.h>
 #include "bctoolbox/ios_utils.hh"
 
+using namespace bctoolbox;
+
 unsigned long belle_sip_begin_background_task(const char *name, belle_sip_background_task_end_callback_t cb, void *data){
-	IOSUtils iOSUtils;
-    	return iOSUtils.beginBackgroundTask(name, cb, data);
+    auto &iOSUtils = IOSUtils::getUtils();
+    
+    std::function<void()> callback;
+    if (cb) {
+        callback = std::bind(cb, data);
+    }
+    
+    return iOSUtils.beginBackgroundTask(name, callback);
 }
 
 void belle_sip_end_background_task(unsigned long id){
-    	IOSUtils iOSUtils;
-    	iOSUtils.endBackgroundTask(id);
+    auto &iOSUtils = IOSUtils::getUtils();
+    iOSUtils.endBackgroundTask(id);
 }
 
 #else
