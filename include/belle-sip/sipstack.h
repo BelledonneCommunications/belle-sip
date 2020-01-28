@@ -31,6 +31,14 @@ typedef struct belle_sip_timer_config belle_sip_timer_config_t;
 
 BELLE_SIP_BEGIN_DECLS
 
+BELLESIP_EXPORT void belle_sip_set_well_known_port (int value);
+
+BELLESIP_EXPORT int belle_sip_get_well_known_port (void);
+
+BELLESIP_EXPORT void belle_sip_set_well_known_port_tls (int value);
+
+BELLESIP_EXPORT int belle_sip_get_well_known_port_tls (void);
+
 BELLESIP_EXPORT belle_sip_stack_t * belle_sip_stack_new(const char *properties);
 
 BELLESIP_EXPORT belle_sip_listening_point_t *belle_sip_stack_create_listening_point(belle_sip_stack_t *s, const char *ipaddress, int port, const char *transport);

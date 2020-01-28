@@ -18,6 +18,7 @@
  */
 
 #include "belle_sip_internal.h"
+#include "sipstack_internal.h"
 
 void belle_sip_listening_point_init(belle_sip_listening_point_t *lp, belle_sip_stack_t *s, const char *address, int port){
 	char *tmp;
@@ -130,10 +131,30 @@ const belle_sip_uri_t* belle_sip_listening_point_get_uri(const  belle_sip_listen
 	return lp->listening_uri;
 }
 int belle_sip_listening_point_get_well_known_port(const char *transport){
-	if (strcasecmp(transport,"UDP")==0 || strcasecmp(transport,"TCP")==0 ) return 5060;
-	if (strcasecmp(transport,"DTLS")==0 || strcasecmp(transport,"TLS")==0 ) return 5061;
-	belle_sip_error("No well known port for transport %s", transport);
-	return -1;
+	int well_known_port = belle_sip_get_well_known_port();
+	int tls_well_known_port = belle_sip_get_well_known_port_tls();
+		if (strcasecmp(transport,"UDP")==0 || strcasecmp(transport,"TCP")==0 ){
+			if (well_known_port <= 0){
+				belle_sip_message("No custom well known port for transport %s", transport);
+				return 5060;
+			} else {
+					return well_known_port;
+			}
+
+		} else if (strcasecmp(transport,"DTLS")==0 || strcasecmp(transport,"TLS")==0 ){
+			if (tls_well_known_port <= 0){
+				belle_sip_message("No custom TLS well known port for transport %s", transport);
+				return 5061;
+			} else {
+					return tls_well_known_port;
+			}
+		}
+	else {
+		belle_sip_error("Not valid transport value : %s", transport);
+		return -1;
+	}
+
+
 }
 
 belle_sip_channel_t *_belle_sip_listening_point_get_channel(belle_sip_listening_point_t *lp, const belle_sip_hop_t *hop, const struct addrinfo *addr){
