@@ -20,24 +20,24 @@
 #include "belle_sip_internal.h"
 #include "listeningpoint_internal.h"
 
-static int belle_sip_well_known_port = 0;
-static int belle_sip_well_known_port_tls = 0;
+static int belle_sip_well_known_port = 5060;
+static int belle_sip_well_known_port_tls = 5061;
 
-int belle_sip_get_well_known_port(){
+int belle_sip_stack_get_well_known_port(){
 	return belle_sip_well_known_port;
 }
 
-void belle_sip_set_well_known_port(int value){
-	bctbx_message("WKP : set WellKnownPort bellesip value=%d", value);
+void belle_sip_stack_set_well_known_port(int value){
+	bctbx_message("belle_sip_stack_set_well_know_port() : set to [%i]", value);
 	belle_sip_well_known_port = value;
 }
 
-int belle_sip_get_well_known_port_tls(){
+int belle_sip_stack_get_well_known_port_tls(){
 	return belle_sip_well_known_port_tls;
 }
 
-void belle_sip_set_well_known_port_tls(int value){
-	bctbx_message("WKP : set WellKnownPort_tls bellesip value=%d", value);
+void belle_sip_stack_set_well_known_port_tls(int value){
+	bctbx_message("belle_sip_stack_set_well_know_port_tls() : set to [%i]", value);
 	belle_sip_well_known_port_tls = value;
 }
 
