@@ -132,12 +132,12 @@ const belle_sip_uri_t* belle_sip_listening_point_get_uri(const  belle_sip_listen
 int belle_sip_listening_point_get_well_known_port(const char *transport){
 	int well_known_port = belle_sip_stack_get_well_known_port();
 	int tls_well_known_port = belle_sip_stack_get_well_known_port_tls();
-		if (strcasecmp(transport,"UDP")==0 || strcasecmp(transport,"TCP")==0 ){
-			return well_known_port;
+	if (strcasecmp(transport,"UDP")==0 || strcasecmp(transport,"TCP")==0 ){
+		return well_known_port;
 
-		} else if (strcasecmp(transport,"DTLS")==0 || strcasecmp(transport,"TLS")==0 ){
-			return tls_well_known_port;
-		}
+	} else if (strcasecmp(transport,"DTLS")==0 || strcasecmp(transport,"TLS")==0 ){
+		return tls_well_known_port;
+	}
 	else {
 		belle_sip_error("belle_sip_listening_point_get_well_known_port() : Not valid transport value : %s", transport);
 		return -1;
