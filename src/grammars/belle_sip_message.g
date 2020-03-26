@@ -1926,7 +1926,7 @@ scope { const char* current; }
 hostname        :   ( domainlabel DOT )* (toplabel)=>toplabel DOT? ;
 
 domainlabel     :   alphanum | (alphanum ( alphanum | DASH )* alphanum) ;
-toplabel        :   alphanum (  DASH?  alphanum)+;
+toplabel        :   alpha | (alpha (  DASH?  alphanum)+) ;
 
 ipv4address    :  three_digit DOT three_digit DOT three_digit DOT three_digit ;
 ipv6reference returns [const char* ret=NULL]  :  LSBRAQUET ipv6address RSBRAQUET {$ret=(const char *)$ipv6address.text->chars;};
