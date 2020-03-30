@@ -719,14 +719,14 @@ static void test_max_forwards_header(void) {
 }
 
 static void test_user_agent_header(void) {
-	const char* l_header = "User-Agent: Linphone/3.4.99.1 (eXosip2/3.3.0)";
+	const char* l_header = "User-Agent: Linphone/3.4.99.1 (eXosip2/3.3.0) (iphone, Frédi)";
 	const char* values[] ={"Linphone/3.4.99.1"
-				,"(eXosip2/3.3.0)"};
+				,"(eXosip2/3.3.0)","(iphone, Frédi)"};
 	belle_sip_list_t* products;
 	belle_sip_header_user_agent_t* L_tmp;
 	belle_sip_header_user_agent_t* L_user_agent = belle_sip_header_user_agent_parse(l_header);
 	char* l_raw_header = belle_sip_object_to_string(BELLE_SIP_OBJECT(L_user_agent));
-	int i=0;
+	unsigned long i=0;
 	belle_sip_object_unref(BELLE_SIP_OBJECT(L_user_agent));
 	L_tmp = belle_sip_header_user_agent_parse(l_raw_header);
 	L_user_agent = BELLE_SIP_HEADER_USER_AGENT(belle_sip_object_clone(BELLE_SIP_OBJECT(L_tmp)));
@@ -736,7 +736,7 @@ static void test_user_agent_header(void) {
 
 	products = belle_sip_header_user_agent_get_products(L_user_agent);
 
-	for(i=0;i<2;i++){
+	for(i=0;i<sizeof(values)/sizeof(const char*);i++){
 		BC_ASSERT_PTR_NOT_NULL(products);
 		BC_ASSERT_STRING_EQUAL((const char *)(products->data),values[i]);
 		products=products->next;

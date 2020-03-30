@@ -1232,7 +1232,7 @@ retry_after
   :   'Retry-After' HCOLON delta_seconds
                  comment? ( SEMI retry_param )*;
 */
-comment : LPAREN . RPAREN;
+comment : LPAREN (~RPAREN)+ RPAREN;
 
 /*
 retry_param
@@ -1363,7 +1363,7 @@ catch [ANTLR3_RECOGNITION_EXCEPTION]
    $ret=NULL;
 }
 
-server_val    : word {belle_sip_header_user_agent_add_product($header_user_agent::current,(const char*)$word.text->chars); };
+server_val    : ( comment |  (token (SLASH token)? )) {belle_sip_header_user_agent_add_product($header_user_agent::current,(const char*)$server_val.text->chars); };
 /*serval_item
   :   product | comment  ;
 product
@@ -1946,8 +1946,12 @@ three_digit: (DIGIT) => DIGIT
             (DIGIT DIGIT) => (DIGIT DIGIT)
             |
             (DIGIT DIGIT DIGIT) =>(DIGIT DIGIT DIGIT) ;
-token
-  :   (alphanum | mark | PERCENT | PLUS | BQUOTE  )+;
+/*
+token       =  1*(alphanum / "-" / "." / "!" / "%" / "*"
+                     / "_" / "+" / "`" / "'" / "~" )
+                     */
+token       
+  :   (alphanum | DASH | DOT  | EMARK|  PERCENT | STAR | USCORE | PLUS | BQUOTE | SQUOTE | TILDE)+;
 
 reserved_for_from_to_contact_addr_spec:
 	COLON | AT | AND | EQUAL | PLUS | DOLLARD  | SLASH;
