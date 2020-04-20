@@ -36,12 +36,13 @@ public:
 	}
 	static const char* getTypeName(const belle_sip_object_t *obj){
 		static thread_local std::string readableTypeName;
+		const Object *cppObject = Object::getCppObject(obj);
 #ifdef __GNUC__
 		int status = 0;
-		char *tmp = abi::__cxa_demangle(typeid(*Object::getCppObject(obj)).name(), 0, 0, &status);
+		char *tmp = abi::__cxa_demangle(typeid(*cppObject).name(), 0, 0, &status);
 		if (status != 0){
 #endif
-			readableTypeName = typeid(*Object::getCppObject(obj)).name();
+			readableTypeName = typeid(*cppObject).name();
 #ifdef __GNUC__
 		}else{
 			readableTypeName = tmp;
