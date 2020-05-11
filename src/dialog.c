@@ -1009,9 +1009,9 @@ static belle_sip_request_t *_belle_sip_dialog_create_request_from(belle_sip_dial
 		belle_sip_parameters_copy_parameters_from(BELLE_SIP_PARAMETERS(new_via),BELLE_SIP_PARAMETERS(orig_via));
 	}
 
-	/*copy body*/
-	if (content_lenth && belle_sip_header_content_length_get_content_length(content_lenth)>0) {
-		belle_sip_message_set_body(BELLE_SIP_MESSAGE(req),belle_sip_message_get_body(BELLE_SIP_MESSAGE(initial_req)),belle_sip_header_content_length_get_content_length(content_lenth));
+	/*copy body handler to save content enconding processing (I.E deflat)*/
+	if (belle_sip_message_get_body_handler(BELLE_SIP_MESSAGE(initial_req))) {
+		belle_sip_message_set_body_handler(BELLE_SIP_MESSAGE(req),belle_sip_message_get_body_handler(BELLE_SIP_MESSAGE(initial_req)));
 	}
 	return req;
 }
