@@ -988,7 +988,8 @@ static void copy_non_system_headers(belle_sip_header_t* header,belle_sip_request
 static belle_sip_request_t *_belle_sip_dialog_create_request_from(belle_sip_dialog_t *obj, const belle_sip_request_t *initial_req, int queued){
 	belle_sip_request_t* req;
 	const char *method=belle_sip_request_get_method(initial_req);
-	belle_sip_header_content_length_t* content_lenth;
+// Commented because of GCC error -Werror=unused-but-set-variable
+//	belle_sip_header_content_length_t* content_lenth;
 	belle_sip_list_t* headers;
 
 	if (queued) req=belle_sip_dialog_create_queued_request(obj,method);
@@ -996,7 +997,8 @@ static belle_sip_request_t *_belle_sip_dialog_create_request_from(belle_sip_dial
 
 	if (req==NULL) return NULL;
 
-	content_lenth = belle_sip_message_get_header_by_type(initial_req,belle_sip_header_content_length_t);
+// Commented because of GCC error -Werror=unused-but-set-variable
+//	content_lenth = belle_sip_message_get_header_by_type(initial_req,belle_sip_header_content_length_t);
 	/*first copy non system headers*/
 	headers = belle_sip_message_get_all_headers(BELLE_SIP_MESSAGE(initial_req));
 	belle_sip_list_for_each2(headers,(void (*)(void *, void *))copy_non_system_headers,req);
