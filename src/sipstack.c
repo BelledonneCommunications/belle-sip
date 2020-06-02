@@ -157,6 +157,7 @@ belle_sip_stack_t * belle_sip_stack_new(const char *properties){
 	stack->dns_srv_enabled=TRUE;
 	stack->dns_search_enabled=TRUE;
 	stack->inactive_transport_timeout=3600; /*one hour*/
+	stack->use_ipv6_dns_severs=TRUE;
 	return stack;
 }
 
@@ -303,6 +304,14 @@ void belle_sip_stack_set_dns_servers(belle_sip_stack_t *stack, const belle_sip_l
 		belle_sip_list_free_with_data(stack->dns_servers, belle_sip_free);
 	}
 	stack->dns_servers = newservers;
+}
+
+void belle_sip_stack_enable_ipv6_dns_servers(belle_sip_stack_t *stack, unsigned char enable) {
+	stack->use_ipv6_dns_severs = enable;
+}
+
+unsigned char belle_sip_stack_ipv6_dns_servers_enabled(belle_sip_stack_t *stack) {
+	return stack->use_ipv6_dns_severs;
 }
 
 const char* belle_sip_version_to_string() {

@@ -84,6 +84,19 @@ BELLESIP_EXPORT void belle_sip_stack_enable_dns_search(belle_sip_stack_t *stack,
 **/
 BELLESIP_EXPORT void belle_sip_stack_set_dns_servers(belle_sip_stack_t *stack, const belle_sip_list_t *servers);
 
+/**
+ * Used to tell the resolver whether to use or skip IPv6 DNS servers
+ * @param stack the stack
+ * @param enable TRUE to allow IPv6 DNS servers, FALSE otherwise
+ */
+BELLESIP_EXPORT void belle_sip_stack_enable_ipv6_dns_servers(belle_sip_stack_t *stack, unsigned char enable);
+
+/**
+ * Whether to use or skip IPv6 DNS servers
+ * @param stack the stack
+ * @return TRUE if IPv6 DNS servers are allowed, FALSE otherwise
+ */
+BELLESIP_EXPORT unsigned char belle_sip_stack_ipv6_dns_servers_enabled(belle_sip_stack_t *stack);
 
 /**
  * Get the additional DNS hosts file.

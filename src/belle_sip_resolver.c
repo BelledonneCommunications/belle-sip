@@ -374,27 +374,55 @@ static struct dns_resolv_conf *resconf(belle_sip_simple_resolver_context_t *ctx)
 		}
 	}
 
-	if (error==0){
+	if (error == 0) {
 		char ip[64];
 		char serv[10];
-		int using_ipv6=FALSE;
+		int using_ipv6 = FALSE;
 		size_t i;
+		size_t nameserver_size = sizeof(ctx->resconf->nameserver[0]);
+		size_t max = sizeof(ctx->resconf->nameserver) / nameserver_size;
+		unsigned char ipv6_dns_servers_enabled = belle_sip_stack_ipv6_dns_servers_enabled(ctx->base.stack);
 
 		belle_sip_message("Resolver is using DNS server(s):");
-		for(i=0;i<sizeof(ctx->resconf->nameserver)/sizeof(ctx->resconf->nameserver[0]);++i){
-			struct sockaddr *ns_addr=(struct sockaddr*)&ctx->resconf->nameserver[i];
-			if (ns_addr->sa_family==AF_UNSPEC) break;
-			bctbx_getnameinfo(ns_addr,ns_addr->sa_family==AF_INET6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr)
-					,ip,sizeof(ip),serv,sizeof(serv),NI_NUMERICHOST|NI_NUMERICSERV);
-			belle_sip_message("\t%s",ip);
-			if (ns_addr->sa_family==AF_INET6) using_ipv6=TRUE;
+		for (i = 0 ; i < max ; ++i) {
+			struct sockaddr *ns_addr = (struct sockaddr*)&ctx->resconf->nameserver[i];
+			if (ns_addr->sa_family == AF_UNSPEC) break;
+
+			bctbx_getnameinfo(ns_addr, 
+				ns_addr->sa_family == AF_INET6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr), 
+				ip, sizeof(ip), serv, sizeof(serv), NI_NUMERICHOST|NI_NUMERICSERV);
+
+			if (ns_addr->sa_family == AF_INET6) {
+				if (!!ipv6_dns_servers_enabled) {
+					using_ipv6 = TRUE;
+					belle_sip_message("\t%s", ip);
+				} else {
+					ns_addr->sa_family = AF_UNSPEC;
+					belle_sip_message("\t%s (won't be used because IPv6 DNS disabled)", ip);
+					continue;
+				}
+			} else {
+				belle_sip_message("\t%s", ip);
+			}
 		}
+
+		for (i = 0 ; i < max ; ++i) {
+			struct sockaddr *ns_addr = (struct sockaddr*)&ctx->resconf->nameserver[i];
+			int j = i;
+			while (ns_addr->sa_family == AF_UNSPEC && j+1 < max) {
+				struct sockaddr *next_ns_addr = (struct sockaddr*)&ctx->resconf->nameserver[j+1];
+				memcpy(ns_addr, next_ns_addr, nameserver_size);
+				next_ns_addr->sa_family = AF_UNSPEC;
+				j++;
+			}
+		}
+
 		ctx->resconf->iface.ss_family=using_ipv6 ? AF_INET6 : AF_INET;
 		if (i==0) {
 			belle_sip_error("- no DNS servers available - resolution aborted.");
 			return NULL;
 		}
-	}else{
+	} else{
 		belle_sip_error("Error loading dns server addresses.");
 		return NULL;
 	}

@@ -570,6 +570,103 @@ static void ipv4_and_ipv6_dns_server(void) {
 	destroy_endpoint(client);
 }
 
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden(bool_t ipv6_first, bool_t three_dns, bool_t middle) {
+	struct addrinfo *ai;
+	endpoint_t *client;
+	const char *nameservers[]={
+		"::ffff:192.168.86.12",
+		"8.8.8.8",
+		NULL
+	};
+	const char *nameservers2[]={
+		"8.8.8.8",
+		"::ffff:192.168.86.12",
+		NULL
+	};
+	const char *nameservers3[]={
+		"::ffff:192.168.86.12",
+		"::ffff:192.168.86.13",
+		"8.8.8.8",
+		NULL
+	};
+	const char *nameservers4[]={
+		"8.8.8.8",
+		"::ffff:192.168.86.12",
+		"::ffff:192.168.86.13",
+		NULL
+	};
+	const char *nameservers5[]={
+		"::ffff:192.168.86.12",
+		"8.8.8.8",
+		"::ffff:192.168.86.13",
+		NULL
+	};
+
+	if (!belle_sip_tester_ipv6_available()){
+		belle_sip_warning("Test skipped, IPv6 connectivity not available.");
+		return;
+	}
+	
+	client = create_endpoint();
+	if (!BC_ASSERT_PTR_NOT_NULL(client)) return;
+	
+	belle_sip_stack_enable_ipv6_dns_servers(client->stack, FALSE);
+	if (middle) {
+		set_custom_resolv_conf(client->stack, nameservers5);
+	} else {
+		if (ipv6_first) {
+			if (three_dns) {
+				set_custom_resolv_conf(client->stack, nameservers3);
+			} else {
+				set_custom_resolv_conf(client->stack, nameservers);
+			}
+		} else {
+			if (three_dns) {
+				set_custom_resolv_conf(client->stack, nameservers4);
+			} else {
+				set_custom_resolv_conf(client->stack, nameservers2);
+			}
+		}
+	}
+
+	client->resolver_ctx = belle_sip_stack_resolve_a(client->stack, IPV4_SIP_DOMAIN, SIP_PORT, AF_INET, a_resolve_done, client);
+	BC_ASSERT_PTR_NOT_NULL(client->resolver_ctx);
+	BC_ASSERT_TRUE(wait_for(client->stack, &client->resolve_done, 1, 2000));
+	BC_ASSERT_PTR_NOT_EQUAL(client->ai_list, NULL);
+	if (client->ai_list) {
+		struct sockaddr_in *sock_in = (struct sockaddr_in *)client->ai_list->ai_addr;
+		int ntohsi = (int)ntohs(sock_in->sin_port);
+		BC_ASSERT_EQUAL(ntohsi, SIP_PORT, int, "%d");
+		ai = bctbx_ip_address_to_addrinfo(AF_INET, SOCK_STREAM, IPV4_SIP_IP, SIP_PORT);
+		if (ai) {
+			BC_ASSERT_EQUAL(sock_in->sin_addr.s_addr, ((struct sockaddr_in *)ai->ai_addr)->sin_addr.s_addr, int, "%d");
+			bctbx_freeaddrinfo(ai);
+		}
+	}
+
+	destroy_endpoint(client);
+}
+
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden_1(void) {
+	ipv6_and_ipv4_dns_server_with_ipv6_forbidden(TRUE, FALSE, FALSE);
+}
+
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden_2(void) {
+	ipv6_and_ipv4_dns_server_with_ipv6_forbidden(TRUE, TRUE, FALSE);
+}
+
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden_3(void) {
+	ipv6_and_ipv4_dns_server_with_ipv6_forbidden(FALSE, FALSE, FALSE);
+}
+
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden_4(void) {
+	ipv6_and_ipv4_dns_server_with_ipv6_forbidden(FALSE, TRUE, FALSE);
+}
+
+static void ipv6_and_ipv4_dns_server_with_ipv6_forbidden_5(void) {
+	ipv6_and_ipv4_dns_server_with_ipv6_forbidden(FALSE, TRUE, TRUE);
+}
+
 #ifdef HAVE_MDNS
 static void mdns_register_callback(void *data, int error) {
 	int *register_error = (int *)data;
@@ -719,6 +816,11 @@ test_t resolver_tests[] = {
 	TEST_NO_TAG("DNS fallback because of invalid IPv6", dns_fallback_because_of_invalid_ipv6),
 	TEST_NO_TAG("IPv6 DNS server", ipv6_dns_server),
 	TEST_NO_TAG("IPv4 and v6 DNS servers", ipv4_and_ipv6_dns_server),
+	TEST_NO_TAG("IPv6 and v4 DNS servers with v6 forbidden 1", ipv6_and_ipv4_dns_server_with_ipv6_forbidden_1),
+	TEST_NO_TAG("IPv6 and v4 DNS servers with v6 forbidden 2", ipv6_and_ipv4_dns_server_with_ipv6_forbidden_2),
+	TEST_NO_TAG("IPv6 and v4 DNS servers with v6 forbidden 3", ipv6_and_ipv4_dns_server_with_ipv6_forbidden_3),
+	TEST_NO_TAG("IPv6 and v4 DNS servers with v6 forbidden 4", ipv6_and_ipv4_dns_server_with_ipv6_forbidden_4),
+	TEST_NO_TAG("IPv6 and v4 DNS servers with v6 forbidden 5", ipv6_and_ipv4_dns_server_with_ipv6_forbidden_5),
 #ifdef HAVE_MDNS
 	TEST_NO_TAG("MDNS query", mdns_query),
 	TEST_NO_TAG("MDNS query with ipv6", mdns_query_ipv6),
