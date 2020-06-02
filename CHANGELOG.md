@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [4.4.0] - 2019-06-03
+
+### Added
+- New C++ facilities:
+  * HybridObject implements toString() using typeid() operator.
+  * Mainloop's do_later() and create_timer() with lambdas.
+- Session-Expires header
+
+### Changed
+- version number is aligned for all components of linphone-sdk, for simplicity.
+- Via header parsing is more tolerant, following recommandation of https://tools.ietf.org/html/rfc5118#section-4.5
+
+### Fixed
+- bad channel selection in some specific cases.
+- an undefined behavior and a memory leak when timer is added with an interval greater than MAX_INT.
+- accumulation of data in main loop's control file descriptor (for use with threads).
+
 ## [1.7.0] - 2019-09-06
 
 ### Added
