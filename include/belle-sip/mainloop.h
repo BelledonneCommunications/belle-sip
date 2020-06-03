@@ -20,6 +20,10 @@
 #ifndef BELLE_SIP_MAINLOOP_H
 #define BELLE_SIP_MAINLOOP_H
 
+#include "defs.h"
+#include "utils.h"
+#include "types.h"
+
 #define BELLE_SIP_EVENT_READ 1
 #define BELLE_SIP_EVENT_WRITE (1<<1)
 #define BELLE_SIP_EVENT_ERROR (1<<2)
@@ -112,8 +116,22 @@ BELLESIP_EXPORT belle_sip_source_t* belle_sip_main_loop_create_timeout_with_remo
 
 /**
  * Schedule an arbitrary task at next main loop iteration.
+ * @note thread-safe
 **/
 BELLESIP_EXPORT void belle_sip_main_loop_do_later(belle_sip_main_loop_t *ml, belle_sip_callback_t func, void *data);
+
+/**
+ * Same as #belle_sip_main_loop_do_later() but allow to give a name to the task.
+ * @param[in] timer_name The name of the task. If NULL, the task will be named as though
+ * #belle_sip_main_loop_do_later() was called.
+ * @note thread-safe
+**/
+BELLESIP_EXPORT void belle_sip_main_loop_do_later_with_name(
+	belle_sip_main_loop_t *ml,
+	belle_sip_callback_t func,
+	void *data,
+	const char *timer_name
+);
 
 /**
  * Creates a timeout source, similarly to belle_sip_main_loop_add_timeout().
@@ -122,14 +140,30 @@ BELLESIP_EXPORT void belle_sip_main_loop_do_later(belle_sip_main_loop_t *ml, bel
 **/
 BELLESIP_EXPORT belle_sip_source_t * belle_sip_timeout_source_new(belle_sip_source_func_t func, void *data, unsigned int timeout_value_ms);
 
-BELLESIP_EXPORT void belle_sip_source_set_timeout(belle_sip_source_t *s, unsigned int value_ms);
+/**
+ * Set the timeout duration.
+ * @param[in] s The source to modify.
+ * @param[in] value_ms The new timeout duration in milliseconds. Only values in [0;INT_MAX] are valid to define a new
+ * duration. Higher values will cause the timer to be disabled.
+ * @deprecated Since 2020-05-20 (SDK 4.4). Use belle_sip_source_set_timeout_int64() instead.
+ */
+BELLESIP_DEPRECATED BELLESIP_EXPORT void belle_sip_source_set_timeout(belle_sip_source_t *s, unsigned int value_ms);
+/**
+ * Set the timeout duration.
+ * @param[in] s The source to modify.
+ * @param[in] value_ms Positive values willbe taken as the new duration to set. Negative values will cause the timer
+ * to be disabled.
+ */
+BELLESIP_EXPORT void belle_sip_source_set_timeout_int64(belle_sip_source_t *s, int64_t value_ms);
+
 /**
  * Cancel a source. Will be removed at next iterate. It is not freed.
  **/
 BELLESIP_EXPORT void belle_sip_source_cancel(belle_sip_source_t * src);
 
 
-BELLESIP_EXPORT unsigned int belle_sip_source_get_timeout(const belle_sip_source_t *s);
+BELLESIP_DEPRECATED BELLESIP_EXPORT unsigned int belle_sip_source_get_timeout(const belle_sip_source_t *s);
+BELLESIP_EXPORT int64_t belle_sip_source_get_timeout_int64(const belle_sip_source_t *s);
 
 BELLESIP_EXPORT belle_sip_source_t * belle_sip_socket_source_new(belle_sip_source_func_t func, void *data, belle_sip_socket_t fd, unsigned int events, unsigned int timeout_value_ms);
 /*
@@ -165,41 +199,93 @@ BELLESIP_EXPORT int belle_sip_main_loop_quit(belle_sip_main_loop_t *ml);
 BELLESIP_EXPORT void belle_sip_main_loop_cancel_source(belle_sip_main_loop_t *ml, unsigned long id);
 
 BELLE_SIP_END_DECLS
-#ifndef BELLE_SIP_USE_STL
-#define BELLE_SIP_USE_STL 1
-#endif
 
-#if ((defined(WIN32) && defined(__cplusplus)) || __cplusplus >= 201103L) && BELLE_SIP_USE_STL
+#if (defined(WIN32) && defined(__cplusplus)) || __cplusplus >= 201103L
 /*Only Visual Studio 2018 properly defines __cplusplus according to c++ level. */
 
 #include <functional>
+#include <memory>
 
-typedef std::function<int (unsigned int)> belle_sip_source_cpp_func_t;
+/**
+ * A generic deleter for belle_sip_object_t objects that limits itself to decrementing the
+ * reference counter. This class is to be used by std::unique_ptr and std::shared_ptr maybe.
+ */
+template <typename T>
+struct BelleSipObjectDeleter {
+	constexpr BelleSipObjectDeleter() noexcept = default;
+	void operator()(T *ptr) const noexcept {belle_sip_object_unref(ptr);}
+};
 
+using BelleSipSourcePtr = std::unique_ptr<belle_sip_source_t, BelleSipObjectDeleter<belle_sip_source_t>>;
+using belle_sip_source_cpp_func_t = std::function<int(unsigned int)>;
+using BelleSipDoLaterFunc = std::function<void()>;
 
-/*purpose of this function is to simplify c++ timer integration.
+/**
+ * The purpose of this function is to simplify c++ timer integration.
  * ex:
  * std::string helloworld("Hello world):
  * belle_sip_source_cpp_func_t *func = new belle_sip_source_cpp_func_t([helloworld](unsigned int events) {
  *						std::cout << helloworld << std::endl;
  *						return BELLE_SIP_STOP;
  *					});
- *create timer
- *mTimer = belle_sip_main_loop_create_cpp_timeout( mainloop
+ * // create timer
+ * belle_sip_source_t *timer = belle_sip_main_loop_create_cpp_timeout( mainloop
+ *												, func
+ *												, 1000
+ *												,"timer for c++");
+ * [...]
+ * // Unref the timer when you doesn't need it anymore
+ * belle_sip_object_unref(timer);
+ *
+ * @warning Not thread-sfae
+ * @deprecated Since 2020-04-17.
+ */
+BELLESIP_DEPRECATED BELLESIP_EXPORT belle_sip_source_t *belle_sip_main_loop_create_cpp_timeout(belle_sip_main_loop_t *ml
+								, belle_sip_source_cpp_func_t *func
+								, unsigned int timeout_value_ms
+								, const char* timer_name);
+
+/**
+ * The purpose of this function is to simplify c++ timer integration.
+ * Unlike the deprecated overload of this function, there is no need to
+ * allocate anything with new and to unref the timer.
+ *
+ * ex:
+ * std::string helloworld{"Hello world};
+ * auto func = [helloworld](unsigned int events) {
+ *					std::cout << helloworld << std::endl;
+ *					return BELLE_SIP_STOP;
+ *				});
+ *
+ * // create the timer
+ * auto timer = belle_sip_main_loop_create_cpp_timeout( mainloop
  *												, func
  *												, 1000
  *												,"timer for c++");
  *
  */
-
-BELLESIP_EXPORT belle_sip_source_t * belle_sip_main_loop_create_cpp_timeout(belle_sip_main_loop_t *ml
-								, belle_sip_source_cpp_func_t *func
+BELLESIP_EXPORT BelleSipSourcePtr belle_sip_main_loop_create_cpp_timeout(belle_sip_main_loop_t *ml
+								, const belle_sip_source_cpp_func_t &func
 								, unsigned int timeout_value_ms
 								, const char* timer_name);
 
-BELLESIP_EXPORT void belle_sip_main_loop_cpp_do_later(belle_sip_main_loop_t *ml, const std::function<void (void)> &func);
+/**
+ * C++ wrapper for #belle_sip_main_loop_do_later().
+ * @note thread-safe
+ */
+BELLESIP_EXPORT void belle_sip_main_loop_cpp_do_later(belle_sip_main_loop_t *ml, const BelleSipDoLaterFunc &func);
+
+/**
+ * Overload of the previous function that allow to give a name to the task.
+ * @note thread-safe
+ */
+BELLESIP_EXPORT void belle_sip_main_loop_cpp_do_later(
+	belle_sip_main_loop_t *ml,
+	const BelleSipDoLaterFunc &func,
+	const char *task_name
+);
 
 
-#endif
+#endif // C++ declarations
 
-#endif
+#endif // #ifndef BELLE_SIP_MAINLOOP_H
