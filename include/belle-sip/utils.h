@@ -73,6 +73,17 @@ BELLE_SIP_BEGIN_DECLS
 
 #define belle_sip_log_level_enabled(level) bctbx_log_level_enabled(BELLE_SIP_LOG_DOMAIN,level)
 
+#ifndef BELLE_SIP_DEBUG_MODE
+/*
+ * Handy switch to enable debug messages.
+ *
+ * To enable, just change to 1.
+ */
+#if 0
+#define BELLE_SIP_DEBUG_MODE
+#endif
+#endif
+
 #ifdef BELLE_SIP_DEBUG_MODE
 #define belle_sip_debug bctbx_debug
 #else
