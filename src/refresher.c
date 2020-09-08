@@ -183,7 +183,7 @@ belle_sip_header_contact_t* get_first_contact_in_unknown_state(belle_sip_request
 static int is_contact_address_acurate(const belle_sip_refresher_t* refresher,belle_sip_request_t* request) {
 	belle_sip_header_contact_t* contact;
 	if ((contact = get_first_contact_in_unknown_state(request))){
-		/*check if contact ip/port is consistant with  public channel ip/port*/
+		/*check if contact ip/port is consistent with public channel ip/port*/
 		int channel_public_port = refresher->transaction->base.channel->public_port;
 		int contact_port = belle_sip_uri_get_listening_port(belle_sip_header_address_get_uri(BELLE_SIP_HEADER_ADDRESS(contact)));
 		const char* channel_public_ip = refresher->transaction->base.channel->public_ip;

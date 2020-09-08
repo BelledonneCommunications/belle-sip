@@ -744,7 +744,7 @@ static void update_inactivity_timer(belle_sip_channel_t *obj, int from_recv){
 
 /*constructor for channels creating an outgoing connection
  * bindip local ip address to bind on, typically 0.0.0.0 or ::0
- * locaport locaport to use for binding, can be set to 0 if port doesn't matter
+ * localport local port to use for binding, can be set to 0 if port doesn't matter
  * peer_cname canonical name of remote host, used for TLS verification
  * peername peer's hostname, either ip address or DNS name
  * peer_port peer's port to connect to.
