@@ -180,7 +180,7 @@ belle_sip_header_contact_t* get_first_contact_in_unknown_state(belle_sip_request
 	return NULL;
 }
 
-static int is_contact_address_acurate(const belle_sip_refresher_t* refresher,belle_sip_request_t* request) {
+static int is_contact_address_accurate(const belle_sip_refresher_t* refresher,belle_sip_request_t* request) {
 	belle_sip_header_contact_t* contact;
 	if ((contact = get_first_contact_in_unknown_state(request))){
 		/*check if contact ip/port is consistent with public channel ip/port*/
@@ -268,7 +268,7 @@ static void process_response_event(belle_sip_listener_t *user_ctx, const belle_s
 		if (refresher->state==started) {
 			if (!refresher->first_acknowledged_request)
 				belle_sip_object_ref(refresher->first_acknowledged_request = request);
-			if (is_contact_address_acurate(refresher,request)
+			if (is_contact_address_accurate(refresher,request)
 				|| (!belle_sip_provider_nat_helper_enabled(client_transaction->base.provider) || (contact && belle_sip_parameters_has_parameter(BELLE_SIP_PARAMETERS(contact), "pub-gruu"))) ) { /*Disable nat helper in gruu case. Might not be the best fix, maybe better to make reflesh is not mandatory*/
 				schedule_timer(refresher); /*re-arm timer*/
 			} else {
@@ -760,7 +760,7 @@ int belle_sip_refresher_start(belle_sip_refresher_t* refresher) {
 		if (refresher->target_expires>0) {
 			belle_sip_request_t* request = belle_sip_transaction_get_request(BELLE_SIP_TRANSACTION(refresher->transaction));
 			refresher->state=started;
-			if (is_contact_address_acurate(refresher,request)) {
+			if (is_contact_address_accurate(refresher,request)) {
 				schedule_timer(refresher); /*re-arm timer*/
 			} else {
 				belle_sip_message("belle_sip_refresher_start(): refresher [%p] is resubmitting request because contact sent was not correct in original request.",refresher);
