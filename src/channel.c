@@ -291,6 +291,23 @@ static void belle_sip_channel_set_public_ip_port(belle_sip_channel_t *obj, const
 	obj->public_port=port;
 }
 
+static void belle_sip_channel_pass_public_ip_port(belle_sip_channel_t *obj, const char *public_ip, int port){
+	belle_sip_list_t *it = NULL;
+	belle_sip_channel_t *chan = NULL;
+
+	for (it = obj->lp->channels; it; it = it->next){
+		chan = (belle_sip_channel_t*)(it->data);
+
+		if ((BELLE_SIP_CHANNEL_DISCONNECTED == chan->state) ||
+		    (BELLE_SIP_CHANNEL_ERROR == chan->state) ||
+		    (chan->about_to_be_closed) ||
+		    (chan == obj) ||
+		    (chan->public_ip)) continue;
+
+		belle_sip_channel_set_public_ip_port(chan,public_ip,port);
+	}
+}
+
 static void belle_sip_channel_learn_public_ip_port(belle_sip_channel_t *obj, belle_sip_response_t *resp){
 	belle_sip_header_via_t *via=belle_sip_message_get_header_by_type(resp,belle_sip_header_via_t);
 	const char *received;
@@ -312,6 +329,9 @@ static void belle_sip_channel_learn_public_ip_port(belle_sip_channel_t *obj, bel
 		rport=belle_sip_header_via_get_listening_port(via);
 	}
 	belle_sip_channel_set_public_ip_port(obj,received,rport);
+
+	/* Additionally, pass that information up to any other channels of the listening endpoint. */
+	belle_sip_channel_pass_public_ip_port(obj,received,rport);
 
 	obj->learnt_ip_port=TRUE;
 }
