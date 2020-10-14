@@ -50,6 +50,10 @@ set(SOURCE_FILES_C
 	object_tester.cc
 )
 
+set(SOURCE_FILES_CXX
+	belle_sip_potential_configuration_tester.cc
+)
+
 set(OTHER_FILES
 	tester_hosts
 )
@@ -66,9 +70,13 @@ endif()
 string(REPLACE ";" " " LINK_FLAGS_STR "${LINK_FLAGS}")
 bc_apply_compile_flags(SOURCE_FILES_C STRICT_OPTIONS_CPP STRICT_OPTIONS_C)
 bc_apply_compile_flags(SOURCE_FILES_OBJC STRICT_OPTIONS_CPP STRICT_OPTIONS_OBJC)
+if(SOURCE_FILES_CXX)
+	set_source_files_properties(${SOURCE_FILES_CXX} PROPERTIES LANGUAGE CXX)
+	bc_apply_compile_flags(SOURCE_FILES_CXX STRICT_OPTIONS_CPP STRICT_OPTIONS_CXX)
+endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-	add_library(belle_sip_tester_static STATIC ${SOURCE_FILES_C})
+	add_library(belle_sip_tester_static STATIC ${SOURCE_FILES_C} ${SOURCE_FILES_CXX})
 #	target_include_directories(belle_sip_tester_static PUBLIC ${BCTOOLBOX_TESTER_INCLUDE_DIRS})
 	target_link_libraries(belle_sip_tester_static bctoolbox bctoolbox-tester ${PROJECT_LIBS})
 
@@ -104,7 +112,7 @@ else()
 		set(USE_BUNDLE MACOSX_BUNDLE)
 	endif()
 
-	add_executable(belle_sip_tester ${USE_BUNDLE} ${SOURCE_FILES_C} ${SOURCE_FILES_OBJC})
+	add_executable(belle_sip_tester ${USE_BUNDLE} ${SOURCE_FILES_C} ${SOURCE_FILES_CXX} ${SOURCE_FILES_OBJC})
 	set_target_properties(belle_sip_tester PROPERTIES LINKER_LANGUAGE CXX)
 	set_target_properties(belle_sip_tester PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
 	set_target_properties(belle_sip_tester PROPERTIES C_STANDARD 99)
