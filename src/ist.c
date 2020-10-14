@@ -21,7 +21,7 @@
  * INVITE server transaction implementation.
 **/
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static void ist_on_terminate(belle_sip_ist_t *obj){
 	belle_sip_transaction_t *base=(belle_sip_transaction_t*)obj;
