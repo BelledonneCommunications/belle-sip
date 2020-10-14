@@ -909,22 +909,29 @@ belle_sip_hop_t* belle_sip_response_get_return_hop(belle_sip_response_t *msg);
  */
 #define BELLE_SDP_PARSE(object_type) \
 belle_sdp_##object_type##_t* belle_sdp_##object_type##_parse (const char* value) { \
-	pANTLR3_INPUT_STREAM           input; \
-	pbelle_sdpLexer               lex; \
-	pANTLR3_COMMON_TOKEN_STREAM    tokens; \
-	pbelle_sdpParser              parser; \
-	belle_sdp_##object_type##_t* l_parsed_object; \
-	input  = ANTLR_STREAM_NEW(object_type, value,strlen(value));\
-	lex    = belle_sdpLexerNew                (input);\
-	tokens = antlr3CommonTokenStreamSourceNew  (ANTLR3_SIZE_HINT, TOKENSOURCE(lex));\
-	parser = belle_sdpParserNew               (tokens);\
-	l_parsed_object = parser->object_type(parser).ret;\
-	parser ->free(parser);\
-	tokens ->free(tokens);\
-	lex    ->free(lex);\
-	input  ->close(input);\
-	if (l_parsed_object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
-	return l_parsed_object;\
+	if (!use_belr) {\
+		pANTLR3_INPUT_STREAM           input; \
+		pbelle_sdpLexer               lex; \
+		pANTLR3_COMMON_TOKEN_STREAM    tokens; \
+		pbelle_sdpParser              parser; \
+		belle_sdp_##object_type##_t* l_parsed_object; \
+		input  = ANTLR_STREAM_NEW(object_type, value,strlen(value));\
+		lex    = belle_sdpLexerNew                (input);\
+		tokens = antlr3CommonTokenStreamSourceNew  (ANTLR3_SIZE_HINT, TOKENSOURCE(lex));\
+		parser = belle_sdpParserNew               (tokens);\
+		l_parsed_object = parser->object_type(parser).ret;\
+		parser ->free(parser);\
+		tokens ->free(tokens);\
+		lex    ->free(lex);\
+		input  ->close(input);\
+		if (l_parsed_object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
+		return l_parsed_object;\
+	} else {\
+		auto parser = new bellesip::Parser::SDP;\
+		auto object = parser->parse(value, #object_type);\
+		if (object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
+		return (belle_sdp_##object_type##_t *)object;\
+	}\
 }
 #define BELLE_SDP_NEW(object_type,super_type) \
 		BELLE_SIP_DECLARE_NO_IMPLEMENTED_INTERFACES(belle_sdp_##object_type##_t); \
