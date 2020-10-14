@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "bctoolbox/parser.h"
 #include "bctoolbox/crypto.h"
 

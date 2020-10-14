@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include <limits.h>
 #include <ctype.h>
 #include <wchar.h>
@@ -845,7 +845,7 @@ int belle_sip_channel_matches(const belle_sip_channel_t *obj, const belle_sip_ho
 			return 1;
 		}
 		if (strcmp(hop->host,obj->peer_name)==0 && (hop->port==obj->peer_port || obj->srv_overrides_port)){
-			/*We may be matching the general name of the service, in that case the port doesn't matter.*/ 
+			/*We may be matching the general name of the service, in that case the port doesn't matter.*/
 			if (hop->cname && obj->peer_cname && strcmp(hop->cname,obj->peer_cname) != 0){
 				return 0; /*cname mismatch*/
 			}

@@ -18,7 +18,7 @@
  */
 
 #include "belle-sip/belle-sip.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "belle_sip_tester.h"
 
 

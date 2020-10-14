@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "dns.h"
 #include <bctoolbox/defs.h>
 
@@ -172,11 +172,11 @@ static const belle_sip_dns_srv_t * _belle_sip_dns_srv_get_from_addrinfo(const be
 	 * - there might not be srv record for a domain, in which case the srv_list is empty...
 	 */
 	const bctbx_list_t *elem;
-	
+
 	for (elem = srv_list; elem != NULL; elem = elem->next){
 		const belle_sip_dns_srv_t *srv = (const belle_sip_dns_srv_t *) elem->data;
 		const belle_sip_dns_srv_t *next_srv = elem->next ? (const belle_sip_dns_srv_t *) elem->next->data : NULL;
-		
+
 		if (addrinfo_in_range(ai, srv->a_results, next_srv ? next_srv->a_results : NULL)){
 			return srv;
 		}
@@ -1468,7 +1468,7 @@ static void dual_resolver_context_check_finished(belle_sip_dual_resolver_context
 
 static int dual_resolver_aaaa_timeout(void *data, unsigned int event){
 	belle_sip_dual_resolver_context_t *ctx = BELLE_SIP_DUAL_RESOLVER_CONTEXT(data);
-	
+
 	/*
 	 * It is too late to receive the AAAA query, so give up, and notify the A result we have already.
 	 */
@@ -1485,18 +1485,18 @@ static int dual_resolver_aaaa_timeout(void *data, unsigned int event){
 static void on_ipv4_results(void *data, belle_sip_resolver_results_t *results) {
 	belle_sip_dual_resolver_context_t *ctx = BELLE_SIP_DUAL_RESOLVER_CONTEXT(data);
 	int aaaa_timeout = 3000;
-	
+
 	ctx->a_results = results->ai_list;
 	results->ai_list = NULL;
 	ctx->a_notified = TRUE;
-	
+
 	if (!ctx->aaaa_notified && ctx->a_results && aaaa_timeout > 0){
-		/* 
-		 * Start a global timer in order to workaround buggy home routers that don't respond to AAAA requests when there is no 
+		/*
+		 * Start a global timer in order to workaround buggy home routers that don't respond to AAAA requests when there is no
 		 * corresponding AAAA record for the queried domain. It is only started if we have a A result.
 		 */
 		belle_sip_message("resolver[%p]: starting aaaa timeout since A response is received.", ctx);
-		belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)dual_resolver_aaaa_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT, 
+		belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)dual_resolver_aaaa_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT,
 				aaaa_timeout);
 		belle_sip_main_loop_add_source(ctx->base.stack->ml, (belle_sip_source_t*)ctx);
 	}
@@ -1508,7 +1508,7 @@ static void on_ipv6_results(void *data, belle_sip_resolver_results_t *results) {
 	ctx->aaaa_results = results->ai_list;
 	results->ai_list = NULL;
 	ctx->aaaa_notified = TRUE;
-	
+
 	if (ctx->a_notified){
 		/* Cancel the aaaa timeout.*/
 		belle_sip_source_cancel((belle_sip_source_t*)ctx);

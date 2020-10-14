@@ -18,7 +18,7 @@
  */
 
 #include "belle-sip/auth-helper.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include <string.h>
 #include "bctoolbox/crypto.h"
 

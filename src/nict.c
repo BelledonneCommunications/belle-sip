@@ -21,7 +21,7 @@
  * non-INVITE client transaction implementation.
 **/
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static int nict_on_timer_K(belle_sip_nict_t *obj){
 	belle_sip_transaction_terminate((belle_sip_transaction_t*)obj);

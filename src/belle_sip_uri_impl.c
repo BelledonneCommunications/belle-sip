@@ -24,7 +24,7 @@
 #include <stdarg.h>
 #include "grammars/belle_sip_messageParser.h"
 #include "grammars/belle_sip_messageLexer.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "listeningpoint_internal.h"
 
 
