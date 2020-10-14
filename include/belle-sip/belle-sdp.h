@@ -50,6 +50,7 @@ BELLESIP_EXPORT belle_sdp_raw_attribute_t* belle_sdp_raw_attribute_new(void);
 BELLESIP_EXPORT belle_sdp_raw_attribute_t* belle_sdp_raw_attribute_parse(const char* attribute);
 BELLESIP_EXPORT belle_sdp_raw_attribute_t* belle_sdp_raw_attribute_create(const char* name, const char* value);
 BELLESIP_EXPORT void belle_sdp_raw_attribute_set_value(belle_sdp_raw_attribute_t* attribute, const char* value);
+BELLESIP_EXPORT void belle_sdp_raw_attribute_set_name(belle_sdp_raw_attribute_t* attribute, const char* name);
 #define BELLE_SDP_RAW_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_raw_attribute_t)
 /***************************************************************************************
  * RTCP-FB Attribute
@@ -76,12 +77,16 @@ BELLESIP_EXPORT belle_sdp_rtcp_fb_attribute_t* belle_sdp_rtcp_fb_attribute_parse
 BELLESIP_EXPORT belle_sdp_rtcp_fb_attribute_t* belle_sdp_rtcp_fb_attribute_create(void);
 BELLESIP_EXPORT int8_t belle_sdp_rtcp_fb_attribute_get_id(const belle_sdp_rtcp_fb_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_id(belle_sdp_rtcp_fb_attribute_t* attribute, int8_t id);
+BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_raw_id(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value);
 BELLESIP_EXPORT belle_sdp_rtcp_fb_val_type_t belle_sdp_rtcp_fb_attribute_get_type(const belle_sdp_rtcp_fb_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_type(belle_sdp_rtcp_fb_attribute_t* attribute, belle_sdp_rtcp_fb_val_type_t type);
+BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_raw_type(belle_sdp_rtcp_fb_attribute_t* attribute, const char* type);
 BELLESIP_EXPORT belle_sdp_rtcp_fb_val_param_t belle_sdp_rtcp_fb_attribute_get_param(const belle_sdp_rtcp_fb_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_param(belle_sdp_rtcp_fb_attribute_t* attribute, belle_sdp_rtcp_fb_val_param_t param);
+BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_raw_param(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value);
 BELLESIP_EXPORT uint16_t belle_sdp_rtcp_fb_attribute_get_trr_int(const belle_sdp_rtcp_fb_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_trr_int(belle_sdp_rtcp_fb_attribute_t* attribute, uint16_t milliseconds);
+BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_trr_raw(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value);
 BELLESIP_EXPORT uint32_t belle_sdp_rtcp_fb_attribute_get_smaxpr(const belle_sdp_rtcp_fb_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_fb_attribute_set_smaxpr(belle_sdp_rtcp_fb_attribute_t* attribute, uint32_t smaxpr);
 #define BELLE_SDP_RTCP_FB_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_rtcp_fb_attribute_t)
@@ -99,10 +104,12 @@ BELLESIP_EXPORT int belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_max_size(const bell
 BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_set_rcvr_rtt_max_size(belle_sdp_rtcp_xr_attribute_t* attribute, int max_size);
 BELLESIP_EXPORT unsigned int belle_sdp_rtcp_xr_attribute_has_stat_summary(const belle_sdp_rtcp_xr_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_set_stat_summary(belle_sdp_rtcp_xr_attribute_t* attribute, unsigned int enable);
+BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_enable_stat_summary(belle_sdp_rtcp_xr_attribute_t* attribute, const char* flag);
 BELLESIP_EXPORT const belle_sip_list_t* belle_sdp_rtcp_xr_attribute_get_stat_summary_flags(const belle_sdp_rtcp_xr_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_add_stat_summary_flag(belle_sdp_rtcp_xr_attribute_t* attribute, const char* flag);
 BELLESIP_EXPORT unsigned int belle_sdp_rtcp_xr_attribute_has_voip_metrics(const belle_sdp_rtcp_xr_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_set_voip_metrics(belle_sdp_rtcp_xr_attribute_t* attribute, unsigned int enable);
+BELLESIP_EXPORT void belle_sdp_rtcp_xr_attribute_enable_voip_metrics(belle_sdp_rtcp_xr_attribute_t* attribute, const char* flag);
 #define BELLE_SDP_RTCP_XR_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_rtcp_xr_attribute_t)
 /***************************************************************************************
  * Bandwidth
@@ -188,6 +195,7 @@ BELLESIP_EXPORT int	belle_sdp_media_get_port_count(const belle_sdp_media_t* medi
 BELLESIP_EXPORT const char* belle_sdp_media_get_protocol(const belle_sdp_media_t* media);
 BELLESIP_EXPORT void belle_sdp_media_set_media_formats(belle_sdp_media_t* media, belle_sip_list_t* mediaFormats);
 BELLESIP_EXPORT void belle_sdp_media_set_raw_fmt(belle_sdp_media_t* media, const char* fmt);
+BELLESIP_EXPORT void belle_sdp_media_media_formats_add(belle_sdp_media_t* media, const char* fmt);
 BELLESIP_EXPORT void belle_sdp_media_set_media_port(belle_sdp_media_t* media, int port);
 BELLESIP_EXPORT void belle_sdp_media_set_media_type(belle_sdp_media_t* media, const char* mediaType);
 BELLESIP_EXPORT void belle_sdp_media_set_port_count(belle_sdp_media_t* media, int port_count);
@@ -244,10 +252,10 @@ BELLESIP_EXPORT belle_sip_list_t* belle_sdp_media_description_build_mime_paramet
 BELLESIP_EXPORT void belle_sdp_media_description_remove_attribute(belle_sdp_media_description_t* media_description,const char* attribute);
 BELLESIP_EXPORT void belle_sdp_media_description_remove_bandwidth(belle_sdp_media_description_t* media_description,const char* bandwidth);
 BELLESIP_EXPORT void belle_sdp_media_description_set_attribute_value(belle_sdp_media_description_t* media_description, const char* name, const char* value);
-BELLESIP_EXPORT void belle_sdp_media_description_add_attribute(belle_sdp_media_description_t* media_description, const belle_sdp_attribute_t* attr);
+BELLESIP_EXPORT void belle_sdp_media_description_add_attribute(belle_sdp_media_description_t* media_description, belle_sdp_attribute_t* attr);
 BELLESIP_EXPORT void belle_sdp_media_description_set_attributes(belle_sdp_media_description_t* media_description, belle_sip_list_t* Attributes);
 BELLESIP_EXPORT void belle_sdp_media_description_set_bandwidth(belle_sdp_media_description_t* media_description, const char* name, int value);
-BELLESIP_EXPORT void belle_sdp_media_description_add_bandwidth(belle_sdp_media_description_t* media_description, const belle_sdp_bandwidth_t* bandwidth);
+BELLESIP_EXPORT void belle_sdp_media_description_add_bandwidth(belle_sdp_media_description_t* media_description, belle_sdp_bandwidth_t* bandwidth);
 BELLESIP_EXPORT void belle_sdp_media_description_set_bandwidths(belle_sdp_media_description_t* media_description, belle_sip_list_t* bandwidths);
 BELLESIP_EXPORT void belle_sdp_media_description_set_connection(belle_sdp_media_description_t* media_description, belle_sdp_connection_t* conn);
 BELLESIP_EXPORT void belle_sdp_media_description_set_info(belle_sdp_media_description_t* media_description,belle_sdp_info_t* i);
@@ -388,7 +396,7 @@ BELLESIP_EXPORT belle_sdp_uri_t* belle_sdp_session_description_get_zone_adjustme
 BELLESIP_EXPORT void belle_sdp_session_description_remove_attribute(belle_sdp_session_description_t* session_description, const char* name);
 BELLESIP_EXPORT void belle_sdp_session_description_remove_bandwidth(belle_sdp_session_description_t* session_description, const char* name);
 BELLESIP_EXPORT void belle_sdp_session_description_set_attribute_value(belle_sdp_session_description_t* session_description, const char* name, const char* value);
-BELLESIP_EXPORT void belle_sdp_session_description_add_attribute(belle_sdp_session_description_t* session_description, const belle_sdp_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_session_description_add_attribute(belle_sdp_session_description_t* session_description, belle_sdp_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_session_description_set_attributes(belle_sdp_session_description_t* session_description, belle_sip_list_t* Attributes);
 BELLESIP_EXPORT void belle_sdp_session_description_set_bandwidth(belle_sdp_session_description_t* session_description, const char* name, int value);
 BELLESIP_EXPORT void belle_sdp_session_description_set_bandwidths(belle_sdp_session_description_t* session_description, belle_sip_list_t* bandwidths);
