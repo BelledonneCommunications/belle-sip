@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "listeningpoint_internal.h"
 
 static int belle_sip_well_known_port = 5060;
