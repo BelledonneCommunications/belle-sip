@@ -19,7 +19,7 @@
 
 #include <bctoolbox/defs.h>
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "belle-sip/refresher.h"
 
 #define DEFAULT_RETRY_AFTER 60000
