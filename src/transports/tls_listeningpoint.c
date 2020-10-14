@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static void belle_sip_tls_listening_point_uninit(belle_sip_tls_listening_point_t *lp){
 	belle_sip_object_unref(lp->crypto_config);

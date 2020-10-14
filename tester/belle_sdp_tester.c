@@ -80,58 +80,73 @@ static void test_attribute_2(void) {
 static void test_rtcp_fb_attribute(void) {
 	belle_sdp_rtcp_fb_attribute_t* lAttribute;
 
-	lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* ack"));
+	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* ack"));
+	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:* ack");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_ACK, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_NONE, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:98 nack rpsi"));
+	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:98 nack rpsi"));
+	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:98 nack rpsi");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), 98, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_NACK, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_RPSI, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* trr-int 3"));
+	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* trr-int 3"));
+	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:* trr-int 3");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_TRR_INT, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_trr_int(lAttribute), 3, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:103 ccm fir"));
+	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:103 ccm fir"));
+	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:103 ccm fir");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), 103, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_CCM, int, "%d");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_FIR, int, "%d");
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+
+	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:* ccm tmmbr smaxpr=120");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
+	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
+	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_CCM, int, "%d");
+	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_TMMBR, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 }
 
 static void test_rtcp_xr_attribute(void) {
 	belle_sdp_rtcp_xr_attribute_t* lAttribute;
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=all:10"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=all:10"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:rcvr-rtt=all:10");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute), "all");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_max_size(lAttribute), 10, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:stat-summary");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_PTR_NULL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute));
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary=loss,jitt"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary=loss,jitt"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:stat-summary=loss,jitt");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_PTR_NOT_NULL(belle_sip_list_find_custom(belle_sdp_rtcp_xr_attribute_get_stat_summary_flags(lAttribute), (belle_sip_compare_func)strcasecmp, "loss"));
@@ -139,13 +154,15 @@ static void test_rtcp_xr_attribute(void) {
 	BC_ASSERT_PTR_NULL(belle_sip_list_find_custom(belle_sdp_rtcp_xr_attribute_get_stat_summary_flags(lAttribute), (belle_sip_compare_func)strcasecmp, "HL"));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:voip-metrics"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:voip-metrics"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:voip-metrics");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=sender stat-summary=loss,dup,jitt,TTL voip-metrics"));
+	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=sender stat-summary=loss,dup,jitt,TTL voip-metrics"));
+	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:rcvr-rtt=sender stat-summary=loss,dup,jitt,TTL voip-metrics");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute), "sender");
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
@@ -185,7 +202,6 @@ static void test_origin(void) {
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lOrigin));
 	belle_sip_free(l_raw_origin);
 }
-
 
 static void test_malformed_origin(void) {
 	belle_sdp_origin_t* lOrigin = belle_sdp_origin_parse("o=Jehan Monnier 3800 2558 IN IP4 192.168.0.165");
@@ -270,7 +286,6 @@ static void test_connection_multicast(void) {
 
 }
 
-
 static void test_email(void) {
 	belle_sdp_email_t* lTmp;
 	belle_sdp_email_t* l_email = belle_sdp_email_parse("e= jehan <jehan@linphone.org>");
@@ -349,7 +364,6 @@ static void test_media_description_base(belle_sdp_media_description_t* media_des
 	BC_ASSERT_STRING_EQUAL(belle_sdp_connection_get_network_type(lConnection), "IN");
 
 	/*bandwidth*/
-
 	BC_ASSERT_EQUAL(belle_sdp_media_description_get_bandwidth(l_media_description,"AS"),380, int, "%d");
 
 	/*attributes*/
@@ -364,6 +378,7 @@ static void test_media_description_base(belle_sdp_media_description_t* media_des
 
 static void test_media_description(void) {
 	const char* l_src = "m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"i=Hey\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -607,8 +622,8 @@ static void test_mime_parameter(void) {
 	belle_sip_list_t* mime_parameter_list;
 	belle_sip_list_t* mime_parameter_list_iterator;
 	belle_sdp_media_description_t* l_media_description_tmp = belle_sdp_media_description_parse(l_src);
-
-	belle_sdp_media_description_t* l_media_description = belle_sdp_media_description_parse(belle_sip_object_to_string(l_media_description_tmp));
+	char* sdp = belle_sip_object_to_string(l_media_description_tmp);
+	belle_sdp_media_description_t* l_media_description = belle_sdp_media_description_parse(sdp);
 	belle_sip_object_unref(l_media_description_tmp);
 
 	mime_parameter_list = belle_sdp_media_description_build_mime_parameters(l_media_description);
