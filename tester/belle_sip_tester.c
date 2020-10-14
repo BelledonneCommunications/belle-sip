@@ -139,6 +139,7 @@ void belle_sip_tester_init(void(*ftester_printf)(int level, const char *fmt, va_
 	bc_tester_add_suite(&headers_test_suite);
 	bc_tester_add_suite(&core_test_suite);
 	bc_tester_add_suite(&sdp_test_suite);
+	bc_tester_add_suite(&sdp_belr_test_suite);
 	bc_tester_add_suite(&resolver_test_suite);
 	bc_tester_add_suite(&message_test_suite);
 	bc_tester_add_suite(&authentication_helper_test_suite);

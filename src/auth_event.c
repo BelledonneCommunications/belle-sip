@@ -18,7 +18,7 @@
  */
 
 #include "belle-sip/auth-helper.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 
 GET_SET_STRING(belle_sip_auth_event,username)
