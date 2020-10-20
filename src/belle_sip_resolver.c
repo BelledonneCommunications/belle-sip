@@ -866,7 +866,11 @@ static void dns_service_query_record_cb(DNSServiceRef dns_service, DNSServiceFla
 	belle_sip_simple_resolver_context_t *ctx = (belle_sip_simple_resolver_context_t *)context;
 
 	if (errorCode != kDNSServiceErr_NoError) {
-		belle_sip_error("%s : resolving %s got error %d", __FUNCTION__, fullname, errorCode);
+		if (errorCode == kDNSServiceErr_NoSuchRecord) {
+			belle_sip_message("%s : resolving %s : no such record", __FUNCTION__, fullname);
+		} else {
+			belle_sip_error("%s : resolving %s got error %d", __FUNCTION__, fullname, errorCode);
+		}
 		belle_sip_resolver_context_notify(BELLE_SIP_RESOLVER_CONTEXT(ctx));
 	}
 
