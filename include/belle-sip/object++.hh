@@ -62,6 +62,8 @@ class BELLESIP_EXPORT Object{
 		belle_sip_error_code marshal(char* buff, size_t buff_size, size_t *offset);
 };
 
+std::ostream &operator<< (std::ostream &stream, const Object &obj);
+
 /**
  * Template class to help define an Object usable in both C and C++
  * The template arguments are:
@@ -190,6 +192,14 @@ class HybridObject : public Object {
 			return result;
 		}
 
+		virtual std::string toString() const override {
+			std::string baseInfo(Object::toString());
+			const void * voidThis = static_cast<const void*>(this);
+			std::stringstream ss;
+			ss << belle_sip_object_to_string(this) << " " << voidThis;
+			return baseInfo.empty() ? ss.str() : (baseInfo + " " + ss.str());
+		}
+
 	protected:
 		virtual ~HybridObject() = default;
 		HybridObject() {}
@@ -213,7 +223,6 @@ class HybridObject : public Object {
 		}
 		mutable std::weak_ptr<_CppType> mSelf;
 };
-
 
 }//end of namespace
 
