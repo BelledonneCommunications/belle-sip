@@ -48,7 +48,6 @@ set(SOURCE_FILES_C
 	cast_test.c
 	register_tester.h
 	object_tester.cc
-	belle_sdp_tester.cc
 )
 
 set(OTHER_FILES
