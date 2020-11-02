@@ -917,7 +917,7 @@ belle_sdp_##object_type##_t* belle_sdp_##object_type##_parse (const char* value)
 		if (l_parsed_object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
 		return l_parsed_object;\
 	} else {\
-		auto parser = new bellesip::Parser::SDP;\
+		auto parser = bellesip::Parser::SDP::getInstance();\
 		auto object = parser->parse(value, #object_type);\
 		if (object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
 		return (belle_sdp_##object_type##_t *)object;\
