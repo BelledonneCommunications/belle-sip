@@ -23,7 +23,7 @@
 #include "belle_sip_internal.hh"
 #include "parser/sdp.hh"
 
-int use_belr = 1;
+int belle_sdp_use_belr = 1;
 
 struct _belle_sdp_mime_parameter {
 	belle_sip_object_t base;
@@ -168,6 +168,55 @@ void belle_sdp_raw_attribute_set_name(belle_sdp_raw_attribute_t* attribute, cons
 }
 
 /***************************************************************************************
+ * RFC5939 Attributes
+ *
+ **************************************************************************************/
+struct _belle_sdp_csup_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* option_tags;
+};
+void belle_sdp_csup_attribute_destroy(belle_sdp_csup_attribute_t* attribute) {}
+void belle_sdp_csup_attribute_clone(belle_sdp_csup_attribute_t* attribute, const belle_sdp_csup_attribute_t *orig) {
+	attribute->option_tags = belle_sip_list_copy_with_data(orig->option_tags, belle_sip_string_copyfunc);
+}
+belle_sip_error_code belle_sdp_csup_attribute_marshal(belle_sdp_csup_attribute_t* attribute, char * buff, size_t buff_size, size_t *offset) {
+	return BELLE_SIP_OK;
+}
+static void belle_sdp_csup_attribute_init(belle_sdp_csup_attribute_t* attribute) {
+	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "csup");
+}
+BELLE_SDP_NEW_WITH_CTR(csup_attribute,belle_sdp_attribute)
+BELLE_SDP_BELR_PARSE(csup_attribute)
+
+struct _belle_sdp_creq_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* option_tags;
+};
+//BELLE_SDP_NEW(creq_attribute,belle_sdp_attribute)
+//BELLE_SDP_PARSE(creq_attribute)
+
+struct _belle_sdp_tcap_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* protos;
+	int8_t trpr_cap_num;
+};
+//BELLE_SDP_NEW(tcap_attribute,belle_sdp_attribute)
+//BELLE_SDP_PARSE(tcap_attribute)
+//GET_SET_INT(belle_sdp_tcap_attribute,trpr_cap_num,int8_t)
+
+struct _belle_sdp_acap_attribute {
+	belle_sdp_attribute_t base;
+	int8_t acap_cap_num;
+	const char* name;
+	const char* value;
+};
+//BELLE_SDP_NEW(acap_attribute,belle_sdp_attribute)
+//BELLE_SDP_PARSE(acap_attribute)
+//GET_SET_INT(belle_sdp_acap_attribute,acap_cap_num,int8_t)
+//GET_SET_STRING(belle_sdp_acap_attribute,name)
+//GET_SET_STRING(belle_sdp_acap_attribute,value)
+
+/***************************************************************************************
  * RTCP-FB Attribute
  *
  **************************************************************************************/
@@ -269,14 +318,11 @@ belle_sip_error_code belle_sdp_rtcp_fb_attribute_marshal(belle_sdp_rtcp_fb_attri
 	return error;
 }
 void belle_sdp_rtcp_fb_attribute_set_raw_id(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value) {
-	belle_sip_debug("PARSED ID %s", value);
 	attribute->id = strcmp(value, "*") == 0
 		? -1
 		: atoi(value);
 }
 void belle_sdp_rtcp_fb_attribute_set_raw_type(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value) {
-	belle_sip_debug("PARSED TYPE %s", value);
-
 	if (strcmp(value, "ack") == 0) {
 		attribute->type = BELLE_SDP_RTCP_FB_ACK;
 	}

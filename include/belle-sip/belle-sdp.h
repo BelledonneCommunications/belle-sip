@@ -52,6 +52,23 @@ BELLESIP_EXPORT belle_sdp_raw_attribute_t* belle_sdp_raw_attribute_create(const 
 BELLESIP_EXPORT void belle_sdp_raw_attribute_set_value(belle_sdp_raw_attribute_t* attribute, const char* value);
 BELLESIP_EXPORT void belle_sdp_raw_attribute_set_name(belle_sdp_raw_attribute_t* attribute, const char* name);
 #define BELLE_SDP_RAW_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_raw_attribute_t)
+
+/***************************************************************************************
+ * RFC5939 Attributes
+ *
+ **************************************************************************************/
+typedef struct _belle_sdp_csup_attribute belle_sdp_csup_attribute_t;
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_create(void);
+#define BELLE_SDP_CSUP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_csup_attribute_t)
+typedef struct _belle_sdp_creq_attribute belle_sdp_creq_attribute_t;
+#define BELLE_SDP_CREQ_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_creq_attribute_t)
+typedef struct _belle_sdp_tcap_attribute belle_sdp_tcap_attribute_t;
+#define BELLE_SDP_TCAP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_tcap_attribute_t)
+typedef struct _belle_sdp_acap_attribute belle_sdp_acap_attribute_t;
+#define BELLE_SDP_ACAP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_acap_attribute_t)
+
 /***************************************************************************************
  * RTCP-FB Attribute
  *

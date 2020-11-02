@@ -10,16 +10,31 @@ using namespace std;
 using namespace belr;
 using namespace bellesip;
 
-void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
+// Initialize the singleton instance
+bellesip::Parser::SDP *bellesip::Parser::SDP::instance = 0;
+bellesip::Parser::SDP *bellesip::Parser::SDP::getInstance() {
+    if (!instance) {
+       instance = new SDP();
+    }
+
+    return instance;
+}
+
+bellesip::Parser::SDP::SDP() {
+    shared_ptr<Grammar> grammar = loadGrammar();
+    _parser = make_shared<belr::Parser<void*>>(grammar);
+
     _parser->setHandler("session-description", make_fn(&belle_sdp_session_description_new))
-           ->setCollector("attribute", make_fn(&belle_sdp_session_description_add_attribute))
-           ->setCollector("session-name", make_fn(&belle_sdp_session_description_set_session_name))
-           ->setCollector("origin", make_fn(&belle_sdp_session_description_set_origin))
-           ->setCollector("proto-version", make_fn(&belle_sdp_session_description_set_version))
-           ->setCollector("connection", make_fn(&belle_sdp_session_description_set_connection))
-           ->setCollector("info", make_fn(&belle_sdp_session_description_set_info))
-           ->setCollector("times", make_fn(&belle_sdp_session_description_set_time_description))
-           ->setCollector("media-description", make_fn(&belle_sdp_session_description_add_media_description));
+        ->setCollector("attribute", make_fn(&belle_sdp_session_description_add_attribute))
+        ->setCollector("session-name", make_fn(&belle_sdp_session_description_set_session_name))
+        ->setCollector("origin", make_fn(&belle_sdp_session_description_set_origin))
+        ->setCollector("proto-version", make_fn(&belle_sdp_session_description_set_version))
+        ->setCollector("connection", make_fn(&belle_sdp_session_description_set_connection))
+        ->setCollector("info", make_fn(&belle_sdp_session_description_set_info))
+        ->setCollector("times", make_fn(&belle_sdp_session_description_set_time_description))
+        ->setCollector("media-description", make_fn(&belle_sdp_session_description_add_media_description));
+
+    _parser->setHandler("csup-attribute", make_fn(&belle_sdp_session_name_new));
 
     _parser->setHandler("session-name", make_fn(&belle_sdp_session_name_new))
            ->setCollector("session-name-value", make_fn(&belle_sdp_session_name_set_value));
@@ -96,7 +111,9 @@ void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
            ->setCollector("sdp-port", make_fn(&belle_sdp_media_set_media_port))
            ->setCollector("proto", make_fn(&belle_sdp_media_set_protocol))
            ->setCollector("fmt", make_fn(&belle_sdp_media_media_formats_add));
+}
 
+void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
     string parsedRule = rule;
     size_t parsedSize = 0;
     replace(parsedRule.begin(), parsedRule.end(), '_', '-');
@@ -106,11 +123,6 @@ void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
     }
 
     return elem;
-}
-
-bellesip::Parser::SDP::SDP() {
-    shared_ptr<Grammar> grammar = bellesip::Parser::SDP::loadGrammar();
-    _parser = make_shared<belr::Parser<void*>>(grammar);
 }
 
 shared_ptr<Grammar> bellesip::Parser::SDP::loadGrammar() {

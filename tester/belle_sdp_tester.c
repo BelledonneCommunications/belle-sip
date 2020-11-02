@@ -77,6 +77,18 @@ static void test_attribute_2(void) {
 
 }
 
+static void test_capability_negociation(void) {
+	belle_sdp_csup_attribute_t* lAttribute;
+
+	lAttribute = belle_sdp_csup_attribute_parse("a=csup:cap-v0,foo,bar");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "csup");
+	//BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
+	//BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_type(lAttribute), BELLE_SDP_RTCP_FB_ACK, int, "%d");
+	//BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_NONE, int, "%d");
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
+
+
 static void test_rtcp_fb_attribute(void) {
 	belle_sdp_rtcp_fb_attribute_t* lAttribute;
 
@@ -704,6 +716,7 @@ test_t sdp_tests[] = {
 	TEST_NO_TAG("a=rtcp-fb", test_rtcp_fb_attribute),
 	TEST_NO_TAG("a=rtcp-xr", test_rtcp_xr_attribute),
 	TEST_NO_TAG("b= (bandwidth)", test_bandwidth),
+	TEST_NO_TAG("a= (csup...)", test_capability_negociation),
 	TEST_NO_TAG("o= (IPv4 origin)", test_origin),
 	TEST_NO_TAG("o= (malformed origin)", test_malformed_origin),
 	TEST_NO_TAG("c= (IPv4 connection)", test_connection),
