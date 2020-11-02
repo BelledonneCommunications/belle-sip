@@ -74,7 +74,76 @@ static void test_attribute_2(void) {
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_value(lAttribute), "1 1 : e2br+9PL Eu1qGlQ9 10.211.55.3 8988");
 	BC_ASSERT_TRUE(belle_sdp_attribute_has_value(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
 
+static void test_csup_attribute(void) {
+	belle_sdp_csup_attribute_t* lAttribute;
+	belle_sip_list_t* list;
+	int i = 0;
+	const char* fmt[] = {"cap-v0","foo","bar"};
+	const char* line = "a=csup:cap-v0,foo,bar";
+
+	lAttribute = belle_sdp_csup_attribute_parse(line);
+	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "csup");
+	list = belle_sdp_csup_attribute_get_option_tags(lAttribute);
+	BC_ASSERT_PTR_NOT_NULL(list);
+	for(; list!=NULL; list=list->next){
+		BC_ASSERT_STRING_EQUAL(list->data, fmt[i++]);
+	}
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
+
+static void test_creq_attribute(void) {
+	belle_sdp_creq_attribute_t* lAttribute;
+	belle_sip_list_t* list;
+	int i = 0;
+	const char* fmt[] = {"cap-v0","foo","bar"};
+	const char* line = "a=creq:cap-v0,foo,bar";
+
+	lAttribute = belle_sdp_creq_attribute_parse(line);
+	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "creq");
+	list = belle_sdp_creq_attribute_get_option_tags(lAttribute);
+	BC_ASSERT_PTR_NOT_NULL(list);
+	i = 0;
+	for(; list!=NULL; list=list->next){
+		BC_ASSERT_STRING_EQUAL(list->data, fmt[i++]);
+	}
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
+
+static void test_tcap_attribute(void) {
+	belle_sdp_tcap_attribute_t* lAttribute;
+	belle_sip_list_t* list;
+	int i = 0;
+	const char* protos[] = {"RTP/SAVP","RTP/SAVPF"};
+	const char* line = "a=tcap:5 RTP/SAVP RTP/SAVPF";
+
+	lAttribute = belle_sdp_tcap_attribute_parse(line);
+	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "tcap");
+	BC_ASSERT_EQUAL(belle_sdp_tcap_attribute_get_id(lAttribute), 5, int, "%d");
+	list = belle_sdp_tcap_attribute_get_protos(lAttribute);
+	BC_ASSERT_PTR_NOT_NULL(list);
+	i = 0;
+	for(; list!=NULL; list=list->next){
+		BC_ASSERT_STRING_EQUAL(list->data, protos[i++]);
+	}
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
+
+static void test_acap_attribute(void) {
+	belle_sdp_acap_attribute_t* lAttribute;
+	const char* line = "a=acap:3 key-mgmt:mikey AQAFgM";
+
+	lAttribute = belle_sdp_acap_attribute_parse(line);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "acap");
+	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	BC_ASSERT_EQUAL(belle_sdp_acap_attribute_get_id(lAttribute), 3, int, "%d");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_name(lAttribute), "key-mgmt");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_value(lAttribute), "mikey AQAFgM");
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 }
 
 static void test_rtcp_fb_attribute(void) {
@@ -703,6 +772,10 @@ test_t sdp_tests[] = {
 	TEST_NO_TAG("a= (attribute) 2", test_attribute_2),
 	TEST_NO_TAG("a=rtcp-fb", test_rtcp_fb_attribute),
 	TEST_NO_TAG("a=rtcp-xr", test_rtcp_xr_attribute),
+	TEST_NO_TAG("a= (csup)", test_csup_attribute),
+	TEST_NO_TAG("a= (creq)", test_creq_attribute),
+	TEST_NO_TAG("a= (tcap)", test_tcap_attribute),
+	TEST_NO_TAG("a= (acap)", test_acap_attribute),
 	TEST_NO_TAG("b= (bandwidth)", test_bandwidth),
 	TEST_NO_TAG("o= (IPv4 origin)", test_origin),
 	TEST_NO_TAG("o= (malformed origin)", test_malformed_origin),
