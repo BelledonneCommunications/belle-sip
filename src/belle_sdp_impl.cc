@@ -23,7 +23,7 @@
 #include "belle_sip_internal.hh"
 #include "parser/sdp.hh"
 
-int use_belr = 1;
+int belle_sdp_use_belr = 1;
 
 struct _belle_sdp_mime_parameter {
 	belle_sip_object_t base;
