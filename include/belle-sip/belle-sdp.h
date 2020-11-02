@@ -52,6 +52,76 @@ BELLESIP_EXPORT belle_sdp_raw_attribute_t* belle_sdp_raw_attribute_create(const 
 BELLESIP_EXPORT void belle_sdp_raw_attribute_set_value(belle_sdp_raw_attribute_t* attribute, const char* value);
 BELLESIP_EXPORT void belle_sdp_raw_attribute_set_name(belle_sdp_raw_attribute_t* attribute, const char* name);
 #define BELLE_SDP_RAW_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_raw_attribute_t)
+
+/***************************************************************************************
+ * RFC5939 Attributes
+ *
+ **************************************************************************************/
+
+// csup
+typedef struct _belle_sdp_csup_attribute belle_sdp_csup_attribute_t;
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_csup_attribute_t* belle_sdp_csup_attribute_create(void);
+BELLESIP_EXPORT void belle_sdp_csup_attribute_add_option_tag(belle_sdp_csup_attribute_t* attribute, const char* option_tag);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_csup_attribute_get_option_tags(belle_sdp_csup_attribute_t* attribute);
+#define BELLE_SDP_CSUP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_csup_attribute_t)
+
+// creq
+typedef struct _belle_sdp_creq_attribute belle_sdp_creq_attribute_t;
+BELLESIP_EXPORT belle_sdp_creq_attribute_t* belle_sdp_creq_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_creq_attribute_t* belle_sdp_creq_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_creq_attribute_t* belle_sdp_creq_attribute_create(void);
+BELLESIP_EXPORT void belle_sdp_creq_attribute_add_option_tag(belle_sdp_creq_attribute_t* attribute, const char* option_tag);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_creq_attribute_get_option_tags(belle_sdp_creq_attribute_t* attribute);
+#define BELLE_SDP_CREQ_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_creq_attribute_t)
+
+//tcap
+typedef struct _belle_sdp_tcap_attribute belle_sdp_tcap_attribute_t;
+BELLESIP_EXPORT belle_sdp_tcap_attribute_t* belle_sdp_tcap_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_tcap_attribute_t* belle_sdp_tcap_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_tcap_attribute_t* belle_sdp_tcap_attribute_create(void);
+BELLESIP_EXPORT void belle_sdp_tcap_attribute_set_id(belle_sdp_tcap_attribute_t* attribute, int id);
+BELLESIP_EXPORT int belle_sdp_tcap_attribute_get_id(const belle_sdp_tcap_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_tcap_attribute_add_proto(belle_sdp_tcap_attribute_t* attribute, const char* proto);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_tcap_attribute_get_protos(belle_sdp_tcap_attribute_t* attribute);
+#define BELLE_SDP_TCAP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_tcap_attribute_t)
+
+// acap
+typedef struct _belle_sdp_acap_attribute belle_sdp_acap_attribute_t;
+BELLESIP_EXPORT belle_sdp_acap_attribute_t* belle_sdp_acap_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_acap_attribute_t* belle_sdp_acap_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_acap_attribute_t* belle_sdp_acap_attribute_create(void);
+BELLESIP_EXPORT int belle_sdp_acap_attribute_get_id(const belle_sdp_acap_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_acap_attribute_set_id(belle_sdp_acap_attribute_t* attribute, int id);
+BELLESIP_EXPORT const char* belle_sdp_acap_attribute_get_name(const belle_sdp_acap_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_acap_attribute_set_name(belle_sdp_acap_attribute_t* attribute, const char* name);
+BELLESIP_EXPORT const char* belle_sdp_acap_attribute_get_value(const belle_sdp_acap_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_acap_attribute_set_value(belle_sdp_acap_attribute_t* attribute, const char* value);
+#define BELLE_SDP_ACAP_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_acap_attribute_t)
+
+// acfg
+typedef struct _belle_sdp_acfg_attribute belle_sdp_acfg_attribute_t;
+BELLESIP_EXPORT belle_sdp_acfg_attribute_t* belle_sdp_acfg_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_acfg_attribute_t* belle_sdp_acfg_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_acfg_attribute_t* belle_sdp_acfg_attribute_create(void);
+BELLESIP_EXPORT int belle_sdp_acfg_attribute_get_id(const belle_sdp_acfg_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_acfg_attribute_set_id(belle_sdp_acfg_attribute_t* attribute, int id);
+BELLESIP_EXPORT void belle_sdp_acfg_attribute_add_config(belle_sdp_acfg_attribute_t* attribute, const char* config);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_acfg_attribute_get_configs(belle_sdp_acfg_attribute_t* attribute);
+#define BELLE_SDP_ACFG_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_acfg_attribute_t)
+
+// pcfg
+typedef struct _belle_sdp_pcfg_attribute belle_sdp_pcfg_attribute_t;
+BELLESIP_EXPORT belle_sdp_pcfg_attribute_t* belle_sdp_pcfg_attribute_new(void);
+BELLESIP_EXPORT belle_sdp_pcfg_attribute_t* belle_sdp_pcfg_attribute_parse(const char* attribute);
+BELLESIP_EXPORT belle_sdp_pcfg_attribute_t* belle_sdp_pcfg_attribute_create(void);
+BELLESIP_EXPORT int belle_sdp_pcfg_attribute_get_id(const belle_sdp_pcfg_attribute_t* attribute);
+BELLESIP_EXPORT void belle_sdp_pcfg_attribute_set_id(belle_sdp_pcfg_attribute_t* attribute, int id);
+BELLESIP_EXPORT void belle_sdp_pcfg_attribute_add_config(belle_sdp_pcfg_attribute_t* attribute, const char* config);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_pcfg_attribute_get_configs(belle_sdp_pcfg_attribute_t* attribute);
+#define BELLE_SDP_PCFG_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_pcfg_attribute_t)
+
 /***************************************************************************************
  * RTCP-FB Attribute
  *
