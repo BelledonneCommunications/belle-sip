@@ -23,7 +23,7 @@
 #include "belle_sip_internal.hh"
 #include "parser/sdp.hh"
 
-int use_belr = 1;
+int belle_sdp_use_belr = 1;
 
 struct _belle_sdp_mime_parameter {
 	belle_sip_object_t base;
@@ -168,6 +168,141 @@ void belle_sdp_raw_attribute_set_name(belle_sdp_raw_attribute_t* attribute, cons
 }
 
 /***************************************************************************************
+ * RFC5939 Attributes
+ *
+ **************************************************************************************/
+
+// csup
+
+struct _belle_sdp_csup_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* option_tags;
+};
+
+void belle_sdp_csup_attribute_destroy(belle_sdp_csup_attribute_t* attribute) {
+	belle_sip_list_free_with_data(attribute->option_tags, belle_sip_free);
+}
+
+void belle_sdp_csup_attribute_clone(belle_sdp_csup_attribute_t* attribute, const belle_sdp_csup_attribute_t *orig) {
+	attribute->option_tags = belle_sip_list_copy_with_data(orig->option_tags, belle_sip_string_copyfunc);
+}
+
+belle_sip_error_code belle_sdp_csup_attribute_marshal(belle_sdp_csup_attribute_t* attribute, char * buff, size_t buff_size, size_t *offset) {
+	return BELLE_SIP_OK;
+}
+
+void belle_sdp_csup_attribute_add_option_tag(belle_sdp_csup_attribute_t* attribute, const char* option_tag) {
+	attribute->option_tags = belle_sip_list_append(attribute->option_tags, belle_sip_strdup(option_tag));
+}
+
+belle_sip_list_t* belle_sdp_csup_attribute_get_option_tags(belle_sdp_csup_attribute_t* attribute) {
+	return attribute->option_tags;
+}
+
+static void belle_sdp_csup_attribute_init(belle_sdp_csup_attribute_t* attribute) {
+	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "csup");
+}
+
+BELLE_SDP_NEW_WITH_CTR(csup_attribute,belle_sdp_attribute)
+BELLE_SDP_BELR_PARSE(csup_attribute)
+
+// creq
+
+struct _belle_sdp_creq_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* option_tags;
+};
+
+void belle_sdp_creq_attribute_destroy(belle_sdp_creq_attribute_t* attribute) {
+	belle_sip_list_free_with_data(attribute->option_tags, belle_sip_free);
+}
+
+void belle_sdp_creq_attribute_clone(belle_sdp_creq_attribute_t* attribute, const belle_sdp_creq_attribute_t *orig) {
+	attribute->option_tags = belle_sip_list_copy_with_data(orig->option_tags, belle_sip_string_copyfunc);
+}
+
+belle_sip_error_code belle_sdp_creq_attribute_marshal(belle_sdp_creq_attribute_t* attribute, char * buff, size_t buff_size, size_t *offset) {
+	return BELLE_SIP_OK;
+}
+
+void belle_sdp_creq_attribute_add_option_tag(belle_sdp_creq_attribute_t* attribute, const char* option_tag) {
+	attribute->option_tags = belle_sip_list_append(attribute->option_tags, belle_sip_strdup(option_tag));
+}
+
+belle_sip_list_t* belle_sdp_creq_attribute_get_option_tags(belle_sdp_creq_attribute_t* attribute) {
+	return attribute->option_tags;
+}
+
+static void belle_sdp_creq_attribute_init(belle_sdp_creq_attribute_t* attribute) {
+	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "creq");
+}
+
+BELLE_SDP_NEW_WITH_CTR(creq_attribute,belle_sdp_attribute)
+BELLE_SDP_BELR_PARSE(creq_attribute)
+
+// tcap
+
+struct _belle_sdp_tcap_attribute {
+	belle_sdp_attribute_t base;
+	belle_sip_list_t* protos;
+	int8_t id;
+};
+
+static void belle_sdp_tcap_attribute_init(belle_sdp_tcap_attribute_t* attribute) {
+	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "tcap");
+}
+
+void belle_sdp_tcap_attribute_destroy(belle_sdp_tcap_attribute_t* attribute) {
+	belle_sip_list_free_with_data(attribute->protos, belle_sip_free);
+}
+
+void belle_sdp_tcap_attribute_clone(belle_sdp_tcap_attribute_t* attribute, const belle_sdp_tcap_attribute_t *orig) {
+	attribute->protos = belle_sip_list_copy_with_data(orig->protos, belle_sip_string_copyfunc);
+}
+
+belle_sip_error_code belle_sdp_tcap_attribute_marshal(belle_sdp_tcap_attribute_t* attribute, char * buff, size_t buff_size, size_t *offset) {
+	return BELLE_SIP_OK;
+}
+
+void belle_sdp_tcap_attribute_add_proto(belle_sdp_tcap_attribute_t* attribute, const char* proto) {
+	attribute->protos = belle_sip_list_append(attribute->protos, belle_sip_strdup(proto));
+}
+
+belle_sip_list_t* belle_sdp_tcap_attribute_get_protos(belle_sdp_tcap_attribute_t* attribute) {
+	return attribute->protos;
+}
+
+BELLE_SDP_NEW_WITH_CTR(tcap_attribute,belle_sdp_attribute)
+BELLE_SDP_BELR_PARSE(tcap_attribute)
+GET_SET_INT(belle_sdp_tcap_attribute,id,int8_t)
+
+// acap
+
+struct _belle_sdp_acap_attribute {
+	belle_sdp_attribute_t base;
+	int8_t id;
+	const char* name;
+	const char* value;
+};
+
+static void belle_sdp_acap_attribute_init(belle_sdp_acap_attribute_t* attribute) {
+	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "acap");
+}
+
+void belle_sdp_acap_attribute_destroy(belle_sdp_acap_attribute_t* attribute) {}
+void belle_sdp_acap_attribute_clone(belle_sdp_acap_attribute_t* attribute, const belle_sdp_acap_attribute_t *orig) {}
+
+belle_sip_error_code belle_sdp_acap_attribute_marshal(belle_sdp_acap_attribute_t* attribute, char * buff, size_t buff_size, size_t *offset) {
+	return BELLE_SIP_OK;
+}
+
+BELLE_SDP_NEW_WITH_CTR(acap_attribute,belle_sdp_attribute)
+BELLE_SDP_BELR_PARSE(acap_attribute)
+GET_SET_INT(belle_sdp_acap_attribute,id,int8_t)
+GET_SET_STRING(belle_sdp_acap_attribute,name)
+GET_SET_STRING(belle_sdp_acap_attribute,value)
+
+/***************************************************************************************
  * RTCP-FB Attribute
  *
  **************************************************************************************/
@@ -269,14 +404,11 @@ belle_sip_error_code belle_sdp_rtcp_fb_attribute_marshal(belle_sdp_rtcp_fb_attri
 	return error;
 }
 void belle_sdp_rtcp_fb_attribute_set_raw_id(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value) {
-	belle_sip_debug("PARSED ID %s", value);
 	attribute->id = strcmp(value, "*") == 0
 		? -1
 		: atoi(value);
 }
 void belle_sdp_rtcp_fb_attribute_set_raw_type(belle_sdp_rtcp_fb_attribute_t* attribute, const char* value) {
-	belle_sip_debug("PARSED TYPE %s", value);
-
 	if (strcmp(value, "ack") == 0) {
 		attribute->type = BELLE_SDP_RTCP_FB_ACK;
 	}
