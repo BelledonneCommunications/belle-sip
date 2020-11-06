@@ -62,7 +62,7 @@ class BELLESIP_EXPORT Object{
 		belle_sip_error_code marshal(char* buff, size_t buff_size, size_t *offset);
 };
 
-std::ostream &operator<< (std::ostream &stream, const Object &obj);
+BELLESIP_EXPORT std::ostream &operator<< (std::ostream &stream, const Object &obj);
 
 /**
  * Template class to help define an Object usable in both C and C++
