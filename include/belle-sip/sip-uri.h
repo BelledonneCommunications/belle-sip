@@ -62,7 +62,7 @@ BELLESIP_EXPORT const char*	belle_sip_uri_get_header(const belle_sip_uri_t* uri,
  * Returns all URI headers
  *
  */
-BELLESIP_EXPORT belle_sip_parameters_t* belle_sip_uri_get_headers(const belle_sip_uri_t* uri);
+BELLESIP_EXPORT const belle_sip_parameters_t* belle_sip_uri_get_headers(const belle_sip_uri_t* uri);
 
 /**
  * Remove all headers
