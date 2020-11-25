@@ -39,7 +39,7 @@ class BELLESIP_EXPORT Object{
 		const Object *ref() const;
 		void unref();
 		//Overrides should keep	the size of toString() lower than BELLE_SIP_MAX_TO_STRING_SIZE
-	  virtual std::string toString() const;
+		virtual std::string toString() const;
 		virtual Object *clone()const;
 		belle_sip_cpp_object_t *getCObject();
 		const belle_sip_cpp_object_t *getCObject()const;
@@ -194,7 +194,7 @@ class HybridObject : public Object {
 			if (cppString.empty()) return nullptr;
 			else return cppString.c_str();
 		}
-		
+
 	protected:
 		virtual ~HybridObject() = default;
 		HybridObject() {}
