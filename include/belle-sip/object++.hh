@@ -39,7 +39,7 @@ class BELLESIP_EXPORT Object{
 		const Object *ref() const;
 		void unref();
 		//Overrides should keep	the size of toString() lower than BELLE_SIP_MAX_TO_STRING_SIZE
-	  virtual std::string toString() const;
+		virtual std::string toString() const;
 		virtual Object *clone()const;
 		belle_sip_cpp_object_t *getCObject();
 		const belle_sip_cpp_object_t *getCObject()const;
@@ -162,7 +162,7 @@ class HybridObject : public Object {
 		static std::list<std::shared_ptr<_CppType>> getCppListFromCList(const bctbx_list_t *cList, const std::function<std::shared_ptr<_CppType> (_CType *)> &func) {
 			std::list<std::shared_ptr<_CppType>> result;
 			for (auto it = cList; it != nullptr; it = bctbx_list_next(it))
-			 	result.push_back(func(static_cast<_CType*>(bctbx_list_get_data(it))));
+				result.push_back(func(static_cast<_CType*>(bctbx_list_get_data(it))));
 			return result;
 		}
 		//Convenience method for easy std::list<shared_ptr<CppType>> -> bctbx_list(CType) conversion
@@ -188,13 +188,12 @@ class HybridObject : public Object {
 				result = bctbx_list_append(result, cptr);
 			}
 			return result;
-		}
 
 		static const char * nullifyEmptyString(const std::string& cppString){
 			if (cppString.empty()) return nullptr;
 			else return cppString.c_str();
 		}
-		
+
 	protected:
 		virtual ~HybridObject() = default;
 		HybridObject() {}
@@ -204,7 +203,7 @@ class HybridObject : public Object {
 			std::shared_ptr<_CppType> sp;
 			if ((sp = mSelf.lock()) == nullptr){
 				sp = std::shared_ptr<_CppType>(static_cast<_CppType *>(const_cast<HybridObject<_CType, _CppType> *>(this)),
-								  std::mem_fn(&HybridObject<_CType, _CppType>::constUnref));
+									std::mem_fn(&HybridObject<_CType, _CppType>::constUnref));
 				mSelf = sp;
 				if (!withTransfer){
 					sp->ref();
