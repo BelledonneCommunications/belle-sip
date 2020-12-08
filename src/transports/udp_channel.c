@@ -39,11 +39,15 @@ static int udp_channel_send(belle_sip_channel_t *obj, const void *buf, size_t bu
 	belle_sip_udp_channel_t *chan=(belle_sip_udp_channel_t *)obj;
 	int err;
 	belle_sip_socket_t sock=belle_sip_source_get_socket((belle_sip_source_t*)chan);
-
-	err=(int)bctbx_sendto(sock,buf,buflen,0,obj->current_peer->ai_addr,(socklen_t)obj->current_peer->ai_addrlen);
-	if (err==-1){
-		belle_sip_error("channel [%p]: could not send UDP packet because [%s]",obj,belle_sip_get_socket_error_string());
-		return -errno;
+	if(sock){
+		err=(int)bctbx_sendto(sock,buf,buflen,0,obj->current_peer->ai_addr,(socklen_t)obj->current_peer->ai_addrlen);
+		if (err==-1){
+			belle_sip_error("channel [%p]: could not send UDP packet because [%s]",obj,belle_sip_get_socket_error_string());
+			return -errno;
+		}
+	}else {
+		belle_sip_error("channel [%p]: no socket are available to send UDP packet because [%s]",obj,belle_sip_get_socket_error_string());
+		err = -errno;
 	}
 	return err;
 }
@@ -73,14 +77,14 @@ static int udp_channel_recv(belle_sip_channel_t *obj, void *buf, size_t buflen){
 int udp_channel_connect(belle_sip_channel_t *obj, const struct addrinfo *ai){
 	belle_sip_udp_channel_t *chan=(belle_sip_udp_channel_t *)obj;
 	struct sockaddr_storage laddr;
+	int err;
+	
 	memset(&laddr, 0, sizeof(laddr));
 	socklen_t lslen=sizeof(laddr);
 
-	if (obj->local_ip==NULL){
-		int err = belle_sip_get_src_addr_for(ai->ai_addr,(socklen_t)ai->ai_addrlen,(struct sockaddr*)&laddr,&lslen,obj->local_port);
-		if (err == -BCTBX_ENETUNREACH || err == -BCTBX_EHOSTUNREACH){
-			return -1;
-		}
+	err = belle_sip_get_src_addr_for(ai->ai_addr,(socklen_t)ai->ai_addrlen,(struct sockaddr*)&laddr,&lslen,obj->local_port);
+	if (err == -BCTBX_ENETUNREACH || err == -BCTBX_EHOSTUNREACH){
+		return -1;
 	}
 	belle_sip_channel_set_socket(obj, chan->shared_socket, NULL);
 	belle_sip_channel_set_ready(obj, (struct sockaddr*)&laddr, lslen);
@@ -109,9 +113,9 @@ BELLE_SIP_INSTANCIATE_CUSTOM_VPTR_BEGIN(belle_sip_udp_channel_t)
 	}
 BELLE_SIP_INSTANCIATE_CUSTOM_VPTR_END
 
-belle_sip_channel_t * belle_sip_channel_new_udp(belle_sip_stack_t *stack, int sock, const char *bindip, int localport, const char *dest, int port){
+belle_sip_channel_t * belle_sip_channel_new_udp(belle_sip_stack_t *stack, int sock, const char *bindip, int localport, const char *dest, int port, int no_srv){
 	belle_sip_udp_channel_t *obj=belle_sip_object_new(belle_sip_udp_channel_t);
-	belle_sip_channel_init((belle_sip_channel_t*)obj,stack,bindip,localport,NULL,dest,port);
+	belle_sip_channel_init((belle_sip_channel_t*)obj,stack,bindip,localport,NULL,dest,port, no_srv);
 	obj->shared_socket = sock;
 	return (belle_sip_channel_t*)obj;
 }

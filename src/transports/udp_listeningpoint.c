@@ -42,7 +42,7 @@ static belle_sip_channel_t *udp_create_channel(belle_sip_listening_point_t *lp, 
 														,belle_sip_uri_get_host(lp->listening_uri)
 														,belle_sip_uri_get_port(lp->listening_uri)
 														,hop->host
-														,hop->port);
+														,hop->port, hop->port_is_explicit);
 	return chan;
 }
 
@@ -72,8 +72,7 @@ static belle_sip_socket_t create_udp_socket(const char *addr, int *port, int *fa
 	char portnum[10];
 	int optval=1;
 
-	if (*port==-1) *port=0; /*random port for bind()*/
-
+	if (*port==BELLE_SIP_LISTENING_POINT_RANDOM_PORT || *port==BELLE_SIP_LISTENING_POINT_DONT_BIND) *port=0; /*random port for bind()*/
 	belle_sip_set_socket_api(NULL);
 
 

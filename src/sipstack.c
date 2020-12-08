@@ -61,17 +61,21 @@ belle_sip_hop_t* belle_sip_hop_new_from_uri(const belle_sip_uri_t *uri){
 	const char *host;
 	const char *cname=NULL;
 	const char * transport=belle_sip_uri_get_transport_param(uri);
+	belle_sip_hop_t *hop;
 	if (!transport) {
 		transport=belle_sip_uri_is_secure(uri)?"tls":"udp";
 	}
-	host=belle_sip_uri_get_maddr_param(uri);
+	host = belle_sip_uri_get_maddr_param(uri);
 	if (!host) host=belle_sip_uri_get_host(uri);
-	else cname=belle_sip_uri_get_host(uri);
+	
+	cname=belle_sip_uri_get_host(uri);
 
-	return belle_sip_hop_new(	transport,
+	hop = belle_sip_hop_new(	transport,
 								cname,
 								host,
 								belle_sip_uri_get_listening_port(uri));
+	hop->port_is_explicit = (belle_sip_uri_get_port(uri) > 0);
+	return hop;
 }
 
 belle_sip_hop_t* belle_sip_hop_new_from_generic_uri(const belle_generic_uri_t *uri){
@@ -139,6 +143,12 @@ static void belle_sip_stack_destroy(belle_sip_stack_t *stack){
 	if (stack->http_proxy_passwd) belle_sip_free(stack->http_proxy_passwd);
 	if (stack->http_proxy_username) belle_sip_free(stack->http_proxy_username);
 	belle_sip_list_free_with_data(stack->dns_servers, belle_sip_free);
+#ifdef HAVE_DNS_SERVICE
+	if (stack->dns_service_queue) {
+		dispatch_release(stack->dns_service_queue);
+		stack->dns_service_queue = NULL;
+	}
+#endif /* HAVE_DNS_SERVICE */
 	bctbx_uninit_logger();
 }
 
@@ -158,6 +168,9 @@ belle_sip_stack_t * belle_sip_stack_new(const char *properties){
 	stack->dns_search_enabled=TRUE;
 	stack->inactive_transport_timeout=3600; /*one hour*/
 	stack->unreliable_transport_timeout = 120;
+#ifdef HAVE_DNS_SERVICE
+	stack->dns_service_queue = dispatch_queue_create("com.belledonne_communications.belle_sip.dns_service_queue", DISPATCH_QUEUE_SERIAL);
+#endif /* HAVE_DNS_SERVICE */
 	return stack;
 }
 

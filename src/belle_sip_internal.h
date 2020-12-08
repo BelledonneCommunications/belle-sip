@@ -68,6 +68,10 @@
 
 #endif
 
+#ifdef HAVE_DNS_SERVICE // must be tested after config.h is included
+#include "dispatch/dispatch.h"
+#endif /* HAVE_DNS_SERVICE */
+
 
 /*etc*/
 
@@ -532,6 +536,7 @@ struct belle_sip_hop{
 	char *host;
 	char *transport;
 	int port;
+	int port_is_explicit;
 };
 
 
@@ -564,6 +569,9 @@ struct belle_sip_stack{
 	unsigned char dns_srv_enabled;
 	unsigned char dns_search_enabled;
 	unsigned char reconnect_to_primary_asap;
+#ifdef HAVE_DNS_SERVICE
+	dispatch_queue_t dns_service_queue;
+#endif /* HAVE_DNS_SERVICE */
 };
 
 BELLESIP_EXPORT belle_sip_hop_t* belle_sip_hop_new(const char* transport, const char *cname, const char* host,int port);
@@ -876,7 +884,7 @@ struct belle_sip_dialog{
 
 belle_sip_dialog_t *belle_sip_dialog_new(belle_sip_transaction_t *t);
 belle_sip_dialog_t * belle_sip_provider_create_dialog_internal(belle_sip_provider_t *prov, belle_sip_transaction_t *t,unsigned int check_last_resp);
-int belle_sip_dialog_is_authorized_transaction(const belle_sip_dialog_t *dialog,const char* method) ;
+int belle_sip_dialog_can_accept_request(const belle_sip_dialog_t *dialog, belle_sip_request_t *request) ;
 /*returns 1 if message belongs to the dialog, 0 otherwise */
 int belle_sip_dialog_is_null_dialog_with_matching_subscribe(belle_sip_dialog_t *obj, const char *call_id, const char *local_tag, belle_sip_request_t *notify);
 int _belle_sip_dialog_match(belle_sip_dialog_t *obj, const char *call_id, const char *local_tag, const char *remote_tag);
