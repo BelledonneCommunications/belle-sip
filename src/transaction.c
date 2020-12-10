@@ -506,9 +506,10 @@ int belle_sip_client_transaction_send_request_to(belle_sip_client_transaction_t 
 		return -1;
 	}
 	/*store preset route for future use by refresher*/
-	if (outbound_proxy){
-		t->preset_route=outbound_proxy;
-		belle_sip_object_ref(t->preset_route);
+	if (outbound_proxy) {
+		belle_sip_uri_t *ref = belle_sip_object_ref(outbound_proxy);
+		if (t->preset_route) belle_sip_object_unref(t->preset_route);
+		t->preset_route = ref;
 	}
 
 	if (t->base.sent_by_dialog_queue){
@@ -658,8 +659,14 @@ belle_sip_uri_t *belle_sip_client_transaction_get_route(belle_sip_client_transac
 }
 
 static void client_transaction_destroy(belle_sip_client_transaction_t *t ){
-	if (t->preset_route) belle_sip_object_unref(t->preset_route);
-	if (t->next_hop) belle_sip_object_unref(t->next_hop);
+	if (t->preset_route) {
+		belle_sip_object_unref(t->preset_route);
+		t->preset_route = NULL;
+	}
+	if (t->next_hop) {
+		belle_sip_object_unref(t->next_hop);
+		t->next_hop = NULL;
+	}
 }
 
 
