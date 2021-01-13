@@ -690,6 +690,10 @@ static const char* big_sdp = "v=0\r\n"\
 						"b=AS:380\r\n"\
 						"t=0 0\r\n"\
 						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:2 key-mgmt:mikey YjKBgNn\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:2 RTP/AVP RTP/AVPF\r\n"\
 						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
 						"a=rtpmap:111 speex/16000\r\n"\
 						"a=fmtp:111 vbr=on\r\n"\
