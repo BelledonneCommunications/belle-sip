@@ -510,11 +510,15 @@ static void test_media_description_base(belle_sdp_media_description_t* media_des
 	const char* attr[] ={"98 nack rpsi"
 				, "rcvr-rtt=all:10"
 				,"4 key-mgmt:mikey AQAFgM"
+				,"2147483647 key-mgmt:mikey YjKBgNn"
 				,"6 RTP/SAVP RTP/SAVPF"
+				,"99 RTP/AVP RTP/AVPF"
 				,"99 MP4V-ES/90000"
 				,"99 profile-level-id=3"
 				,"97 theora/90000"
 				,"98 H263-1998/90000"
+				,"1 t=99 a=[2]"
+				,"2 t=6 a=2147483647"
 				,"98 CIF=1;QCIF=1"};
 	belle_sdp_connection_t* lConnection;
 	belle_sdp_media_description_t* l_media_description=media_description;
@@ -558,11 +562,15 @@ static void test_media_description(void) {
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
 						"a=fmtp:99 profile-level-id=3\r\n"\
 						"a=rtpmap:97 theora/90000\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acfg:1 t=99 a=[2]\r\n"\
+						"a=acfg:2 t=6 a=2147483647\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 	belle_sdp_media_description_t* lTmp;
@@ -602,11 +610,15 @@ static void test_simple_session_description(void) {
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
 						"a=fmtp:99 profile-level-id=3\r\n"\
 						"a=rtpmap:97 theora/90000\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acfg:1 t=99 a=[2]\r\n"\
+						"a=acfg:2 t=6 a=2147483647\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 	belle_sdp_origin_t* l_origin;
 	belle_sip_list_t* media_descriptions;
@@ -641,11 +653,14 @@ static void test_simple_session_description(void) {
 
 	media_descriptions = belle_sdp_session_description_get_media_descriptions(l_session_description);
 	BC_ASSERT_PTR_NOT_NULL(media_descriptions);
-	BC_ASSERT_STRING_EQUAL (belle_sdp_media_get_media_type(belle_sdp_media_description_get_media((belle_sdp_media_description_t*)(media_descriptions->data))),"audio");
-	media_descriptions=media_descriptions->next;
-	BC_ASSERT_PTR_NOT_NULL(media_descriptions);
-
-	test_media_description_base((belle_sdp_media_description_t*)(media_descriptions->data));
+	if (media_descriptions) {
+		BC_ASSERT_STRING_EQUAL (belle_sdp_media_get_media_type(belle_sdp_media_description_get_media((belle_sdp_media_description_t*)(media_descriptions->data))),"audio");
+		media_descriptions=media_descriptions->next;
+		BC_ASSERT_PTR_NOT_NULL(media_descriptions);
+		if (media_descriptions) {
+			test_media_description_base((belle_sdp_media_description_t*)(media_descriptions->data));
+		}
+	}
 	belle_sip_object_unref(l_session_description);
 	return;
 }
@@ -688,11 +703,15 @@ static const char* big_sdp = "v=0\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
 						"a=fmtp:99 profile-level-id=3\r\n"\
 						"a=rtpmap:97 theora/90000\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acfg:1 t=99 a=[2]\r\n"\
+						"a=acfg:2 t=6 a=2147483647\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_session_description(void) {
