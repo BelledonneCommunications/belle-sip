@@ -1008,10 +1008,20 @@ const char* belle_sdp_base_description_get_attribute_value(const belle_sdp_base_
 belle_sip_list_t* belle_sdp_base_description_get_attributes(const belle_sdp_base_description_t* base_description) {
 	return base_description->attributes;
 }
+belle_sip_list_t* belle_sdp_base_description_find_attributes_with_name(const belle_sdp_base_description_t* base_description, const char* name) {
+	belle_sip_list_t* matches = NULL;
+	const belle_sip_list_t* attributes = belle_sdp_base_description_get_attributes(base_description);
+	for(;attributes!=NULL;attributes=attributes->next){
+		belle_sdp_attribute_t* attribute = ((belle_sdp_attribute_t*)attributes->data);
+		if (belle_sdp_base_description_attribute_comp_func(attribute,name)==0) {
+			matches = belle_sip_list_append(matches,belle_sip_object_ref(attribute));
+		}
+	}
+	return matches;
+}
 static int belle_sdp_base_description_bandwidth_comp_func(const belle_sdp_bandwidth_t* a, const char*b) {
 	return strcmp(a->type,b);
 }
-
 
 belle_sdp_bandwidth_t* belle_sdp_base_description_get_bandwidth(const belle_sdp_base_description_t *base_description, const char *name){
 	belle_sip_list_t* found = belle_sip_list_find_custom(base_description->bandwidths, (belle_sip_compare_func)belle_sdp_base_description_bandwidth_comp_func, name);
@@ -1700,6 +1710,9 @@ BELLE_SDP_PARSE(session_description)
 
 belle_sip_list_t * belle_sdp_session_description_get_attributes(const belle_sdp_session_description_t *session_description) {
 	return belle_sdp_base_description_get_attributes(BELLE_SIP_CAST(session_description, belle_sdp_base_description_t));
+}
+belle_sip_list_t * belle_sdp_session_description_find_attributes_with_name(const belle_sdp_session_description_t *session_description, const char* name) {
+	return belle_sdp_base_description_find_attributes_with_name(BELLE_SIP_CAST(session_description, belle_sdp_base_description_t), name);
 }
 
 const char* belle_sdp_session_description_get_attribute_value(const belle_sdp_session_description_t* session_description, const char* name) {
