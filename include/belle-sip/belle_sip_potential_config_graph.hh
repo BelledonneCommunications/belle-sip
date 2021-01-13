@@ -34,32 +34,37 @@ namespace bellesip {
 
 		std::string capabilityToAttributeName(const bellesip::SDP::capability_type_t cap);
 
-		typedef struct capability {
-			int  index = -1, // Invalid index
-			std::string       value,
-			capability_type_t type = ATTRIBUTE
-		} capability_t;
+		struct capability {
+			int               index = -1; // Invalid index
+			std::string       value;
+			capability_type_t type = ATTRIBUTE;
+		};
 
-		typedef struct config_capability {
-			std::weak_ptr<capability_t>,
-			bool mandatory = false // Capability is mandatory
-		} capability_t;
+		struct acapability : public capability_t {
+			std::string       name;
+		};
 
-		typedef struct config_attribute {
+		struct config_capability {
+			std::weak_ptr<capability> cap;
+			bool                      mandatory = false; // Capability is mandatory
+		};
+
+		struct config_attribute {
 			// vector of list of capabilities
 			// each element of the vector stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
 			std::vector<std::list<config_capability>> acap,
 			std::vector<std::list<config_capability>> tcap,
-			std::vector<std::list<config_capability>> ecap,
 			bool delete_media_attributes = false, // Delete SDP media attributes
 			bool delete_session_attributes = false // Delete SDP session attributes
-		} config_attribute_t;
+		};
 
 		class SDPPotentialCfgGraph {
 
-			using media_description_capability = std::list<capability_t>;
-			using session_description_capability = std::vector<media_description_capability>;
-			using media_description_config = std::map<int, config_attribute_t>;
+			using media_description_base_cap = std::list<std::shared_ptr<capability>>;
+			using session_description_base_cap = std::vector<media_description_base_cap>;
+			using media_description_acap = std::list<std::shared_ptr<acapability>>;
+			using session_description_acap = std::vector<media_description_acap>;
+			using media_description_config = std::map<unsigned int, config_attribute>;
 			using session_description_config = std::vector<media_description_config>;
 
 			public:
@@ -70,11 +75,20 @@ namespace bellesip {
 			private:
 				// configuration list
 				// Each element of the vector is a media session
+				session_description_config acfg;
 				session_description_config pcfg;
-				session_description_capability acap;
-				session_description_capability tcap;
-				session_description_capability ecap;
+				session_description_acap acap;
+				session_description_base_cap tcap;
 
 				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const std::list<capability_t> & globalAcap, const std::list<capability_t> & globalTcap, const std::list<capability_t> & globalEcap);
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
-		}
+				const belle_sip_list_t * getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap);
+				media_description_acap getSessionDescriptionACapabilities (const belle_sdp_session_description_t* session_desc);
+				media_description_base_cap getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc);
+				const belle_sip_list_t * getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap);
+				media_description_acap getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc);
+				media_description_base_cap getMediaDescrptionTCapabilities (const belle_sdp_media_description_t* media_desc);
+		};
+	}
+}
+
