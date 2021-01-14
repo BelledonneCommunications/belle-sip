@@ -89,14 +89,32 @@ namespace bellesip {
 				session_description_acap acap;
 				session_description_base_cap tcap;
 
-				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const std::list<capability_t> & globalAcap, const std::list<capability_t> & globalTcap, const std::list<capability_t> & globalEcap);
+ 				// Session
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
 				const belle_sip_list_t * getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap);
-				media_description_acap getSessionDescriptionACapabilities (const belle_sdp_session_description_t* session_desc);
-				media_description_base_cap getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc);
+
+ 				// Media
+				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const std::list<capability_t> & globalAcap, const std::list<capability_t> & globalTcap, const std::list<capability_t> & globalEcap);
 				const belle_sip_list_t * getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap);
+
+ 				// Attribute capabilities
+				media_description_acap getSessionDescriptionACapabilities (const belle_sdp_session_description_t* session_desc);
 				media_description_acap getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc);
+				media_description_acap createACapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap);
+
+				// Transport capabilities
+				media_description_base_cap getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc);
 				media_description_base_cap getMediaDescrptionTCapabilities (const belle_sdp_media_description_t* media_desc);
+				media_description_base_cap createTCapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap);
+
+				// Configuration
+				void processMediaCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType);
+				config_attribute createPConfigFromAttribute(const belle_sdp_pcfg_attribute_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				config_attribute createAConfigFromAttribute(const belle_sdp_acfg_attribute_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				config_attribute processConfig(const belle_sip_list_t* configList, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap) const;
+				void fillConfigCapability(const int & index, const bool mandatory, config_attribute & attr_config, const bellesip::SDP::capability_type_t & cap) const;
+				const bellesip::SDP::capability_type_t capabilityTypeFromAttrParam(const std::string & attrParam) const;
+				void getElementIdx(const std::string & index) const;
 		};
 
 		// This method should be moved to an utility file as it is not strictly releated to the configuration graph
