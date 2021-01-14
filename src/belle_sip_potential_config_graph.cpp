@@ -21,7 +21,7 @@ bellesip::SDP::SDPPotentialCfgGraph::SDPPotentialCfgGraph (const belle_sdp_sessi
 	processSessionDescription(session_desc);
 }
 
-void bellesip::SDP::capabilityToAttributeName(const bellesip::SDP::capability_type_t cap) {
+std::string bellesip::SDP::capabilityToAttributeName(const bellesip::SDP::capability_type_t cap) {
 	std::string cap_name;
 	switch (cap) {
 		case bellesip::SDP::capability_type_t::ATTRIBUTE:
@@ -37,6 +37,9 @@ void bellesip::SDP::capabilityToAttributeName(const bellesip::SDP::capability_ty
 	return cap_name;
 }
 
+/*
+ * Session
+ */
 void bellesip::SDP::SDPPotentialCfgGraph::processSessionDescription (const belle_sdp_session_description_t* session_desc) {
 	const auto globalAcap = getSessionDescriptionACapabilities(session_desc);
 	const auto globalTcap = getSessionDescriptionTCapabilities(session_desc);
@@ -52,16 +55,39 @@ const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getSessionCapabili
 	return belle_sdp_session_description_find_attributes_with_name(session_desc, cap_name);
 }
 
+/*
+ * Media
+ */
+void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const belle_sdp_media_description_t* media_desc, const media_description_acap & globalAcap, const media_description_base_cap & globalTcap) {
+	// ACAP
+	auto mediaAcap = getSessionDescriptionACapabilities(media_desc);
+	mediaAcap.insert(globalAcap.begin(), globalAcap.end());
+	acap.push_back(mediaAcap);
+
+	// TCAP
+	auto mediaTcap = getSessionDescriptionTCapabilities(media_desc);
+	mediaTcap.insert(globalTcap.begin(), globalTcap.end());
+	tcap.push_back(mediaTcap);
+
+	// ACFG
+	processMediaCfg(media_desc, mediaAcap, mediaTCap, bellesip::SDP::config_type::ACFG);
+
+	// PCFG
+	processMediaCfg(media_desc, mediaAcap, mediaTCap, bellesip::SDP::config_type::PCFG);
+}
+
+const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getMediaCapabilityAttributes(const belle_sdp_media_description_t* session_desc, const bellesip::SDP::capability_type_t cap) {
+	const std::string cap_name(bellesip::SDP::capabilityToAttributeName(cap));
+	return belle_sdp_session_description_find_attributes_with_name(session_desc, cap_name);
+}
+
+/*
+ * Attribute capabilities
+ */
 media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getSessionDescriptionACapabilities (const belle_sdp_session_description_t* session_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::ATTRIBUTE;
 	const belle_sip_list_t * caps_attr = getSessionCapabilityAttributes(session_desc, cap);
 	return createACapabilitiesList(caps_attr, cap);
-}
-
-media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc) {
-	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
-	const belle_sip_list_t * caps_attr = getSessionCapabilityAttributes(session_desc, cap);
-	return createTCapabilitiesList(caps_attr, cap);
 }
 
 media_description_acap bellesip::SDP::SDPPotentialCfgGraph::createACapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap) {
@@ -76,6 +102,21 @@ media_description_acap bellesip::SDP::SDPPotentialCfgGraph::createACapabilitiesL
 		caps.push_back(elem);
 	}
 	return caps;
+}
+
+media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc) {
+	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::ATTRIBUTE;
+	const belle_sip_list_t * caps_attr = getMediaCapabilityAttributes(media_desc, cap);
+	return createACapabilitiesList(caps_attr, cap);
+}
+
+/*
+ * Transport capabilities
+ */
+media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc) {
+	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
+	const belle_sip_list_t * caps_attr = getSessionCapabilityAttributes(session_desc, cap);
+	return createTCapabilitiesList(caps_attr, cap);
 }
 
 media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::createTCapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap) {
@@ -96,40 +137,10 @@ media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::createTCapabilit
 	return caps;
 }
 
-const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getMediaCapabilityAttributes(const belle_sdp_media_description_t* session_desc, const bellesip::SDP::capability_type_t cap) {
-	const std::string cap_name(bellesip::SDP::capabilityToAttributeName(cap));
-	return belle_sdp_session_description_find_attributes_with_name(session_desc, cap_name);
-}
-
-
-media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc) {
-	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::ATTRIBUTE;
-	const belle_sip_list_t * caps_attr = getMediaCapabilityAttributes(media_desc, cap);
-	return createACapabilitiesList(caps_attr, cap);
-}
-
 media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::getMediaDescriptionTCapabilities (const belle_sdp_media_description_t* media_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
 	const belle_sip_list_t * caps_attr = getMediaCapabilityAttributes(media_desc, cap);
 	return createTCapabilitiesList(caps_attr, cap);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const belle_sdp_media_description_t* media_desc, const media_description_acap & globalAcap, const media_description_base_cap & globalTcap) {
-	// ACAP
-	auto mediaAcap = getSessionDescriptionACapabilities(media_desc);
-	mediaAcap.insert(globalAcap.begin(), globalAcap.end());
-	acap.push_back(mediaAcap);
-
-	// TCAP
-	auto mediaTcap = getSessionDescriptionTCapabilities(media_desc);
-	mediaTcap.insert(globalTcap.begin(), globalTcap.end());
-	tcap.push_back(mediaTcap);
-
-	// ACFG
-	processMediaCfg(media_desc, mediaAcap, mediaTCap, bellesip::SDP::config_type::ACFG);
-
-	// PCFG
-	processMediaCfg(media_desc, mediaAcap, mediaTCap, bellesip::SDP::config_type::PCFG);
 }
 
 void bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType) {
@@ -234,6 +245,25 @@ config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConfig(const belle_
 	return attr_config;
 }
 
+void bellesip::SDP::SDPPotentialCfgGraph::fillConfigCapability(const int & index, const bool mandatory, config_attribute & attr_config, const bellesip::SDP::capability_type_t & cap) const {
+	switch (cap) {
+		case bellesip::SDP::capability_type_t::ATTRIBUTE:
+		{
+			config_capability<acapbility> cap;
+			cap.mandatory = mandatory;
+
+			attr_config.acap
+			break;
+		case bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL:
+			cap_name = "tcap";
+			break;
+		case bellesip::SDP::capability_type_t::EXTENDED:
+			cap_name = "ecap";
+			break;
+	}
+	return cap_name;
+}
+
 const bellesip::SDP::capability_type_t bellesip::SDP::SDPPotentialCfgGraph::capabilityTypeFromAttrParam(const std::string & attrParam) const {
 	if (configType.compare("a") == 0) {
 		return bellesip::SDP::capability_type_t::ATTRIBUTE;
@@ -243,7 +273,7 @@ const bellesip::SDP::capability_type_t bellesip::SDP::SDPPotentialCfgGraph::capa
 	return bellesip::SDP::capability_type_t::EXTENDED;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index) {
+void bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index) const {
 	std::smatch match;
 	std::regex indexRegex ( "[0-9]+", std::regex::ECMAScript);   // matches words beginning by "sub"
 
@@ -268,22 +298,3 @@ void bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & inde
 	return -1;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::fillConfigCapability(const int & index, const bool mandatory, config_attribute & attr_config, const bellesip::SDP::capability_type_t & cap) const {
-	switch (cap) {
-		case bellesip::SDP::capability_type_t::ATTRIBUTE:
-		{
-			config_capability<acapbility> cap;
-			cap.mandatory = mandatory;
-
-			attr_config.acap
-			break;
-		case bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL:
-			cap_name = "tcap";
-			break;
-		case bellesip::SDP::capability_type_t::EXTENDED:
-			cap_name = "ecap";
-			break;
-	}
-	return cap_name;
-
-}
