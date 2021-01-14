@@ -26,6 +26,11 @@
 namespace bellesip {
 	namespace SDP {
 
+		typedef enum config_type {
+			ACFG,
+			PCFG
+		} config_type_t;
+
 		typedef enum capability_type {
 			ATTRIBUTE,
 			TRANSPORT_PROTOCOL,
@@ -44,16 +49,17 @@ namespace bellesip {
 			std::string       name;
 		};
 
+		template<class cap_type>
 		struct config_capability {
-			std::weak_ptr<capability> cap;
-			bool                      mandatory = false; // Capability is mandatory
+			std::weak_ptr<cap_type> cap;
+			bool                    mandatory = false; // Capability is mandatory
 		};
 
 		struct config_attribute {
 			// vector of list of capabilities
 			// each element of the vector stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
-			std::vector<std::list<config_capability>> acap,
-			std::vector<std::list<config_capability>> tcap,
+			std::vector<std::list<config_capability<acapbility>>> acap,
+			std::vector<std::list<config_capability<capability>>> tcap,
 			bool delete_media_attributes = false, // Delete SDP media attributes
 			bool delete_session_attributes = false // Delete SDP session attributes
 		};
@@ -69,6 +75,9 @@ namespace bellesip {
 
 			public:
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
+				// This method should be moved to an utility file as it is not strictly releated to the configuration graph
+				template<class container>
+				container splitString(const std::string & str, const char delim);
 
 			protected:
 
@@ -89,6 +98,61 @@ namespace bellesip {
 				media_description_acap getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc);
 				media_description_base_cap getMediaDescrptionTCapabilities (const belle_sdp_media_description_t* media_desc);
 		};
+
+		// This method should be moved to an utility file as it is not strictly releated to the configuration graph
+		template<class container>
+		container bellesip::SDP::SDPPotentialCfgGraph::splitString(const std::string & str, const char delim) {
+			container splittedStr;
+			std::size_t current, previous = 0;
+			current = str.find(delim);
+			while (current != std::string::npos) {
+				splittedStr.push_back(str.substr(previous, current - previous));
+				previous = current + 1;
+				current = str.find(delim, previous);
+			}
+			splittedStr.push_back(str.substr(previous, current - previous));
+			return splittedStr;
+		}
+
+		template<class cap_type>
+		std::list<config_capability<cap_type>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::vector<std::list<std::shared_ptr<cap_type>>> & availableCaps) const {
+			const char configDelim = '|';
+			std::list<std::string> attrCapList = splitString(idxList, configDelim);
+			bool mandatory = false;
+
+			const char startOptDelim = '[';
+			const char endOptDelim = ']';
+			std::list<config_capability<cap_type>> capList;
+			for (const auto & config : attrCapList) {
+				const char capDelim = ',';
+				std::list<std::string> capList = splitString(config, capDelim);
+				for (const auto & index : capList) {
+					belle_sip_message("configuration is %s index is %s", config.c_str(), index.c_str());
+					const auto startOptPos = index.find(startOptDelim);
+					const auto endOptPos = index.find(endOptDelim);
+					if (startOptPos != std::string::npos) {
+						mandatory = true;
+					}
+					auto idx = getElementIdx(index);
+					config_capability<cap_type> cfg;
+					cfg.mandatory = mandatory;
+					auto capIt = std::find_if(availableCaps.cbegin(); availableCaps.cend(), [&idx] (const auto & cap) {
+						return (cap->index == idx);
+					}
+					if (capIt == availableCaps.cend()) {
+						belle_sip_error("Unable to find capability with index %d", idx);
+					} else {
+						cfg.cap = *capIt;
+					}
+					capList.push_back(cfg);
+
+					if (endOptPos != std::string::npos) {
+						mandatory = false;
+					}	
+				}
+			}
+		}
+
 	}
 }
 
