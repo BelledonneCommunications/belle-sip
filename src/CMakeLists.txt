@@ -165,8 +165,7 @@ set(BELLE_SIP_SOURCE_FILES_CXX
 	cpp_utils.cc
 	belle_sdp_impl.cc
 	#belle_sip_internal.hh
-	parser/sdp.cpp
-	#parser/sdp.hh
+	parser/sdp.cc
 )
 set(GRAMMAR_FILES
 	parser/sdp_grammar

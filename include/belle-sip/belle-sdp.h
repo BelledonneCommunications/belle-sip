@@ -43,6 +43,15 @@ BELLESIP_EXPORT unsigned int belle_sdp_attribute_has_value(belle_sdp_attribute_t
 #define belle_sdp_attribute_init(obj)		/*nothing*/
 
 /***************************************************************************************
+ * Attributes Holder
+ *
+ **************************************************************************************/
+typedef struct _belle_sdp_attribute_holder belle_sdp_attribute_holder_t;
+BELLESIP_EXPORT belle_sdp_attribute_holder_t* belle_sdp_attribute_holder_new(void);
+BELLESIP_EXPORT void belle_sdp_attribute_holder_set_attribute(belle_sdp_attribute_holder_t* holder, void* attribute);
+BELLESIP_EXPORT belle_sdp_attribute_t* belle_sdp_attribute_holder_get_attribute(belle_sdp_attribute_holder_t* holder);
+
+/***************************************************************************************
  * RAW Attribute
  *
  **************************************************************************************/
@@ -278,6 +287,7 @@ BELLESIP_EXPORT void belle_sdp_media_set_media_port(belle_sdp_media_t* media, in
 BELLESIP_EXPORT void belle_sdp_media_set_media_type(belle_sdp_media_t* media, const char* mediaType);
 BELLESIP_EXPORT void belle_sdp_media_set_port_count(belle_sdp_media_t* media, int port_count);
 BELLESIP_EXPORT void belle_sdp_media_set_protocol(belle_sdp_media_t* media, const char* protocole);
+
 #define BELLE_SDP_MEDIA(t) BELLE_SDP_CAST(t,belle_sdp_media_t)
 
 /***************************************************************************************
@@ -337,6 +347,9 @@ BELLESIP_EXPORT void belle_sdp_media_description_set_connection(belle_sdp_media_
 BELLESIP_EXPORT void belle_sdp_media_description_set_info(belle_sdp_media_description_t* media_description,belle_sdp_info_t* i);
 BELLESIP_EXPORT void belle_sdp_media_description_set_media(belle_sdp_media_description_t* media_description, belle_sdp_media_t* media);
 BELLESIP_EXPORT void belle_sdp_media_description_append_values_from_mime_parameter(belle_sdp_media_description_t* media_description, const belle_sdp_mime_parameter_t* mime_parameter);
+
+BELLESIP_EXPORT void belle_sdp_media_description_add_attribute_holder(belle_sdp_media_description_t* media_description, belle_sdp_attribute_holder_t *holder);
+
 #define BELLE_SDP_MEDIA_DESCRIPTION(t) BELLE_SDP_CAST(t,belle_sdp_media_description_t)
 
 /***************************************************************************************
@@ -508,6 +521,8 @@ BELLESIP_EXPORT void belle_sdp_media_description_set_csup_attribute(belle_sdp_me
 BELLESIP_EXPORT void belle_sdp_media_description_add_pcfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_pcfg_attribute_t* pcfg);
 BELLESIP_EXPORT void belle_sdp_media_description_add_acap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acap_attribute_t* acap);
 BELLESIP_EXPORT void belle_sdp_media_description_add_tcap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_tcap_attribute_t* tcap);
+
+BELLESIP_EXPORT void belle_sdp_session_description_add_attribute_holder(belle_sdp_session_description_t* session_description, belle_sdp_attribute_holder_t *holder);
 
 #define BELLE_SDP_SESSION_DESCRIPTION(t) BELLE_SDP_CAST(t,belle_sdp_session_description_t)
 

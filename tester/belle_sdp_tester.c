@@ -236,7 +236,6 @@ static void test_pcfg_attribute(void) {
 static void test_rtcp_fb_attribute(void) {
 	belle_sdp_rtcp_fb_attribute_t* lAttribute;
 
-	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* ack"));
 	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:* ack");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
@@ -244,7 +243,6 @@ static void test_rtcp_fb_attribute(void) {
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_NONE, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:98 nack rpsi"));
 	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:98 nack rpsi");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), 98, int, "%d");
@@ -252,7 +250,6 @@ static void test_rtcp_fb_attribute(void) {
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_param(lAttribute), BELLE_SDP_RTCP_FB_RPSI, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:* trr-int 3"));
 	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:* trr-int 3");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), -1, int, "%d");
@@ -260,7 +257,6 @@ static void test_rtcp_fb_attribute(void) {
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_trr_int(lAttribute), 3, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_FB_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-fb:103 ccm fir"));
 	lAttribute = belle_sdp_rtcp_fb_attribute_parse("a=rtcp-fb:103 ccm fir");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-fb");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_fb_attribute_get_id(lAttribute), 103, int, "%d");
@@ -279,21 +275,18 @@ static void test_rtcp_fb_attribute(void) {
 static void test_rtcp_xr_attribute(void) {
 	belle_sdp_rtcp_xr_attribute_t* lAttribute;
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=all:10"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:rcvr-rtt=all:10");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute), "all");
 	BC_ASSERT_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_max_size(lAttribute), 10, int, "%d");
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:stat-summary");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_PTR_NULL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute));
@@ -301,7 +294,6 @@ static void test_rtcp_xr_attribute(void) {
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:stat-summary=loss,jitt"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:stat-summary=loss,jitt");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
@@ -310,14 +302,12 @@ static void test_rtcp_xr_attribute(void) {
 	BC_ASSERT_PTR_NULL(belle_sip_list_find_custom(belle_sdp_rtcp_xr_attribute_get_stat_summary_flags(lAttribute), (belle_sip_compare_func)strcasecmp, "HL"));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:voip-metrics"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:voip-metrics");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_FALSE(belle_sdp_rtcp_xr_attribute_has_stat_summary(lAttribute));
 	BC_ASSERT_TRUE(belle_sdp_rtcp_xr_attribute_has_voip_metrics(lAttribute));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 
-	//lAttribute = BELLE_SDP_RTCP_XR_ATTRIBUTE(attribute_parse_marshall_parse_clone("a=rtcp-xr:rcvr-rtt=sender stat-summary=loss,dup,jitt,TTL voip-metrics"));
 	lAttribute = belle_sdp_rtcp_xr_attribute_parse("a=rtcp-xr:rcvr-rtt=sender stat-summary=loss,dup,jitt,TTL voip-metrics");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "rtcp-xr");
 	BC_ASSERT_STRING_EQUAL(belle_sdp_rtcp_xr_attribute_get_rcvr_rtt_mode(lAttribute), "sender");
@@ -493,7 +483,9 @@ static void test_media(void) {
 }
 
 static void test_media_description_base(belle_sdp_media_description_t* media_description) {
-	const char* attr[] ={"4 key-mgmt:mikey AQAFgM"
+	const char* attr[] ={"98 nack rpsi"
+				, "rcvr-rtt=all:10"
+				,"4 key-mgmt:mikey AQAFgM"
 				,"6 RTP/SAVP RTP/SAVPF"
 				,"99 MP4V-ES/90000"
 				,"99 profile-level-id=3"
@@ -539,6 +531,8 @@ static void test_media_description(void) {
 						"i=Hey\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -581,6 +575,8 @@ static void test_simple_session_description(void) {
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -665,6 +661,8 @@ static const char* big_sdp = "v=0\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
