@@ -138,6 +138,7 @@ base64-char =         ALPHA / DIGIT / "+" / "/"
 attribute           = csup-attribute / acap-attribute
                     / tcap-attribute / creq-attribute
                     / pcfg-attribute / acfg-attribute
+                    / rtcp-fb-attribute / rtcp-xr-attribute
                     / raw-attribute
 raw-attribute       = %x61 "=" default-attribute
 default-attribute   = (att-field ":" att-value) / att-field
