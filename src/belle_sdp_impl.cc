@@ -120,9 +120,40 @@ const char *belle_sdp_attribute_get_value(belle_sdp_attribute_t *attribute) {
 unsigned int belle_sdp_attribute_has_value(belle_sdp_attribute_t* attribute) {
 	return belle_sdp_attribute_get_value(attribute) != NULL;
 }
+
 BELLE_SDP_NEW(attribute,belle_sip_object)
-BELLE_SDP_PARSE(attribute)
+
+belle_sdp_attribute_t* belle_sdp_attribute_parse (const char* line) {
+	auto parser = bellesip::Parser::SDP::getInstance();
+	auto holder = (belle_sdp_attribute_holder_t*)parser->parse(line, "attribute");
+	if (holder == NULL) belle_sip_error("attribute parser error for [%s]", line);
+	belle_sdp_attribute_t* attribute = belle_sdp_attribute_holder_get_attribute(holder);
+	belle_sip_free(holder);
+
+	return attribute;
+}
+
 GET_SET_STRING(belle_sdp_attribute,name);
+
+/***************************************************************************************
+ * Attributes Holder
+ *
+ **************************************************************************************/
+struct _belle_sdp_attribute_holder {
+	belle_sdp_attribute_t *attribute;
+};
+
+belle_sdp_attribute_holder_t* belle_sdp_attribute_holder_new() {
+	return (belle_sdp_attribute_holder_t*)belle_sip_malloc0(sizeof(belle_sdp_attribute_holder_t));
+}
+
+void belle_sdp_attribute_holder_set_attribute(belle_sdp_attribute_holder_t* holder, void* attribute) {
+	holder->attribute = (belle_sdp_attribute_t*)attribute;
+}
+
+belle_sdp_attribute_t* belle_sdp_attribute_holder_get_attribute(belle_sdp_attribute_holder_t* holder) {
+	return holder->attribute;
+}
 
 /***************************************************************************************
  * RAW Attribute
@@ -1138,6 +1169,10 @@ belle_sdp_media_t* belle_sdp_media_description_get_media(const belle_sdp_media_d
 	return media_description->media;
 }
 
+void belle_sdp_media_description_add_attribute_holder(belle_sdp_media_description_t* media_description, belle_sdp_attribute_holder_t *holder) {
+	belle_sdp_base_description_add_attribute(BELLE_SIP_CAST(media_description,belle_sdp_base_description_t), holder->attribute);
+}
+
 struct static_payload {
 	unsigned char number;
 	int channel_count;
@@ -1793,6 +1828,10 @@ void belle_sdp_session_description_add_tcap_attribute(belle_sdp_session_descript
 void belle_sdp_session_description_add_acap_attribute(belle_sdp_session_description_t* session_description, belle_sdp_acap_attribute_t* acap) {
 	session_description->base_description.attributes =
 		belle_sip_list_append(session_description->base_description.attributes,belle_sip_object_ref(acap));
+}
+
+void belle_sdp_session_description_add_attribute_holder(belle_sdp_session_description_t* session_description, belle_sdp_attribute_holder_t *holder) {
+	belle_sdp_base_description_add_attribute(BELLE_SIP_CAST(session_description,belle_sdp_base_description_t), holder->attribute);
 }
 
 void belle_sdp_media_description_set_acfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acfg_attribute_t* acfg) {
