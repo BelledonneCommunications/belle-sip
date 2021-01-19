@@ -12,6 +12,7 @@ using namespace bellesip;
 
 // Initialize the singleton instance
 bellesip::Parser::SDP *bellesip::Parser::SDP::instance = 0;
+
 bellesip::Parser::SDP *bellesip::Parser::SDP::getInstance() {
     if (!instance) {
        instance = new SDP();
@@ -25,7 +26,6 @@ bellesip::Parser::SDP::SDP() {
     _parser = make_shared<belr::Parser<void*>>(grammar);
 
     _parser->setHandler("session-description", make_fn(&belle_sdp_session_description_new))
-           ->setCollector("attribute", make_fn(&belle_sdp_session_description_add_attribute))
            ->setCollector("session-name", make_fn(&belle_sdp_session_description_set_session_name))
            ->setCollector("origin", make_fn(&belle_sdp_session_description_set_origin))
            ->setCollector("proto-version", make_fn(&belle_sdp_session_description_set_version))
@@ -33,12 +33,7 @@ bellesip::Parser::SDP::SDP() {
            ->setCollector("info", make_fn(&belle_sdp_session_description_set_info))
            ->setCollector("times", make_fn(&belle_sdp_session_description_set_time_description))
            ->setCollector("media-description", make_fn(&belle_sdp_session_description_add_media_description))
-
-           // RFC5939
-           ->setCollector("creq-attribute", make_fn(&belle_sdp_session_description_set_creq_attribute))
-           ->setCollector("csup-attribute", make_fn(&belle_sdp_session_description_set_csup_attribute))
-           ->setCollector("tcap-attribute", make_fn(&belle_sdp_session_description_add_tcap_attribute))
-           ->setCollector("acap-attribute", make_fn(&belle_sdp_session_description_add_acap_attribute));
+           ->setCollector("attribute", make_fn(&belle_sdp_session_description_add_attribute_holder));
 
     _parser->setHandler("csup-attribute", make_fn(&belle_sdp_csup_attribute_new))
            ->setCollector("option-tag", make_fn(&belle_sdp_csup_attribute_add_option_tag));
@@ -77,19 +72,11 @@ bellesip::Parser::SDP::SDP() {
            ->setCollector("stop-time", make_fn(&belle_sdp_time_set_stop));
 
     _parser->setHandler("media-description", make_fn(&belle_sdp_media_description_new))
-           ->setCollector("attribute", make_fn(&belle_sdp_media_description_add_attribute))
            ->setCollector("media", make_fn(&belle_sdp_media_description_set_media))
            ->setCollector("info", make_fn(&belle_sdp_media_description_set_info))
            ->setCollector("connection", make_fn(&belle_sdp_media_description_set_connection))
            ->setCollector("bandwidth", make_fn(&belle_sdp_media_description_add_bandwidth))
-
-           // RFC5939
-           ->setCollector("acfg-attribute", make_fn(&belle_sdp_media_description_set_acfg_attribute))
-           ->setCollector("creq-attribute", make_fn(&belle_sdp_media_description_set_creq_attribute))
-           ->setCollector("creq-attribute", make_fn(&belle_sdp_media_description_set_csup_attribute))
-           ->setCollector("pcfg-attribute", make_fn(&belle_sdp_media_description_add_pcfg_attribute))
-           ->setCollector("tcap-attribute", make_fn(&belle_sdp_media_description_add_tcap_attribute))
-           ->setCollector("acap-attribute", make_fn(&belle_sdp_media_description_add_acap_attribute));
+           ->setCollector("attribute", make_fn(&belle_sdp_media_description_add_attribute_holder));
 
     _parser->setHandler("rtcp-fb-attribute", make_fn(&belle_sdp_rtcp_fb_attribute_new))
            ->setCollector("rtcp-fb-pt", make_fn(&belle_sdp_rtcp_fb_attribute_set_raw_id))
@@ -110,7 +97,18 @@ bellesip::Parser::SDP::SDP() {
            ->setCollector("stat-flag", make_fn(&belle_sdp_rtcp_xr_attribute_add_stat_summary_flag))
            ->setCollector("voip-metrics", make_fn(&belle_sdp_rtcp_xr_attribute_enable_voip_metrics));
 
-    _parser->setHandler("attribute", make_fn(&belle_sdp_raw_attribute_new))
+    _parser->setHandler("attribute", make_fn(&belle_sdp_attribute_holder_new))
+           ->setCollector("acfg-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("creq-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("creq-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("pcfg-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("tcap-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("acap-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("rtcp-fb-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("rtcp-xr-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("raw-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute));
+
+    _parser->setHandler("raw-attribute", make_fn(&belle_sdp_raw_attribute_new))
            ->setCollector("att-field", make_fn(&belle_sdp_raw_attribute_set_name))
            ->setCollector("att-value", make_fn(&belle_sdp_raw_attribute_set_value));
 
