@@ -163,9 +163,12 @@ set(BELLE_SIP_SOURCE_FILES_CXX
 	${TUNNEL_SOURCE_FILES_CXX}
 	object++.cc
 	cpp_utils.cc
+	#cpp_utils.hh
 	belle_sdp_impl.cc
 	#belle_sip_internal.hh
 	sdp/parser.cc
+	#parser/sdp.hh
+	sdp/potential_config_graph.cc
 )
 set(GRAMMAR_FILES
 	sdp/sdp_grammar

@@ -17,13 +17,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 #include <map>
 #include <list>
 
+#include "cpp_utils.hh"
+#include "belle-sip/belle-sdp.h"
+#include "belle-sip/utils.h"
+
 namespace bellesip {
+
 	namespace SDP {
 
 		typedef enum config_type {
@@ -45,7 +51,7 @@ namespace bellesip {
 			capability_type_t type = ATTRIBUTE;
 		};
 
-		struct acapability : public capability_t {
+		struct acapability : public capability {
 			std::string       name;
 		};
 
@@ -58,10 +64,10 @@ namespace bellesip {
 		struct config_attribute {
 			// vector of list of capabilities
 			// each element of the vector stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
-			std::vector<std::list<config_capability<acapbility>>> acap,
-			std::vector<std::list<config_capability<capability>>> tcap,
-			bool delete_media_attributes = false, // Delete SDP media attributes
-			bool delete_session_attributes = false // Delete SDP session attributes
+			std::vector<std::list<config_capability<acapability>>> acap;
+			std::vector<std::list<config_capability<capability>>> tcap;
+			bool delete_media_attributes = false; // Delete SDP media attributes
+			bool delete_session_attributes = false; // Delete SDP session attributes
 		};
 
 		class SDPPotentialCfgGraph {
@@ -76,8 +82,6 @@ namespace bellesip {
 			public:
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
 				// This method should be moved to an utility file as it is not strictly releated to the configuration graph
-				template<class container>
-				container splitString(const std::string & str, const char delim);
 
 			protected:
 
@@ -89,12 +93,15 @@ namespace bellesip {
 				session_description_acap acap;
 				session_description_base_cap tcap;
 
+				template<class cap_type>
+				std::list<config_capability<cap_type>> parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const;
+
  				// Session
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
 				const belle_sip_list_t * getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap);
 
  				// Media
-				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const std::list<capability_t> & globalAcap, const std::list<capability_t> & globalTcap, const std::list<capability_t> & globalEcap);
+				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const media_description_acap & globalAcap, const media_description_base_cap & globalTcap);
 				const belle_sip_list_t * getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap);
 
  				// Attribute capabilities
@@ -104,38 +111,27 @@ namespace bellesip {
 
 				// Transport capabilities
 				media_description_base_cap getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc);
-				media_description_base_cap getMediaDescrptionTCapabilities (const belle_sdp_media_description_t* media_desc);
+				media_description_base_cap getMediaDescriptionTCapabilities (const belle_sdp_media_description_t* media_desc);
 				media_description_base_cap createTCapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap);
 
 				// Configuration
 				void processMediaCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType);
-				config_attribute createPConfigFromAttribute(const belle_sdp_pcfg_attribute_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
-				config_attribute createAConfigFromAttribute(const belle_sdp_acfg_attribute_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				void processMediaACfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				void processMediaPCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				// TODO: should attribute have const? belle_sdp_pcfg_attribute_get_configs takes a non const
+				config_attribute createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				// TODO: should attribute have const? belle_sdp_acfg_attribute_get_configs takes a non const
+				config_attribute createAConfigFromAttribute(belle_sdp_acfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				config_attribute processConfig(const belle_sip_list_t* configList, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap) const;
-				void fillConfigCapability(const int & index, const bool mandatory, config_attribute & attr_config, const bellesip::SDP::capability_type_t & cap) const;
-				const bellesip::SDP::capability_type_t capabilityTypeFromAttrParam(const std::string & attrParam) const;
-				void getElementIdx(const std::string & index) const;
+				bellesip::SDP::capability_type_t capabilityTypeFromAttrParam(const std::string & attrParam) const;
+				int getElementIdx(const std::string & index) const;
+
 		};
 
-		// This method should be moved to an utility file as it is not strictly releated to the configuration graph
-		template<class container>
-		container bellesip::SDP::SDPPotentialCfgGraph::splitString(const std::string & str, const char delim) {
-			container splittedStr;
-			std::size_t current, previous = 0;
-			current = str.find(delim);
-			while (current != std::string::npos) {
-				splittedStr.push_back(str.substr(previous, current - previous));
-				previous = current + 1;
-				current = str.find(delim, previous);
-			}
-			splittedStr.push_back(str.substr(previous, current - previous));
-			return splittedStr;
-		}
-
 		template<class cap_type>
-		std::list<config_capability<cap_type>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::vector<std::list<std::shared_ptr<cap_type>>> & availableCaps) const {
+		std::list<config_capability<cap_type>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
 			const char configDelim = '|';
-			std::list<std::string> attrCapList = splitString(idxList, configDelim);
+			const auto attrCapList = bellesip::Utils::splitStringToVector(idxList, configDelim);
 			bool mandatory = false;
 
 			const char startOptDelim = '[';
@@ -143,8 +139,8 @@ namespace bellesip {
 			std::list<config_capability<cap_type>> capList;
 			for (const auto & config : attrCapList) {
 				const char capDelim = ',';
-				std::list<std::string> capList = splitString(config, capDelim);
-				for (const auto & index : capList) {
+				const auto capIdList = bellesip::Utils::splitStringToVector(config, capDelim);
+				for (const auto & index : capIdList) {
 					belle_sip_message("configuration is %s index is %s", config.c_str(), index.c_str());
 					const auto startOptPos = index.find(startOptDelim);
 					const auto endOptPos = index.find(endOptDelim);
@@ -154,9 +150,9 @@ namespace bellesip {
 					auto idx = getElementIdx(index);
 					config_capability<cap_type> cfg;
 					cfg.mandatory = mandatory;
-					auto capIt = std::find_if(availableCaps.cbegin(); availableCaps.cend(), [&idx] (const auto & cap) {
+					auto capIt = std::find_if(availableCaps.cbegin(), availableCaps.cend(), [&idx] (const std::shared_ptr<cap_type> & cap) {
 						return (cap->index == idx);
-					}
+					});
 					if (capIt == availableCaps.cend()) {
 						belle_sip_error("Unable to find capability with index %d", idx);
 					} else {
@@ -169,6 +165,8 @@ namespace bellesip {
 					}	
 				}
 			}
+
+			return capList;
 		}
 
 	}

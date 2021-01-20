@@ -1161,6 +1161,9 @@ const char* belle_sdp_media_description_get_attribute_value(const belle_sdp_medi
 belle_sip_list_t* belle_sdp_media_description_get_attributes(const belle_sdp_media_description_t* media_description) {
 	return BELLE_SIP_CAST(media_description,belle_sdp_base_description_t)->attributes;
 }
+belle_sip_list_t * belle_sdp_media_description_find_attributes_with_name(const belle_sdp_media_description_t *media_description, const char* name) {
+	return belle_sdp_base_description_find_attributes_with_name(BELLE_SIP_CAST(media_description, belle_sdp_base_description_t), name);
+}
 
 int	belle_sdp_media_description_get_bandwidth(const belle_sdp_media_description_t* media_description, const char* name) {
 	return belle_sdp_base_description_get_bandwidth_value(BELLE_SIP_CAST(media_description,belle_sdp_base_description_t),name);
