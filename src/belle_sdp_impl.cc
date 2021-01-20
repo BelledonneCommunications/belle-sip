@@ -437,7 +437,7 @@ void belle_sdp_acfg_attribute_add_config(belle_sdp_acfg_attribute_t* attribute, 
 	attribute->configs = belle_sip_list_append(attribute->configs, belle_sip_strdup(config));
 }
 
-belle_sip_list_t* belle_sdp_acfg_attribute_get_configs(belle_sdp_acfg_attribute_t* attribute) {
+belle_sip_list_t* belle_sdp_acfg_attribute_get_configs(const belle_sdp_acfg_attribute_t* attribute) {
 	return attribute->configs;
 }
 
@@ -489,7 +489,7 @@ void belle_sdp_pcfg_attribute_add_config(belle_sdp_pcfg_attribute_t* attribute, 
 	attribute->configs = belle_sip_list_append(attribute->configs, belle_sip_strdup(config));
 }
 
-belle_sip_list_t* belle_sdp_pcfg_attribute_get_configs(belle_sdp_pcfg_attribute_t* attribute) {
+belle_sip_list_t* belle_sdp_pcfg_attribute_get_configs(const belle_sdp_pcfg_attribute_t* attribute) {
 	return attribute->configs;
 }
 
@@ -1813,50 +1813,9 @@ void belle_sdp_session_description_set_zone_adjustments(belle_sdp_session_descri
 
 // RFC5939
 
-void belle_sdp_session_description_set_csup_attribute(belle_sdp_session_description_t* session_description, belle_sdp_csup_attribute_t* csup) {
-	session_description->base_description.attributes =
-		belle_sip_list_append(session_description->base_description.attributes,belle_sip_object_ref(csup));
-}
-void belle_sdp_session_description_set_creq_attribute(belle_sdp_session_description_t* session_description, belle_sdp_creq_attribute_t* creq) {
-	session_description->base_description.attributes =
-		belle_sip_list_append(session_description->base_description.attributes,belle_sip_object_ref(creq));
-}
-void belle_sdp_session_description_add_tcap_attribute(belle_sdp_session_description_t* session_description, belle_sdp_tcap_attribute_t* tcap) {
-	session_description->base_description.attributes =
-		belle_sip_list_append(session_description->base_description.attributes,belle_sip_object_ref(tcap));
-}
-void belle_sdp_session_description_add_acap_attribute(belle_sdp_session_description_t* session_description, belle_sdp_acap_attribute_t* acap) {
-	session_description->base_description.attributes =
-		belle_sip_list_append(session_description->base_description.attributes,belle_sip_object_ref(acap));
-}
-
 void belle_sdp_session_description_add_attribute_holder(belle_sdp_session_description_t* session_description, belle_sdp_attribute_holder_t *holder) {
 	belle_sdp_base_description_add_attribute(BELLE_SIP_CAST(session_description,belle_sdp_base_description_t), holder->attribute);
-}
-
-void belle_sdp_media_description_set_acfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acfg_attribute_t* acfg) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(acfg));
-}
-void belle_sdp_media_description_set_creq_attribute(belle_sdp_media_description_t* media_description, belle_sdp_creq_attribute_t* creq) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(creq));
-}
-void belle_sdp_media_description_set_csup_attribute(belle_sdp_media_description_t* media_description, belle_sdp_csup_attribute_t* csup) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(csup));
-}
-void belle_sdp_media_description_add_pcfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_pcfg_attribute_t* pcfg) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(pcfg));
-}
-void belle_sdp_media_description_add_acap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acap_attribute_t* acap) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(acap));
-}
-void belle_sdp_media_description_add_tcap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_tcap_attribute_t* tcap) {
-	media_description->base_description.attributes =
-		belle_sip_list_append(media_description->base_description.attributes,belle_sip_object_ref(tcap));
+	belle_sip_free(holder);
 }
 
 /************************
