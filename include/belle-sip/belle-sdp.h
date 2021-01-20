@@ -329,6 +329,9 @@ BELLESIP_EXPORT void belle_sdp_media_description_add_dynamic_payloads(belle_sdp_
 BELLESIP_EXPORT const char* belle_sdp_media_description_get_attribute_value(const belle_sdp_media_description_t* media_description, const char* name);
 BELLESIP_EXPORT belle_sdp_attribute_t* belle_sdp_media_description_get_attribute(const belle_sdp_media_description_t* media_description, const char* name);
 BELLESIP_EXPORT belle_sip_list_t* belle_sdp_media_description_get_attributes(const belle_sdp_media_description_t* media_description);
+// belle_sdp_media_description_find_attributes_with_name creates a list of attributes with a given name.
+// The list must be freed after usage
+BELLESIP_EXPORT belle_sip_list_t * belle_sdp_media_description_find_attributes_with_name(const belle_sdp_media_description_t *media_description, const char* name);
 BELLESIP_EXPORT int	belle_sdp_media_description_get_bandwidth(const belle_sdp_media_description_t* media_description, const char* name);
 BELLESIP_EXPORT belle_sip_list_t* belle_sdp_media_description_get_bandwidths(const belle_sdp_media_description_t* media_description);
 BELLESIP_EXPORT belle_sdp_connection_t* belle_sdp_media_description_get_connection(const belle_sdp_media_description_t* media_description);
