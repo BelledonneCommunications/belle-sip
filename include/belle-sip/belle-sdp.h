@@ -118,7 +118,7 @@ BELLESIP_EXPORT belle_sdp_acfg_attribute_t* belle_sdp_acfg_attribute_create(void
 BELLESIP_EXPORT int belle_sdp_acfg_attribute_get_id(const belle_sdp_acfg_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_acfg_attribute_set_id(belle_sdp_acfg_attribute_t* attribute, int id);
 BELLESIP_EXPORT void belle_sdp_acfg_attribute_add_config(belle_sdp_acfg_attribute_t* attribute, const char* config);
-BELLESIP_EXPORT belle_sip_list_t* belle_sdp_acfg_attribute_get_configs(belle_sdp_acfg_attribute_t* attribute);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_acfg_attribute_get_configs(const belle_sdp_acfg_attribute_t* attribute);
 #define BELLE_SDP_ACFG_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_acfg_attribute_t)
 
 // pcfg
@@ -129,7 +129,7 @@ BELLESIP_EXPORT belle_sdp_pcfg_attribute_t* belle_sdp_pcfg_attribute_create(void
 BELLESIP_EXPORT int belle_sdp_pcfg_attribute_get_id(const belle_sdp_pcfg_attribute_t* attribute);
 BELLESIP_EXPORT void belle_sdp_pcfg_attribute_set_id(belle_sdp_pcfg_attribute_t* attribute, int id);
 BELLESIP_EXPORT void belle_sdp_pcfg_attribute_add_config(belle_sdp_pcfg_attribute_t* attribute, const char* config);
-BELLESIP_EXPORT belle_sip_list_t* belle_sdp_pcfg_attribute_get_configs(belle_sdp_pcfg_attribute_t* attribute);
+BELLESIP_EXPORT belle_sip_list_t* belle_sdp_pcfg_attribute_get_configs(const belle_sdp_pcfg_attribute_t* attribute);;
 #define BELLE_SDP_PCFG_ATTRIBUTE(t) BELLE_SDP_CAST(t,belle_sdp_pcfg_attribute_t)
 
 /***************************************************************************************
@@ -508,19 +508,6 @@ BELLESIP_EXPORT void belle_sdp_session_description_set_time_description(belle_sd
 BELLESIP_EXPORT void belle_sdp_session_description_set_uri(belle_sdp_session_description_t* session_description, belle_sdp_uri_t* uri);
 BELLESIP_EXPORT void belle_sdp_session_description_set_version(belle_sdp_session_description_t* session_description, belle_sdp_version_t* v);
 BELLESIP_EXPORT void belle_sdp_session_description_set_zone_adjustments(belle_sdp_session_description_t* session_description, belle_sdp_uri_t* zoneAdjustments);
-
-// RFC5939
-BELLESIP_EXPORT void belle_sdp_session_description_set_csup_attribute(belle_sdp_session_description_t* session_description, belle_sdp_csup_attribute_t* csup);
-BELLESIP_EXPORT void belle_sdp_session_description_set_creq_attribute(belle_sdp_session_description_t* session_description, belle_sdp_creq_attribute_t* creq);
-BELLESIP_EXPORT void belle_sdp_session_description_add_tcap_attribute(belle_sdp_session_description_t* session_description, belle_sdp_tcap_attribute_t* tcap);
-BELLESIP_EXPORT void belle_sdp_session_description_add_acap_attribute(belle_sdp_session_description_t* session_description, belle_sdp_acap_attribute_t* acap);
-
-BELLESIP_EXPORT void belle_sdp_media_description_set_acfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acfg_attribute_t* acfg);
-BELLESIP_EXPORT void belle_sdp_media_description_set_creq_attribute(belle_sdp_media_description_t* media_description, belle_sdp_creq_attribute_t* creq);
-BELLESIP_EXPORT void belle_sdp_media_description_set_csup_attribute(belle_sdp_media_description_t* media_description, belle_sdp_csup_attribute_t* csup);
-BELLESIP_EXPORT void belle_sdp_media_description_add_pcfg_attribute(belle_sdp_media_description_t* media_description, belle_sdp_pcfg_attribute_t* pcfg);
-BELLESIP_EXPORT void belle_sdp_media_description_add_acap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_acap_attribute_t* acap);
-BELLESIP_EXPORT void belle_sdp_media_description_add_tcap_attribute(belle_sdp_media_description_t* media_description, belle_sdp_tcap_attribute_t* tcap);
 
 BELLESIP_EXPORT void belle_sdp_session_description_add_attribute_holder(belle_sdp_session_description_t* session_description, belle_sdp_attribute_holder_t *holder);
 
