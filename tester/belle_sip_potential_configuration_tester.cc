@@ -102,7 +102,7 @@ static const char* simpleSdpWithMultipleCapabilitiesInSession = "v=0\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
-static const char* simpleSdpWithMultipleProtosOnSameLine = "v=0\r\n"\
+static const char* simpleSdpWithMultipleProtosOnSameLineInSession = "v=0\r\n"\
 						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
 						"s=SIP Talk\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
@@ -131,13 +131,89 @@ static const char* simpleSdpWithMultipleProtosOnSameLine = "v=0\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
-static void base_test_no_potential_config(const char* src, int expProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaTcap, int expMediaAcap) {
+static const char* simpleSdpWithSingleCapabilityInMedia = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=tcap:1 RTP/SAVP\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const char* simpleSdpWithMultipleCapabilitiesInMedia = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=tcap:1 RTP/SAVP\r\n"\
+						"a=tcap:2 RTP/SAVPF\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const char* simpleSdpWithMultipleProtosOnSameLineInMedia = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVPF\r\n"\
+						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+
+struct acapParts {
+	const std::string name;
+	const std::string value;
+};
+
+static void base_test_no_potential_config(const char* src, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap) {
 	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
 
 	bellesip::SDP::SDPPotentialCfgGraph graph(sessionDescription);
 
+	std::map<int, acapParts> expAcapAttrs = {
+		{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
+		{ 20, {"ptime", "30"} },
+		{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+	};
 	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
@@ -151,7 +227,7 @@ static void base_test_no_potential_config(const char* src, int expProtoCap, int 
 	// TCAP
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
 	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
-	std::size_t noGlobalTcap = 0;
+	std::size_t noGlobalProtoCap = 0;
 	std::map<int, std::string> idList;
 	for(auto it = globalTcap; it!=NULL; it=it->next){
 		auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
@@ -164,22 +240,59 @@ static void base_test_no_potential_config(const char* src, int expProtoCap, int 
 			protoId++;
 		}
 		auto noTcap = belle_sip_list_size(tcapList);
-		noGlobalTcap += noTcap;
+		noGlobalProtoCap += noTcap;
 	}
-	BC_ASSERT_EQUAL(noGlobalTcap, expProtoCap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(noGlobalProtoCap, expGlobalProtoCap, std::size_t, "%0lu");
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
 		BC_ASSERT_PTR_NOT_NULL(mediaDescriptionElem);
 		auto mediaDescription = static_cast<belle_sdp_media_description_t*>(bctbx_list_get_data(mediaDescriptionElem));
+
+		// ACAP
 		const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
 		BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap, std::size_t, "%0lu");
-		const auto noMediaTcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap"));
-		BC_ASSERT_EQUAL(noMediaTcap, expMediaTcap, std::size_t, "%0lu");
 
-		BC_ASSERT_EQUAL(graph.getAcapForStream(idx).size(), (noGlobalAcap+noMediaAcap), std::size_t, "%0lu");
+		auto acap = graph.getAcapForStream(idx);
+		BC_ASSERT_EQUAL(acap.size(), (noGlobalAcap+noMediaAcap), std::size_t, "%0lu");
+		for (const auto & cap : acap) {
+			auto id = cap->index;
+			auto expIt = expAcapAttrs.find(id);
+			BC_ASSERT_TRUE(expIt != expAcapAttrs.end());
+			if (expIt != expAcapAttrs.end()) {
+				const auto & value = cap->value;
+				const auto & expValue = expAcapAttrs[id].value;
+				BC_ASSERT_STRING_EQUAL(value.c_str(), expValue.c_str());
+
+				const auto & name = cap->name;
+				const auto & expName = expAcapAttrs[id].name;
+				BC_ASSERT_STRING_EQUAL(name.c_str(), expName.c_str());
+
+			}
+		}
+
+		// TCAP
+		const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
+		BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap, std::size_t, "%0lu");
+
+		std::size_t noMediaProtoCap = 0;
+		for(auto it = mediaTcap; it!=NULL; it=it->next){
+			auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
+			auto id = belle_sdp_tcap_attribute_get_id(attr);
+			auto tcapList = belle_sdp_tcap_attribute_get_protos(attr);
+			auto protoId = id;
+			for(auto list = tcapList; list!=NULL; list=list->next){
+				auto proto = static_cast<const char *>(bctbx_list_get_data(list));
+				idList[protoId] = proto;
+				protoId++;
+			}
+			auto noTcap = belle_sip_list_size(tcapList);
+			noMediaProtoCap += noTcap;
+		}
+		BC_ASSERT_EQUAL(noMediaProtoCap, expMediaProtoCap, std::size_t, "%0lu");
+
 		auto tcap = graph.getTcapForStream(idx);
-		BC_ASSERT_EQUAL(tcap.size(), (noGlobalTcap+noMediaTcap), std::size_t, "%0lu");
+		BC_ASSERT_EQUAL(tcap.size(), (noGlobalProtoCap+noMediaProtoCap), std::size_t, "%0lu");
 		for (const auto & cap : tcap) {
 			auto id = cap->index;
 			auto expIt = idList.find(id);
@@ -187,7 +300,7 @@ static void base_test_no_potential_config(const char* src, int expProtoCap, int 
 			if (expIt != idList.end()) {
 				auto proto = cap->value;
 				auto expProto = idList[id];
-				BC_ASSERT_TRUE(expProto.compare(proto) == 0);
+				BC_ASSERT_STRING_EQUAL(proto.c_str(), expProto.c_str());
 			};
 		}
 		mediaDescriptionElem = mediaDescriptionElem->next;
@@ -195,26 +308,41 @@ static void base_test_no_potential_config(const char* src, int expProtoCap, int 
 }
 
 static void test_no_capabilities(void) {
-	base_test_no_potential_config(simpleSdpWithNoCapabilities, 0, 0, 0, 0, 0);
+	base_test_no_potential_config(simpleSdpWithNoCapabilities, 0, 0, 0, 0, 0, 0);
 }
 
 static void test_single_capability_in_session(void) {
-	base_test_no_potential_config(simpleSdpWithSingleCapabilityInSession, 1, 1, 1, 0, 0);
+	base_test_no_potential_config(simpleSdpWithSingleCapabilityInSession, 1, 1, 1, 0, 0, 0);
 }
 
 static void test_multiple_capabilities_in_session(void) {
-	base_test_no_potential_config(simpleSdpWithMultipleCapabilitiesInSession, 2, 2, 3, 0, 0);
+	base_test_no_potential_config(simpleSdpWithMultipleCapabilitiesInSession, 2, 2, 3, 0, 0, 0);
 }
 
 static void test_multiple_capabilities_on_same_line_in_session(void) {
-	base_test_no_potential_config(simpleSdpWithMultipleProtosOnSameLine, 3, 2, 2, 0, 0);
+	base_test_no_potential_config(simpleSdpWithMultipleProtosOnSameLineInSession, 3, 2, 2, 0, 0, 0);
+}
+
+static void test_single_capability_in_media(void) {
+	base_test_no_potential_config(simpleSdpWithSingleCapabilityInMedia, 0, 0, 0, 1, 1, 1);
+}
+
+static void test_multiple_capabilities_in_media(void) {
+	base_test_no_potential_config(simpleSdpWithMultipleCapabilitiesInMedia, 0, 0, 0, 2, 2, 3);
+}
+
+static void test_multiple_capabilities_on_same_line_in_media(void) {
+	base_test_no_potential_config(simpleSdpWithMultipleProtosOnSameLineInMedia, 0, 0, 0, 3, 2, 2);
 }
 
 test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with no capabilities", test_no_capabilities),
 	TEST_NO_TAG("SDP with single capability in session", test_single_capability_in_session),
 	TEST_NO_TAG("SDP with multiple capabilities in session", test_multiple_capabilities_in_session),
-	TEST_NO_TAG("SDP with multiple capabilities on same line in session", test_multiple_capabilities_on_same_line_in_session)
+	TEST_NO_TAG("SDP with multiple capabilities on same line in session", test_multiple_capabilities_on_same_line_in_session),
+	TEST_NO_TAG("SDP with single capability in media", test_single_capability_in_media),
+	TEST_NO_TAG("SDP with multiple capabilities in media", test_multiple_capabilities_in_media),
+	TEST_NO_TAG("SDP with multiple capabilities on same line in media", test_multiple_capabilities_on_same_line_in_media),
 };
 
 test_suite_t potential_configuration_graph_test_suite = {"Potential configuration graph", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
