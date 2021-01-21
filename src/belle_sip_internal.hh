@@ -932,7 +932,7 @@ belle_sdp_##object_type##_t* belle_sdp_##object_type##_parse (const char* value)
 		if (l_parsed_object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
 		return l_parsed_object;\
 	} else {\
-		auto parser = bellesip::Parser::SDP::getInstance();\
+		auto parser = bellesip::SDP::Parser::getInstance();\
 		auto object = parser->parse(value, #object_type);\
 		if (object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
 		return (belle_sdp_##object_type##_t *)object;\
@@ -940,7 +940,7 @@ belle_sdp_##object_type##_t* belle_sdp_##object_type##_parse (const char* value)
 }
 #define BELLE_SDP_BELR_PARSE(object_type) \
 belle_sdp_##object_type##_t* belle_sdp_##object_type##_parse (const char* value) { \
-	auto parser = bellesip::Parser::SDP::getInstance();\
+	auto parser = bellesip::SDP::Parser::getInstance();\
 	auto object = parser->parse(value, #object_type);\
 	if (object == NULL) belle_sip_error(#object_type" parser error for [%s]",value);\
 	return (belle_sdp_##object_type##_t *)object;\
