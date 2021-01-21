@@ -165,10 +165,10 @@ set(BELLE_SIP_SOURCE_FILES_CXX
 	cpp_utils.cc
 	belle_sdp_impl.cc
 	#belle_sip_internal.hh
-	parser/sdp.cc
+	sdp/parser.cc
 )
 set(GRAMMAR_FILES
-	parser/sdp_grammar
+	sdp/sdp_grammar
 )
 
 if(APPLE)

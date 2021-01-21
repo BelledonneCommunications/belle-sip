@@ -21,7 +21,7 @@
 #include "grammars/belle_sdpParser.h"
 #include "grammars/belle_sdpLexer.h"
 #include "belle_sip_internal.hh"
-#include "parser/sdp.hh"
+#include "sdp/parser.hh"
 
 int belle_sdp_use_belr = 1;
 
@@ -124,7 +124,7 @@ unsigned int belle_sdp_attribute_has_value(belle_sdp_attribute_t* attribute) {
 BELLE_SDP_NEW(attribute,belle_sip_object)
 
 belle_sdp_attribute_t* belle_sdp_attribute_parse (const char* line) {
-	auto parser = bellesip::Parser::SDP::getInstance();
+	auto parser = bellesip::SDP::Parser::getInstance();
 	auto holder = (belle_sdp_attribute_holder_t*)parser->parse(line, "attribute");
 	if (holder == NULL) belle_sip_error("attribute parser error for [%s]", line);
 	belle_sdp_attribute_t* attribute = belle_sdp_attribute_holder_get_attribute(holder);
@@ -1811,8 +1811,6 @@ void belle_sdp_session_description_set_version(belle_sdp_session_description_t* 
 void belle_sdp_session_description_set_zone_adjustments(belle_sdp_session_description_t* session_description, belle_sdp_uri_t* zone_adjustments) {
 	SET_OBJECT(session_description,zone_adjustments,belle_sdp_uri_t)
 }
-
-// RFC5939
 
 void belle_sdp_session_description_add_attribute_holder(belle_sdp_session_description_t* session_description, belle_sdp_attribute_holder_t *holder) {
 	belle_sdp_base_description_add_attribute(BELLE_SIP_CAST(session_description,belle_sdp_base_description_t), holder->attribute);
