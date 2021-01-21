@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parser/sdp.hh"
+#include "sdp/parser.hh"
 #include "belle-sip/belle-sdp.h"
 #include "bctoolbox/logging.h"
 
@@ -30,17 +30,17 @@ using namespace belr;
 using namespace bellesip;
 
 // Initialize the singleton instance
-bellesip::Parser::SDP *bellesip::Parser::SDP::instance = 0;
+bellesip::SDP::Parser *bellesip::SDP::Parser::instance = 0;
 
-bellesip::Parser::SDP *bellesip::Parser::SDP::getInstance() {
+bellesip::SDP::Parser *bellesip::SDP::Parser::getInstance() {
     if (!instance) {
-       instance = new SDP();
+       instance = new Parser();
     }
 
     return instance;
 }
 
-bellesip::Parser::SDP::SDP() {
+bellesip::SDP::Parser::Parser() {
     shared_ptr<Grammar> grammar = loadGrammar();
     _parser = make_shared<belr::Parser<void*>>(grammar);
 
@@ -165,7 +165,7 @@ bellesip::Parser::SDP::SDP() {
            ->setCollector("fmt", make_fn(&belle_sdp_media_media_formats_add));
 }
 
-void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
+void * bellesip::SDP::Parser::parse(const string &input, const string &rule) {
     string parsedRule = rule;
     size_t parsedSize = 0;
     replace(parsedRule.begin(), parsedRule.end(), '_', '-');
@@ -177,7 +177,7 @@ void * bellesip::Parser::SDP::parse(const string &input, const string &rule) {
     return elem;
 }
 
-shared_ptr<Grammar> bellesip::Parser::SDP::loadGrammar() {
+shared_ptr<Grammar> bellesip::SDP::Parser::loadGrammar() {
     shared_ptr<Grammar> grammar = GrammarLoader::get().load("sdp_grammar");
 
     if (!grammar) bctbx_fatal("Unable to load SDP grammar");
