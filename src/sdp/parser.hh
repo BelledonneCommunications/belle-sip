@@ -23,15 +23,15 @@
 using namespace std;
 
 namespace bellesip {
-    namespace Parser {
-        class SDP {
+    namespace SDP {
+        class Parser {
             public:
-                static SDP *getInstance();
+                static Parser *getInstance();
                 void * parse(const string &input, const string &rule);
             private:
-                static SDP *instance;
-                SDP();
-                ~SDP();
+                static Parser *instance;
+                Parser();
+                ~Parser();
                 shared_ptr<belr::Grammar> loadGrammar();
                 shared_ptr<belr::Parser<void*>> _parser;
         };
