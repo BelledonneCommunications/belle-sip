@@ -292,3 +292,29 @@ int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index
 	std::smatch match = *indexBegin;
 	return std::stoi(match.str());
 }
+
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllAcfg() const {
+	return acfg;
+}
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllPcfg() const {
+	return pcfg;
+}
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getAllAcap() const {
+	return acap;
+}
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getAllTcap() const {
+	return tcap;
+}
+
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAcfgForStream(const int & idx) const {
+	return acfg[idx];
+}
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getPcfgForStream(const int & idx) const {
+	return pcfg[idx];
+}
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getAcapForStream(const int & idx) const {
+	return acap[idx];
+}
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getTcapForStream(const int & idx) const {
+	return tcap[idx];
+}
