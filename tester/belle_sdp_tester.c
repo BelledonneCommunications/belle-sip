@@ -913,7 +913,6 @@ static void test_mime_parameter(void) {
 	belle_sip_list_free_with_data(mime_parameter_list, (void (*)(void*))belle_sip_object_unref);
 }
 
-
 test_t sdp_tests[] = {
 	TEST_NO_TAG("a=rtcp-fb", test_rtcp_fb_attribute),
 	TEST_NO_TAG("a= (attribute)", test_attribute),
