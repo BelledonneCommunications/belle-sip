@@ -81,7 +81,15 @@ namespace bellesip {
 
 			public:
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
-				// This method should be moved to an utility file as it is not strictly releated to the configuration graph
+				const session_description_config & getAllAcfg() const;
+				const session_description_config & getAllPcfg() const;
+				const session_description_acap & getAllAcap() const;
+				const session_description_base_cap & getAllTcap() const;
+
+				const media_description_config & getAcfgForStream(const int & idx) const;
+				const media_description_config & getPcfgForStream(const int & idx) const;
+				const media_description_acap & getAcapForStream(const int & idx) const;
+				const media_description_base_cap & getTcapForStream(const int & idx) const;
 
 			protected:
 
