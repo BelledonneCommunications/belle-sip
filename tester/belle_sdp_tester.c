@@ -158,9 +158,9 @@ static void test_tcap_attribute(void) {
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
 }
 
-static void test_acap_attribute(void) {
+static void test_acap_attribute_base(const char* line, int id, const char * name, const char * value) {
+
 	belle_sdp_acap_attribute_t* lAttribute;
-	const char* line = "a=acap:3 key-mgmt:mikey AQAFgM";
 
 	lAttribute = belle_sdp_acap_attribute_parse(line);
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "acap");
@@ -172,10 +172,25 @@ static void test_acap_attribute(void) {
 	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
-	BC_ASSERT_EQUAL(belle_sdp_acap_attribute_get_id(lAttribute), 3, int, "%d");
-	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_name(lAttribute), "key-mgmt");
-	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_value(lAttribute), "mikey AQAFgM");
+	BC_ASSERT_EQUAL(belle_sdp_acap_attribute_get_id(lAttribute), id, int, "%d");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_name(lAttribute), name);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_acap_attribute_get_value(lAttribute), value);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lAttribute));
+}
+
+static void test_acap_attribute(void) {
+	const char* line = "a=acap:3 key-mgmt:mikey AQAFgM";
+	test_acap_attribute_base(line, 3, "key-mgmt", "mikey AQAFgM");
+}
+
+static void test_simple_acap_attribute(void) {
+	const char* line = "a=acap:20 ptime:30";
+	test_acap_attribute_base(line, 20, "ptime", "30");
+}
+
+static void test_long_acap_attribute(void) {
+	const char* line = "a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4";
+	test_acap_attribute_base(line, 10021, "crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4");
 }
 
 static void test_acfg_attribute(void) {
@@ -487,6 +502,8 @@ static void test_media_description_base(belle_sdp_media_description_t* media_des
 				, "rcvr-rtt=all:10"
 				,"4 key-mgmt:mikey AQAFgM"
 				,"2147483647 key-mgmt:mikey YjKBgNn"
+				,"20 ptime:30"
+				,"10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"
 				,"6 RTP/SAVP RTP/SAVPF"
 				,"99 RTP/AVP RTP/AVPF"
 				,"99 MP4V-ES/90000"
@@ -539,6 +556,8 @@ static void test_media_description(void) {
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -587,6 +606,8 @@ static void test_simple_session_description(void) {
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -684,6 +705,8 @@ static const char* big_sdp = "v=0\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
 						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
 						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -896,6 +919,8 @@ test_t sdp_tests[] = {
 	TEST_NO_TAG("a= (creq)", test_creq_attribute),
 	TEST_NO_TAG("a= (tcap)", test_tcap_attribute),
 	TEST_NO_TAG("a= (acap)", test_acap_attribute),
+	TEST_NO_TAG("a= (simple acap)", test_simple_acap_attribute),
+	TEST_NO_TAG("a= (long acap)", test_long_acap_attribute),
 	TEST_NO_TAG("a= (acfg)", test_acfg_attribute),
 	TEST_NO_TAG("a= (pcfg)", test_pcfg_attribute),
 	TEST_NO_TAG("b= (bandwidth)", test_bandwidth),
