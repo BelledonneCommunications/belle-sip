@@ -112,7 +112,7 @@ static const char* simpleSdpWithMultipleProtosOnSameLineInSession = "v=0\r\n"\
 						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
-						"a=tcap:10 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
 						"a=rtpmap:111 speex/16000\r\n"\
 						"a=fmtp:111 vbr=on\r\n"\
@@ -183,10 +183,81 @@ static const char* simpleSdpWithMultipleProtosOnSameLineInMedia = "v=0\r\n"\
 						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const char* simpleSdpWithSingleCapability = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=tcap:1 RTP/SAVP\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const char* simpleSdpWithMultipleCapabilities = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=tcap:1 RTP/SAVP\r\n"\
+						"a=tcap:2 RTP/SAVPF\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const char* simpleSdpWithMultipleProtosOnSameLine = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
 						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
-						"a=tcap:10 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"b=AS:380\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -213,6 +284,7 @@ static void base_test_no_potential_config(const char* src, int expGlobalProtoCap
 		{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
 		{ 20, {"ptime", "30"} },
 		{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+		{ 1001, {"crypto", "5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4"} },
 	};
 	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
@@ -335,6 +407,18 @@ static void test_multiple_capabilities_on_same_line_in_media(void) {
 	base_test_no_potential_config(simpleSdpWithMultipleProtosOnSameLineInMedia, 0, 0, 0, 3, 2, 2);
 }
 
+static void test_single_capability(void) {
+	base_test_no_potential_config(simpleSdpWithSingleCapability, 1, 1, 1, 1, 1, 1);
+}
+
+static void test_multiple_capabilities(void) {
+	base_test_no_potential_config(simpleSdpWithMultipleCapabilities, 1, 1, 1, 2, 2, 3);
+}
+
+static void test_multiple_capabilities_on_same_line(void) {
+	base_test_no_potential_config(simpleSdpWithMultipleProtosOnSameLine, 1, 1, 1, 3, 2, 2);
+}
+
 test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with no capabilities", test_no_capabilities),
 	TEST_NO_TAG("SDP with single capability in session", test_single_capability_in_session),
@@ -343,6 +427,9 @@ test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with single capability in media", test_single_capability_in_media),
 	TEST_NO_TAG("SDP with multiple capabilities in media", test_multiple_capabilities_in_media),
 	TEST_NO_TAG("SDP with multiple capabilities on same line in media", test_multiple_capabilities_on_same_line_in_media),
+	TEST_NO_TAG("SDP with single capability", test_single_capability),
+	TEST_NO_TAG("SDP with multiple capabilities", test_multiple_capabilities),
+	TEST_NO_TAG("SDP with multiple capabilities on same line", test_multiple_capabilities_on_same_line),
 };
 
 test_suite_t potential_configuration_graph_test_suite = {"Potential configuration graph", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
