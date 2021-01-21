@@ -69,23 +69,38 @@ static void test_no_potential_config(void) {
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
 	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), 1, std::size_t, "%0lu");
 	std::size_t noGlobalTcap = 0;
+	std::list<int> idList;
 	for(auto it = globalTcap; it!=NULL; it=it->next){
-		auto el = (belle_sdp_tcap_attribute_t*) bctbx_list_get_data(it);
-		noGlobalTcap += belle_sip_list_size(belle_sdp_tcap_attribute_get_protos(el));
+		auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
+		auto id = belle_sdp_tcap_attribute_get_id(attr);
+		auto noTcap = belle_sip_list_size(belle_sdp_tcap_attribute_get_protos(attr));
+		noGlobalTcap += noTcap;
+		for (auto protoId = id; protoId < (id + static_cast<int>(noTcap)); protoId++) {
+			idList.push_back(protoId);
+		}
+		
 	}
 	BC_ASSERT_EQUAL(noGlobalTcap, 2, std::size_t, "%0lu");
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
 		BC_ASSERT_PTR_NOT_NULL(mediaDescriptionElem);
-		belle_sdp_media_description_t* mediaDescription = (belle_sdp_media_description_t*) bctbx_list_get_data(mediaDescriptionElem);
+		belle_sdp_media_description_t* mediaDescription = static_cast<belle_sdp_media_description_t*>(bctbx_list_get_data(mediaDescriptionElem));
 		const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
 		BC_ASSERT_EQUAL(noMediaAcap, 0, std::size_t, "%0lu");
 		const auto noMediaTcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap"));
 		BC_ASSERT_EQUAL(noMediaTcap, 0, std::size_t, "%0lu");
 
 		BC_ASSERT_EQUAL(graph.getAcapForStream(idx).size(), (noGlobalAcap+noMediaAcap), std::size_t, "%0lu");
-		BC_ASSERT_EQUAL(graph.getTcapForStream(idx).size(), (noGlobalTcap+noMediaTcap), std::size_t, "%0lu");
+		auto tcap = graph.getTcapForStream(idx);
+		BC_ASSERT_EQUAL(tcap.size(), (noGlobalTcap+noMediaTcap), std::size_t, "%0lu");
+		for (const auto & cap : tcap) {
+			auto id = cap->index;
+			auto exp = std::find_if(idList.begin(), idList.end(), [&id] (const int & el) {
+				return (el == id);
+			});
+			BC_ASSERT_TRUE(exp != idList.end());
+		}
 		mediaDescriptionElem = mediaDescriptionElem->next;
 	}
 }
