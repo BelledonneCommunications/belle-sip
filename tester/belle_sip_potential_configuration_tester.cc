@@ -57,13 +57,23 @@ static void test_no_potential_config(void) {
 
 	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), 0, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), 0, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
 
-	const auto noGlobalAcap = belle_sip_list_size(belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap"));
+	// ACAP 
+	const auto globalAcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap");
+	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
 	BC_ASSERT_EQUAL(noGlobalAcap, 1, std::size_t, "%0lu");
-	const auto noGlobalTcap = belle_sip_list_size(belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap"));
-	BC_ASSERT_EQUAL(noGlobalTcap, 1, std::size_t, "%0lu");
+
+	// TCAP
+	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
+	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), 1, std::size_t, "%0lu");
+	std::size_t noGlobalTcap = 0;
+	for(auto it = globalTcap; it!=NULL; it=it->next){
+		auto el = (belle_sdp_tcap_attribute_t*) bctbx_list_get_data(it);
+		noGlobalTcap += belle_sip_list_size(belle_sdp_tcap_attribute_get_protos(el));
+	}
+	BC_ASSERT_EQUAL(noGlobalTcap, 2, std::size_t, "%0lu");
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
