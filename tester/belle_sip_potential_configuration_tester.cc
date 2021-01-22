@@ -25,6 +25,58 @@ struct acapParts {
 	const std::string value;
 };
 
+static std::map<int, std::string> fillTcapMap(const bctbx_list_t* currentTcap, const int & expProtoCap) {
+	std::map<int, std::string> protoList;
+	for(auto it = currentTcap; it!=NULL; it=it->next){
+		auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
+		auto id = belle_sdp_tcap_attribute_get_id(attr);
+		auto tcapList = belle_sdp_tcap_attribute_get_protos(attr);
+		auto protoId = id;
+		for(auto list = tcapList; list!=NULL; list=list->next){
+			auto proto = static_cast<const char *>(bctbx_list_get_data(list));
+			protoList[protoId] = proto;
+			protoId++;
+		}
+	}
+	BC_ASSERT_EQUAL(protoList.size(), expProtoCap, std::size_t, "%0lu");
+	return protoList;
+}
+
+static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph & graph, const int idx, const int & expNoAcap, std::map<int, acapParts> & expAcapAttrs) {
+	auto acap = graph.getAcapForStream(idx);
+	BC_ASSERT_EQUAL(acap.size(), expNoAcap, std::size_t, "%0lu");
+	for (const auto & cap : acap) {
+		auto id = cap->index;
+		auto expIt = expAcapAttrs.find(id);
+		BC_ASSERT_TRUE(expIt != expAcapAttrs.end());
+		if (expIt != expAcapAttrs.end()) {
+			const auto & value = cap->value;
+			const auto & expValue = expAcapAttrs[id].value;
+			BC_ASSERT_STRING_EQUAL(value.c_str(), expValue.c_str());
+
+			const auto & name = cap->name;
+			const auto & expName = expAcapAttrs[id].name;
+			BC_ASSERT_STRING_EQUAL(name.c_str(), expName.c_str());
+
+		}
+	}
+}
+
+static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph & graph, const int idx, const int & expNoTcap, std::map<int, std::string> & expTcapProtos) {
+	auto tcap = graph.getTcapForStream(idx);
+	BC_ASSERT_EQUAL(tcap.size(), expNoTcap, std::size_t, "%0lu");
+	for (const auto & cap : tcap) {
+		auto id = cap->index;
+		auto expIt = expTcapProtos.find(id);
+		BC_ASSERT_TRUE(expIt != expTcapProtos.end());
+		if (expIt != expTcapProtos.end()) {
+			auto proto = cap->value;
+			auto expProto = expTcapProtos[id];
+			BC_ASSERT_STRING_EQUAL(proto.c_str(), expProto.c_str());
+		};
+	}
+}
+
 static void base_test_no_potential_config(const char* src, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap) {
 	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
@@ -48,25 +100,12 @@ static void base_test_no_potential_config(const char* src, int expGlobalProtoCap
 	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
 	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
 
+
 	// TCAP
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
 	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
-	std::size_t noGlobalProtoCap = 0;
-	std::map<int, std::string> idList;
-	for(auto it = globalTcap; it!=NULL; it=it->next){
-		auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
-		auto id = belle_sdp_tcap_attribute_get_id(attr);
-		auto tcapList = belle_sdp_tcap_attribute_get_protos(attr);
-		auto protoId = id;
-		for(auto list = tcapList; list!=NULL; list=list->next){
-			auto proto = static_cast<const char *>(bctbx_list_get_data(list));
-			idList[protoId] = proto;
-			protoId++;
-		}
-		auto noTcap = belle_sip_list_size(tcapList);
-		noGlobalProtoCap += noTcap;
-	}
-	BC_ASSERT_EQUAL(noGlobalProtoCap, expGlobalProtoCap, std::size_t, "%0lu");
+	auto protoList = fillTcapMap(globalTcap, expGlobalProtoCap);
+	auto noGlobalProtoCap = protoList.size();
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
@@ -76,57 +115,16 @@ static void base_test_no_potential_config(const char* src, int expGlobalProtoCap
 		// ACAP
 		const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
 		BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap, std::size_t, "%0lu");
-
-		auto acap = graph.getAcapForStream(idx);
-		BC_ASSERT_EQUAL(acap.size(), (noGlobalAcap+noMediaAcap), std::size_t, "%0lu");
-		for (const auto & cap : acap) {
-			auto id = cap->index;
-			auto expIt = expAcapAttrs.find(id);
-			BC_ASSERT_TRUE(expIt != expAcapAttrs.end());
-			if (expIt != expAcapAttrs.end()) {
-				const auto & value = cap->value;
-				const auto & expValue = expAcapAttrs[id].value;
-				BC_ASSERT_STRING_EQUAL(value.c_str(), expValue.c_str());
-
-				const auto & name = cap->name;
-				const auto & expName = expAcapAttrs[id].name;
-				BC_ASSERT_STRING_EQUAL(name.c_str(), expName.c_str());
-
-			}
-		}
+		checkAcap(graph, idx, (noGlobalAcap+noMediaAcap), expAcapAttrs);
 
 		// TCAP
 		const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
 		BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap, std::size_t, "%0lu");
+		auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap);
+		auto noMediaProtoCap = mediaProtoList.size();
+		protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
 
-		std::size_t noMediaProtoCap = 0;
-		for(auto it = mediaTcap; it!=NULL; it=it->next){
-			auto attr = static_cast<belle_sdp_tcap_attribute_t*>(bctbx_list_get_data(it));
-			auto id = belle_sdp_tcap_attribute_get_id(attr);
-			auto tcapList = belle_sdp_tcap_attribute_get_protos(attr);
-			auto protoId = id;
-			for(auto list = tcapList; list!=NULL; list=list->next){
-				auto proto = static_cast<const char *>(bctbx_list_get_data(list));
-				idList[protoId] = proto;
-				protoId++;
-			}
-			auto noTcap = belle_sip_list_size(tcapList);
-			noMediaProtoCap += noTcap;
-		}
-		BC_ASSERT_EQUAL(noMediaProtoCap, expMediaProtoCap, std::size_t, "%0lu");
-
-		auto tcap = graph.getTcapForStream(idx);
-		BC_ASSERT_EQUAL(tcap.size(), (noGlobalProtoCap+noMediaProtoCap), std::size_t, "%0lu");
-		for (const auto & cap : tcap) {
-			auto id = cap->index;
-			auto expIt = idList.find(id);
-			BC_ASSERT_TRUE(expIt != idList.end());
-			if (expIt != idList.end()) {
-				auto proto = cap->value;
-				auto expProto = idList[id];
-				BC_ASSERT_STRING_EQUAL(proto.c_str(), expProto.c_str());
-			};
-		}
+		checkTcap(graph, idx, (noGlobalProtoCap+noMediaProtoCap), protoList);
 
 		auto acfg = graph.getAcfgForStream(idx);
 		BC_ASSERT_EQUAL(acfg.size(), 0, std::size_t, "%0lu");
