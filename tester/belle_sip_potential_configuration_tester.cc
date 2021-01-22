@@ -375,6 +375,13 @@ static void base_test_no_potential_config(const char* src, int expGlobalProtoCap
 				BC_ASSERT_STRING_EQUAL(proto.c_str(), expProto.c_str());
 			};
 		}
+
+		auto acfg = graph.getAcfgForStream(idx);
+		BC_ASSERT_EQUAL(acfg.size(), 0, std::size_t, "%0lu");
+
+		auto pcfg = graph.getPcfgForStream(idx);
+		BC_ASSERT_EQUAL(pcfg.size(), 0, std::size_t, "%0lu");
+
 		mediaDescriptionElem = mediaDescriptionElem->next;
 	}
 }
