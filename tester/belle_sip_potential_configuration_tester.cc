@@ -619,7 +619,7 @@ static const char* simpleSdpWithMultiplePotentialAConfig = "v=0\r\n"\
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1 a=1001,1 t=1\r\n"\
+						"a=acfg:1 a=1001,1 t=1\r\n"\
 						"a=acfg:1475 a=20,59 t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -677,22 +677,22 @@ static const char* simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition = 
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
 						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
-						"a=pcfg:1475 a=20,59 t=10\r\n"\
-						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
-						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"a=acfg:1475 a=20,59 t=10\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1 a=1001,1 t=1\r\n"\
+						"a=acfg:1 a=1001,1 t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
 						"a=fmtp:99 profile-level-id=3\r\n"\
 						"a=rtpmap:97 theora/90000\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_capability_referenced_by_acfg_before_defined(void) {
-	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition, 1, 1, 1, 3, 2, 3, 0, 1);
+	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition, 0, 0, 2, 4, 3, 2, 2, 0);
 }
 
 static const char* simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition = "v=0\r\n"\
@@ -711,19 +711,19 @@ static const char* simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition = 
 						"a=pcfg:1475 a=20,59 t=10\r\n"\
 						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
 						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
-						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
-						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=pcfg:1 a=1001,1 t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
 						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=rtpmap:97 theora/90000\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_capability_referenced_by_pcfg_before_defined(void) {
-	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition, 1, 1, 1, 3, 2, 3, 0, 1);
+	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition, 0, 0, 2, 4, 3, 2, 0, 2);
 }
 
 test_t potential_configuration_graph_tests[] = {
