@@ -521,22 +521,39 @@ static void test_media(void) {
 	belle_sip_free(l_raw_media);
 }
 
-static void test_media_description_base(belle_sdp_media_description_t* media_description) {
-	const char* attr[] ={"98 nack rpsi"
-				, "rcvr-rtt=all:10"
-				,"4 key-mgmt:mikey AQAFgM"
-				,"2147483647 key-mgmt:mikey YjKBgNn"
-				,"20 ptime:30"
-				,"10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"
-				,"6 RTP/SAVP RTP/SAVPF"
-				,"99 RTP/AVP RTP/AVPF"
-				,"99 MP4V-ES/90000"
-				,"99 profile-level-id=3"
-				,"97 theora/90000"
-				,"98 H263-1998/90000"
-				,"1 t=99 a=[2]"
-				,"2 t=6 a=2147483647"
-				,"98 CIF=1;QCIF=1"};
+const char* media_description_attr[] ={"98 nack rpsi"
+			,"rcvr-rtt=all:10"
+			,"4 key-mgmt:mikey AQAFgM"
+			,"2147483647 key-mgmt:mikey YjKBgNn"
+			,"20 ptime:30"
+			,"10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"
+			,"6 RTP/SAVP RTP/SAVPF"
+			,"99 RTP/AVP RTP/AVPF"
+			,"99 MP4V-ES/90000"
+			,"99 profile-level-id=3"
+			,"97 theora/90000"
+			,"98 H263-1998/90000"
+			,"1 t=99 a=[2]"
+			,"2 t=6 a=2147483647"
+			,"98 CIF=1;QCIF=1"};
+
+const char* media_description_attr_2[] ={"98 nack rpsi"
+			,"2 t=6 a=2147483647"
+			,"rcvr-rtt=all:10"
+			,"4 key-mgmt:mikey AQAFgM"
+			,"2147483647 key-mgmt:mikey YjKBgNn"
+			,"20 ptime:30"
+			,"10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"
+			,"6 RTP/SAVP RTP/SAVPF"
+			,"99 RTP/AVP RTP/AVPF"
+			,"99 MP4V-ES/90000"
+			,"99 profile-level-id=3"
+			,"97 theora/90000"
+			,"98 H263-1998/90000"
+			,"1 t=99 a=[2]"
+			,"98 CIF=1;QCIF=1"};
+
+static void test_media_description_base(const char** attr, belle_sdp_media_description_t* media_description) {
 	belle_sdp_connection_t* lConnection;
 	belle_sdp_media_description_t* l_media_description=media_description;
 	belle_sdp_media_t* l_media = belle_sdp_media_description_get_media(l_media_description);
@@ -599,7 +616,7 @@ static void test_media_description(void) {
 	lTmp = belle_sdp_media_description_parse(l_raw_media_description);
 	l_media_description = BELLE_SDP_MEDIA_DESCRIPTION(belle_sip_object_clone(BELLE_SIP_OBJECT(lTmp)));
 	belle_sip_object_unref(BELLE_SIP_OBJECT(lTmp));
-	test_media_description_base(l_media_description);
+	test_media_description_base(media_description_attr, l_media_description);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(l_media_description));
 	belle_sip_free(l_raw_media_description);
 	return;
@@ -679,7 +696,89 @@ static void test_simple_session_description(void) {
 		media_descriptions=media_descriptions->next;
 		BC_ASSERT_PTR_NOT_NULL(media_descriptions);
 		if (media_descriptions) {
-			test_media_description_base((belle_sdp_media_description_t*)(media_descriptions->data));
+			test_media_description_base(media_description_attr, (belle_sdp_media_description_t*)(media_descriptions->data));
+		}
+	}
+	belle_sip_object_unref(l_session_description);
+	return;
+}
+
+static void test_session_description_with_capability_referenced_before_definition(void) {
+	const char* l_src = "v=0\r\n"\
+						"o=jehan-mac 2463217870 2463217870 IN IP4 192.168.0.18\r\n"\
+						"s=Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"t=0 0\r\n"\
+						"a=acfg:1 t=3 a=[2]\r\n"\
+						"a=tcap:5 RTP/SAVP RTP/SAVPF\r\n"\
+						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=alt:1 1 : e2br+9PL Eu1qGlQ9 10.211.55.3 8988\r\n"\
+						"a=acap:3 key-mgmt:mikey AQAFgM\r\n"\
+						"a=tcap:2 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=acfg:2 t=6 a=2147483647\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=acap:4 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:2147483647 key-mgmt:mikey YjKBgNn\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=tcap:6 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:99 RTP/AVP RTP/AVPF\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acfg:1 t=99 a=[2]\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+	belle_sdp_origin_t* l_origin;
+	belle_sip_list_t* media_descriptions;
+	belle_sdp_session_description_t* lTmp;
+	belle_sdp_session_description_t* l_session_description = belle_sdp_session_description_parse(l_src);
+	char* l_raw_session_description = belle_sip_object_to_string(BELLE_SIP_OBJECT(l_session_description));
+
+	belle_sip_object_unref(BELLE_SIP_OBJECT(l_session_description));
+	lTmp = belle_sdp_session_description_parse(l_raw_session_description);
+	belle_sip_free(l_raw_session_description);
+	l_session_description = BELLE_SDP_SESSION_DESCRIPTION(belle_sip_object_clone(BELLE_SIP_OBJECT(lTmp)));
+	belle_sip_object_unref(BELLE_SIP_OBJECT(lTmp));
+
+	BC_ASSERT_PTR_NOT_NULL(belle_sdp_session_description_get_version(l_session_description));
+	BC_ASSERT_EQUAL(belle_sdp_version_get_version(belle_sdp_session_description_get_version(l_session_description)),0, int, "%d");
+
+	l_origin = belle_sdp_session_description_get_origin(l_session_description);
+	BC_ASSERT_PTR_NOT_NULL(l_origin);
+	BC_ASSERT_STRING_EQUAL(belle_sdp_origin_get_address(l_origin),"192.168.0.18");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_origin_get_address_type(l_origin),"IP4");
+	BC_ASSERT_STRING_EQUAL(belle_sdp_origin_get_network_type(l_origin),"IN");
+	BC_ASSERT_EQUAL(belle_sdp_origin_get_session_id(l_origin), 2463217870U, unsigned, "%u");
+	BC_ASSERT_EQUAL(belle_sdp_origin_get_session_version(l_origin), 2463217870U, unsigned, "%u");
+
+	BC_ASSERT_PTR_NOT_NULL(belle_sdp_session_description_get_session_name(l_session_description));
+	BC_ASSERT_STRING_EQUAL(belle_sdp_session_name_get_value(belle_sdp_session_description_get_session_name(l_session_description)),"Talk");
+
+	BC_ASSERT_PTR_NOT_NULL(belle_sdp_session_description_get_connection(l_session_description));
+	BC_ASSERT_PTR_NOT_NULL(belle_sdp_session_description_get_time_descriptions(l_session_description));
+	BC_ASSERT_EQUAL(belle_sdp_time_get_start(belle_sdp_time_description_get_time((belle_sdp_time_description_t*)(belle_sdp_session_description_get_time_descriptions(l_session_description)->data))),0, int, "%d");
+	BC_ASSERT_EQUAL(belle_sdp_time_get_stop(belle_sdp_time_description_get_time((belle_sdp_time_description_t*)(belle_sdp_session_description_get_time_descriptions(l_session_description)->data))),0, int, "%d");
+
+	media_descriptions = belle_sdp_session_description_get_media_descriptions(l_session_description);
+	BC_ASSERT_PTR_NOT_NULL(media_descriptions);
+	if (media_descriptions) {
+		BC_ASSERT_STRING_EQUAL (belle_sdp_media_get_media_type(belle_sdp_media_description_get_media((belle_sdp_media_description_t*)(media_descriptions->data))),"audio");
+		media_descriptions=media_descriptions->next;
+		BC_ASSERT_PTR_NOT_NULL(media_descriptions);
+		if (media_descriptions) {
+			test_media_description_base(media_description_attr_2, (belle_sdp_media_description_t*)(media_descriptions->data));
 		}
 	}
 	belle_sip_object_unref(l_session_description);
@@ -779,7 +878,7 @@ static void test_session_description(void) {
 	media_descriptions=media_descriptions->next;
 	BC_ASSERT_PTR_NOT_NULL(media_descriptions);
 
-	test_media_description_base((belle_sdp_media_description_t*)(media_descriptions->data));
+	test_media_description_base(media_description_attr, (belle_sdp_media_description_t*)(media_descriptions->data));
 	belle_sip_object_unref(l_session_description);
 	return;
 }
@@ -961,6 +1060,7 @@ test_t sdp_tests[] = {
 	TEST_NO_TAG("mime parameter", test_mime_parameter),
 	TEST_NO_TAG("Media description", test_media_description),
 	TEST_NO_TAG("Simple session description", test_simple_session_description),
+	TEST_NO_TAG("Session description with capability reference before definition", test_session_description_with_capability_referenced_before_definition),
 	TEST_NO_TAG("Session description", test_session_description),
 	TEST_NO_TAG("Session description for fax", test_image_mline),
 	TEST_NO_TAG("Marshal buffer overflow", test_overflow)
