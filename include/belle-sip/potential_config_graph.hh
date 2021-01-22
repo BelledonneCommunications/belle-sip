@@ -62,24 +62,24 @@ namespace bellesip {
 		};
 
 		struct config_attribute {
-			// vector of list of capabilities
-			// each element of the vector stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
-			std::vector<std::list<config_capability<acapability>>> acap;
-			std::vector<std::list<config_capability<capability>>> tcap;
+			// list of list of capabilities
+			// each element of the outer list stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
+			std::list<std::list<config_capability<acapability>>> acap;
+			std::list<std::list<config_capability<capability>>> tcap;
 			bool delete_media_attributes = false; // Delete SDP media attributes
 			bool delete_session_attributes = false; // Delete SDP session attributes
 		};
 
 		class SDPPotentialCfgGraph {
 
-			using media_description_base_cap = std::list<std::shared_ptr<capability>>;
-			using session_description_base_cap = std::vector<media_description_base_cap>;
-			using media_description_acap = std::list<std::shared_ptr<acapability>>;
-			using session_description_acap = std::vector<media_description_acap>;
-			using media_description_config = std::map<unsigned int, config_attribute>;
-			using session_description_config = std::vector<media_description_config>;
-
 			public:
+				using media_description_base_cap = std::list<std::shared_ptr<capability>>;
+				using session_description_base_cap = std::vector<media_description_base_cap>;
+				using media_description_acap = std::list<std::shared_ptr<acapability>>;
+				using session_description_acap = std::vector<media_description_acap>;
+				using media_description_config = std::map<unsigned int, config_attribute>;
+				using session_description_config = std::vector<media_description_config>;
+
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
 				const session_description_config & getAllAcfg() const;
 				const session_description_config & getAllPcfg() const;
