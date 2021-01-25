@@ -77,39 +77,41 @@ static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 
 static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<int>> expCfgAcapAttrs, std::map<int, std::list<int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos) {
 
-	BC_ASSERT_EQUAL(cfg.size(), expNoCfg, std::size_t, "%0lu");
+	unsigned int noCfg = 0;
 	for (const auto & cfgPair : cfg) {
 
 		// Check ID exists in the expected config list
 		auto cfgId = cfgPair.first;
+
 		auto expCfgAcap = expCfgAcapAttrs.find(cfgId);
 		BC_ASSERT_TRUE(expCfgAcap != expCfgAcapAttrs.end());
+
 		auto expCfgTcap = expCfgTcapAttrs.find(cfgId);
 		BC_ASSERT_TRUE(expCfgTcap != expCfgTcapAttrs.end());
 
-		auto cfgAttr = cfgPair.second;
-		if (expCfgAcap != expCfgAcapAttrs.end()) {
-			// Check acap
-			const auto & acapCfg = cfgAttr.acap;
-			for (const auto & acapCfgEl : acapCfg) {
-				for (const auto & cfgAttr : acapCfgEl) {
+		for (const auto & cfgAttr : cfgPair.second) {
+
+			noCfg++;
+
+			if (expCfgAcap != expCfgAcapAttrs.end()) {
+				// Check acap
+				const auto & acapCfg = cfgAttr.acap;
+				for (const auto & acap : acapCfg) {
 					// Get shared pointer to capability
-					const auto capPtr = cfgAttr.cap.lock();
+					const auto capPtr = acap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkAcap({capPtr}, 1, expAcapAttrs);
 					}
 				}
 			}
-		}
 
-		if (expCfgTcap != expCfgTcapAttrs.end()) {
-			// Check acap
-			const auto & tcapCfg = cfgAttr.tcap;
-			for (const auto & tcapCfgEl : tcapCfg) {
-				for (const auto & cfgAttr : tcapCfgEl) {
+			if (expCfgTcap != expCfgTcapAttrs.end()) {
+				// Check acap
+				const auto & tcapCfg = cfgAttr.tcap;
+				for (const auto & tcap : tcapCfg) {
 					// Get shared pointer to capability
-					const auto capPtr = cfgAttr.cap.lock();
+					const auto capPtr = tcap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkTcap({capPtr}, 1, expTcapProtos);
@@ -118,6 +120,7 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 			}
 		}
 	}
+	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
 }
 
 static void base_test_with_potential_config(const char* src, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
@@ -1045,7 +1048,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternativ
 						"a=acap:8 ptime:40\r\n"\
 						"a=acap:4 ptime:10\r\n"\
 						"a=acap:9 ptime:20\r\n"\
-						"a=pcfg:36825 a=9,4|59 t=65|66|10\r\n"\
+						"a=pcfg:36825 a=9,4|59 t=65|66|49\r\n"\
 						"a=pcfg:425 a=10021,8|8 t=1\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
@@ -1056,7 +1059,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternativ
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=pcfg:1475 a=20,9|10021,8 t=10\r\n"\
-						"a=pcfg:1 a=1001,1|4 t=1|10|59\r\n"\
+						"a=pcfg:1 a=1001,1|4 t=2|10|19\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
