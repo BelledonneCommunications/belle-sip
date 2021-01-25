@@ -764,86 +764,6 @@ static void test_with_multiple_pcfg_in_multiple_streams(void) {
 	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigInMultipleStreams, 1, 1, 2, 3, 2, 3, 0, 2);
 }
 
-static void test_with_invalid_reference_to_potential_config(const char* src, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
-	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
-	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
-	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
-
-	bellesip::SDP::SDPPotentialCfgGraph graph(sessionDescription);
-
-	std::map<int, acapParts> expAcapAttrs = {
-		{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
-		{ 20, {"ptime", "30"} },
-		{ 59, {"crypto", "10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4"} },
-		{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
-		{ 1001, {"crypto", "5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4"} },
-		{ 8, {"ptime", "40"} },
-		{ 9, {"ptime", "20"} },
-		{ 4, {"ptime", "10"} },
-	};
-
-	std::map<int, std::list<int>> expCfgAcapAttrs = {
-		{ 1, {1, 1001} },
-		{ 1475, {20, 59} },
-		{ 425, {10021, 8} },
-		{ 36825, {4, 9} },
-	};
-
-	std::map<int, std::list<int>> expCfgTcapAttrs = {
-		{ 1, {1} },
-		{ 1475, {10} },
-		{ 425, {66} },
-		{ 36825, {65} },
-	};
-
-	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
-
-	// ACAP 
-	const auto globalAcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap");
-	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
-	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
-
-
-	// TCAP
-	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
-	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
-	auto protoList = fillTcapMap(globalTcap, expGlobalProtoCap);
-	auto noGlobalProtoCap = protoList.size();
-
-	auto mediaDescriptionElem = mediaDescriptions;
-	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
-		BC_ASSERT_PTR_NOT_NULL(mediaDescriptionElem);
-		auto mediaDescription = static_cast<belle_sdp_media_description_t*>(bctbx_list_get_data(mediaDescriptionElem));
-
-		// ACAP
-		const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
-		BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap, std::size_t, "%0lu");
-		const auto acap = graph.getAcapForStream(idx);
-		checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
-
-		// TCAP
-		const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
-		BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap, std::size_t, "%0lu");
-		auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap);
-		auto noMediaProtoCap = mediaProtoList.size();
-		protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
-
-		const auto tcap = graph.getTcapForStream(idx);
-		checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
-
-		auto acfg = graph.getAcfgForStream(idx);
-		checkCfg(acfg, expAcfg, expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList);
-
-		auto pcfg = graph.getPcfgForStream(idx);
-		checkCfg(pcfg, expPcfg, expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList);
-
-		mediaDescriptionElem = mediaDescriptionElem->next;
-	}
-}
-
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfig = "v=0\r\n"\
 						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
 						"s=SIP Talk\r\n"\
@@ -887,7 +807,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg(void) {
-	test_with_invalid_reference_to_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfig, 1, 1, 2, 3, 2, 3, 1, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfig, 1, 1, 2, 3, 2, 3, 1, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfig = "v=0\r\n"\
@@ -933,7 +853,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg(void) {
-	test_with_invalid_reference_to_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfig, 1, 1, 2, 3, 2, 3, 0, 1);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfig, 1, 1, 2, 3, 2, 3, 0, 1);
 }
 
 test_t potential_configuration_graph_tests[] = {
