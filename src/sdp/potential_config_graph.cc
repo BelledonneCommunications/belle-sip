@@ -171,11 +171,11 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaACfg(const belle_sdp_media
 	for(;attrs!=NULL;attrs=attrs->next){
 		belle_sdp_acfg_attribute_t* lAttribute = static_cast<belle_sdp_acfg_attribute_t*>(attrs->data);
 		auto id = belle_sdp_acfg_attribute_get_id(lAttribute);
-		auto attr_config = createAConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
-		if (attr_config.acap.empty() || attr_config.tcap.empty()) {
-			belle_sip_error("Unable to build an actual config for id %0d because no valid list of capacities has been found - acap list is %s tcap list is %s", id, (attr_config.acap.empty() ? "empty " : "not empty "), (attr_config.tcap.empty() ? "empty " : "not empty "));
+		auto attr_configs = createAConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
+		if (attr_configs.empty()) {
+			belle_sip_error("Unable to build a potential config for id %0d", id);
 		} else {
-			config[id] = attr_config;
+			config[id] = attr_configs;
 		}
 	}
 
@@ -188,30 +188,37 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaPCfg(const belle_sdp_media
 	for(;attrs!=NULL;attrs=attrs->next){
 		belle_sdp_pcfg_attribute_t* lAttribute = static_cast<belle_sdp_pcfg_attribute_t*>(attrs->data);
 		auto id = belle_sdp_pcfg_attribute_get_id(lAttribute);
-		auto attr_config = createPConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
-		if (attr_config.acap.empty() || attr_config.tcap.empty()) {
-			belle_sip_error("Unable to build a potential config for id %0d because no valid list of capacities has been found - acap list is %s tcap list is %s", id, (attr_config.acap.empty() ? "empty " : "not empty "), (attr_config.tcap.empty() ? "empty " : "not empty "));
+		auto attr_configs = createPConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
+		if (attr_configs.empty()) {
+			belle_sip_error("Unable to build a potential config for id %0d", id);
 		} else {
-			config[id] = attr_config;
+			config[id] = attr_configs;
 		}
 	}
 
 	pcfg.push_back(config);
 }
 
-bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
+bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type bellesip::SDP::SDPPotentialCfgGraph::createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
 	const belle_sip_list_t* configList = belle_sdp_pcfg_attribute_get_configs(attribute);
 	return processConfig(configList, mediaAcap, mediaTcap);
 }
 
-bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createAConfigFromAttribute(belle_sdp_acfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
+bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type bellesip::SDP::SDPPotentialCfgGraph::createAConfigFromAttribute(belle_sdp_acfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
 	const belle_sip_list_t* configList = belle_sdp_acfg_attribute_get_configs(attribute);
 	return processConfig(configList, mediaAcap, mediaTcap);
 }
 
-bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConfig(const belle_sip_list_t* configList, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) const {
+bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type bellesip::SDP::SDPPotentialCfgGraph::processConfig(const belle_sip_list_t* configList, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) const {
 	const belle_sip_list_t* list = configList;
-	bellesip::SDP::config_attribute attr_config;
+	bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type attr_configs;
+
+	bool delete_media_attributes = false;
+	bool delete_session_attributes = false;
+
+	std::list<std::list<bellesip::SDP::config_capability<acapability>>> acapCfgList;
+	std::list<std::list<bellesip::SDP::config_capability<capability>>> tcapCfgList;
+
 	for(;list!=NULL;list=list->next){
 		std::string cfg = static_cast<const char*>(list->data);
 		belle_sip_message("configuration is %s", cfg.c_str());
@@ -226,7 +233,7 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConf
 
 		if (bodySplit.size() < 2) {
 			belle_sip_error("size of the vector after splitting using delimiter %c is %lu", bodyDelim, bodySplit.size());
-			return attr_config;
+			return attr_configs;
 		}
 
 		// First element is the type of capability
@@ -245,11 +252,11 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConf
 			if (bodySplit.size() > 1) {
 				// First element is the delete attribute
 				auto deleteAttr = deleteAttrSplit.front();
-				attr_config.delete_media_attributes = (deleteAttr.find('m') != std::string::npos);
-				attr_config.delete_session_attributes = (deleteAttr.find('s') != std::string::npos);
+				delete_media_attributes = (deleteAttr.find('m') != std::string::npos);
+				delete_session_attributes = (deleteAttr.find('s') != std::string::npos);
 			} else {
-				attr_config.delete_media_attributes = false;
-				attr_config.delete_session_attributes = false;
+				delete_media_attributes = false;
+				delete_session_attributes = false;
 			}
 		}
 
@@ -258,20 +265,43 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConf
 		belle_sip_message("configuration list is %s", idxList.c_str());
 
 		if (cap == bellesip::SDP::capability_type_t::ATTRIBUTE) {
-			auto parsedList = parseIdxList(idxList, mediaAcap);
-			// Add only if list is not empty
-			if (!parsedList.empty()) {
-				attr_config.acap.insert(attr_config.acap.end(), parsedList.begin(), parsedList.end());
+			if (acapCfgList.empty()) {
+				auto parsedList = parseIdxList(idxList, mediaAcap);
+				// Add only if list is not empty
+				if (!parsedList.empty()) {
+					acapCfgList = parsedList;
+				}
+			} else {
+				belle_sip_error("Ignoring second attribute configuration list %s has been found in the configuration because already %0ld elements have been collected", cfg.c_str(), acapCfgList.size());
 			}
 		} else if (cap == bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL) {
-			auto parsedList = parseIdxList(idxList, mediaTcap);
-			// Add only if list is not empty
-			if (!parsedList.empty()) {
-				attr_config.tcap.insert(attr_config.tcap.end(), parsedList.begin(), parsedList.end());
+			if (tcapCfgList.empty()) {
+				auto parsedList = parseIdxList(idxList, mediaTcap);
+				// Add only if list is not empty
+				if (!parsedList.empty()) {
+					tcapCfgList = parsedList;
+				}
+			} else {
+				belle_sip_error("Ignoring second transport configuration list %s has been found in the configuration because already %0ld elements have been collected", cfg.c_str(), tcapCfgList.size());
 			}
 		}
 	}
-	return attr_config;
+
+	if ((tcapCfgList.empty()) || (acapCfgList.empty())) {
+		belle_sip_error("Unable to build a valid config because no valid list of capacities has been found - acap list is %s tcap list is %s", (acapCfgList.empty() ? "empty " : "not empty "), (tcapCfgList.empty() ? "empty " : "not empty "));
+	} else {
+		for (const auto & acapCfg : acapCfgList) {
+			for (const auto & tcapCfg : tcapCfgList) {
+				bellesip::SDP::config_attribute cfg;
+				cfg.acap = acapCfg;
+				cfg.tcap = tcapCfg;
+				cfg.delete_media_attributes = delete_media_attributes;
+				cfg.delete_session_attributes = delete_session_attributes;
+				attr_configs.push_back(cfg);
+			}
+		}
+	}
+	return attr_configs;
 }
 
 bellesip::SDP::capability_type_t bellesip::SDP::SDPPotentialCfgGraph::capabilityTypeFromAttrParam(const std::string & attrParam) const {
