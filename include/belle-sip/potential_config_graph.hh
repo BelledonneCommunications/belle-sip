@@ -102,7 +102,7 @@ namespace bellesip {
 				session_description_base_cap tcap;
 
 				template<class cap_type>
-				std::list<config_capability<cap_type>> parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const;
+				std::list<std::list<config_capability<cap_type>>> parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const;
 
  				// Session
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
@@ -137,23 +137,24 @@ namespace bellesip {
 		};
 
 		template<class cap_type>
-		std::list<config_capability<cap_type>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
+		std::list<std::list<config_capability<cap_type>>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
 			const char configDelim = '|';
 			const auto attrCapList = bellesip::Utils::splitStringToVector(idxList, configDelim);
-			bool mandatory = false;
+			bool mandatory = true;
 
 			const char startOptDelim = '[';
 			const char endOptDelim = ']';
-			std::list<config_capability<cap_type>> capList;
+			std::list<std::list<config_capability<cap_type>>> capList;
 			for (const auto & config : attrCapList) {
 				const char capDelim = ',';
 				const auto capIdList = bellesip::Utils::splitStringToVector(config, capDelim);
+				std::list<config_capability<cap_type>> caps;
 				for (const auto & index : capIdList) {
 					belle_sip_message("configuration is %s index is %s", config.c_str(), index.c_str());
 					const auto startOptPos = index.find(startOptDelim);
 					const auto endOptPos = index.find(endOptDelim);
 					if (startOptPos != std::string::npos) {
-						mandatory = true;
+						mandatory = false;
 					}
 					auto idx = getElementIdx(index);
 					config_capability<cap_type> cfg;
@@ -162,15 +163,21 @@ namespace bellesip {
 						return (cap->index == idx);
 					});
 					if (capIt == availableCaps.cend()) {
-						belle_sip_error("Unable to find capability with index %d", idx);
+						belle_sip_error("Unable to find capability with index %d - skipping it", idx);
+						caps.clear();
+						break;
 					} else {
 						cfg.cap = *capIt;
+						caps.push_back(cfg);
 					}
-					capList.push_back(cfg);
 
 					if (endOptPos != std::string::npos) {
-						mandatory = false;
-					}	
+						mandatory = true;
+					}
+				}
+
+				if (!caps.empty()) {
+					capList.push_back(caps);
 				}
 			}
 
