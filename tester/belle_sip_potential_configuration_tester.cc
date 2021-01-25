@@ -487,7 +487,6 @@ static void test_multiple_capabilities_on_same_line(void) {
 	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLine, 1, 1, 1, 3, 2, 2, 0, 0);
 }
 
-
 static const char* simpleSdpWithOnePotentialAConfig = "v=0\r\n"\
 						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
 						"s=SIP Talk\r\n"\
@@ -856,6 +855,219 @@ static void test_with_invalid_reference_to_potential_capability_in_pcfg(void) {
 	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfig, 1, 1, 2, 3, 2, 3, 0, 1);
 }
 
+static const char* simpleSdpWithOnePotentialAConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:1475 a=20,59|1001 t=10\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_one_acfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 2, 0);
+}
+
+static const char* simpleSdpWithOnePotentialPConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:1475 a=20,59|1001 t=10\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_one_pcfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 0, 2);
+}
+
+static const char* simpleSdpWithMultiplePotentialAConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:1 a=1001,1|59|20 t=1|19\r\n"\
+						"a=acfg:1475 a=20,59 t=10\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_multiple_acfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 7, 0);
+}
+
+static const char* simpleSdpWithMultiplePotentialPConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:1475 a=20,59 t=10|19\r\n"\
+						"a=pcfg:1 a=1001,1 t=1\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_multiple_pcfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 0, 3);
+}
+
+static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:65 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=acap:8 ptime:40\r\n"\
+						"a=acap:4 ptime:10\r\n"\
+						"a=acap:9 ptime:20\r\n"\
+						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:36825 a=59,4|9 t=1\r\n"\
+						"a=acfg:425 a=10021,8|20 t=66|10\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:1 a=1001,1|59 t=49\r\n"\
+						"a=acfg:1475 a=20,59 t=10|1\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_invalid_reference_to_potential_capability_in_acfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternatives, 1, 1, 2, 3, 2, 3, 2, 0);
+}
+
+static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternatives = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:65 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acap:8 ptime:40\r\n"\
+						"a=acap:4 ptime:10\r\n"\
+						"a=acap:9 ptime:20\r\n"\
+						"a=pcfg:36825 a=9,4|59 t=65|66|10\r\n"\
+						"a=pcfg:425 a=10021,8|8 t=1\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:1475 a=20,9|10021,8 t=10\r\n"\
+						"a=pcfg:1 a=1001,1|4 t=1|10|59\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_alternatives(void) {
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternatives, 1, 1, 2, 3, 2, 3, 0, 3);
+}
 test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with no capabilities", test_no_capabilities),
 	TEST_NO_TAG("SDP with single capability in session", test_single_capability_in_session),
@@ -877,6 +1089,12 @@ test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with multiple pcfg in multiple streams", test_with_multiple_pcfg_in_multiple_streams),
 	TEST_NO_TAG("SDP with invalid reference in acfg", test_with_invalid_reference_to_potential_capability_in_acfg),
 	TEST_NO_TAG("SDP with invalid reference in pcfg", test_with_invalid_reference_to_potential_capability_in_pcfg),
+	TEST_NO_TAG("SDP with one acfg with alternatives", test_with_one_acfg_with_alternatives),
+	TEST_NO_TAG("SDP with one pcfg with alternatives", test_with_one_pcfg_with_alternatives),
+	TEST_NO_TAG("SDP with multiple acfg with alternatives", test_with_multiple_acfg_with_alternatives),
+	TEST_NO_TAG("SDP with multiple pcfg with alternatives", test_with_multiple_pcfg_with_alternatives),
+	TEST_NO_TAG("SDP with invalid reference in acfg with alternatives", test_with_invalid_reference_to_potential_capability_in_acfg_with_alternatives),
+	TEST_NO_TAG("SDP with invalid reference in pcfg with alternatives", test_with_invalid_reference_to_potential_capability_in_pcfg_with_alternatives),
 };
 
 test_suite_t potential_configuration_graph_test_suite = {"Potential configuration graph", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
