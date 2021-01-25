@@ -219,6 +219,17 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 	std::list<std::list<bellesip::SDP::config_capability<acapability>>> acapCfgList;
 	std::list<std::list<bellesip::SDP::config_capability<capability>>> tcapCfgList;
 
+	// Collects all the capacity configuration sets (acap and tcap indexes) and store them in lists.
+	// After all possible configs are created by creating a configuration attribute with each pair of <acap,tcap> lists with their delete attributes
+	// For example:
+	// a=pcfg:1 t=1|4 a=1,5|3
+	// acap list will have 2 elements: 1,5 and 3
+	// tcap list will have 2 elements: 1 and 4
+	// The configuration has therefore 4 possible pairs:
+	// a=1,5 ad t=1
+	// a=1,5 ad t=4
+	// a=3 ad t=1
+	// a=3 ad t=4
 	for(;list!=NULL;list=list->next){
 		std::string cfg = static_cast<const char*>(list->data);
 		belle_sip_message("configuration is %s", cfg.c_str());
@@ -247,29 +258,28 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 		const char deleteAttrDelim = ':';
 		const auto deleteAttrSplit = bellesip::Utils::splitStringToVector(attrBody, deleteAttrDelim);
 
-		// Delete attribute is only in the acfg attribute
-		if (cap == bellesip::SDP::capability_type_t::ATTRIBUTE) {
-			if (bodySplit.size() > 1) {
-				// First element is the delete attribute
-				auto deleteAttr = deleteAttrSplit.front();
-				delete_media_attributes = (deleteAttr.find('m') != std::string::npos);
-				delete_session_attributes = (deleteAttr.find('s') != std::string::npos);
-			} else {
-				delete_media_attributes = false;
-				delete_session_attributes = false;
-			}
-		}
-
 		// last element is the list of configs
 		auto idxList = deleteAttrSplit.back();
 		belle_sip_message("configuration list is %s", idxList.c_str());
 
+		// Only one attribute and one transport capacity is allowed in the config line - hence if acap or tcap has been parsed and trying to add another one, print an error
 		if (cap == bellesip::SDP::capability_type_t::ATTRIBUTE) {
 			if (acapCfgList.empty()) {
 				auto parsedList = parseIdxList(idxList, mediaAcap);
 				// Add only if list is not empty
 				if (!parsedList.empty()) {
 					acapCfgList = parsedList;
+				}
+
+				// Delete attribute is only in the acfg attribute
+				if (bodySplit.size() > 1) {
+					// First element is the delete attribute
+					auto deleteAttr = deleteAttrSplit.front();
+					delete_media_attributes = (deleteAttr.find('m') != std::string::npos);
+					delete_session_attributes = (deleteAttr.find('s') != std::string::npos);
+				} else {
+					delete_media_attributes = false;
+					delete_session_attributes = false;
 				}
 			} else {
 				belle_sip_error("Ignoring second attribute configuration list %s has been found in the configuration because already %0ld elements have been collected", cfg.c_str(), acapCfgList.size());
@@ -287,6 +297,7 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 		}
 	}
 
+	// Create configs by creating all possible pairs of <acap,tcap> lists
 	if ((tcapCfgList.empty()) || (acapCfgList.empty())) {
 		belle_sip_error("Unable to build a valid config because no valid list of capacities has been found - acap list is %s tcap list is %s", (acapCfgList.empty() ? "empty " : "not empty "), (tcapCfgList.empty() ? "empty " : "not empty "));
 	} else {
