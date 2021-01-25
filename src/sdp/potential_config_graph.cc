@@ -172,7 +172,11 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaACfg(const belle_sdp_media
 		belle_sdp_acfg_attribute_t* lAttribute = static_cast<belle_sdp_acfg_attribute_t*>(attrs->data);
 		auto id = belle_sdp_acfg_attribute_get_id(lAttribute);
 		auto attr_config = createAConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
-		config[id] = attr_config;
+		if (attr_config.acap.empty() || attr_config.tcap.empty()) {
+			belle_sip_error("Unable to build an actual config for id %0d because no valid list of capacities has been found - acap list is %s tcap list is %s", id, (attr_config.acap.empty() ? "empty " : "not empty "), (attr_config.tcap.empty() ? "empty " : "not empty "));
+		} else {
+			config[id] = attr_config;
+		}
 	}
 
 	acfg.push_back(config);
@@ -185,7 +189,11 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaPCfg(const belle_sdp_media
 		belle_sdp_pcfg_attribute_t* lAttribute = static_cast<belle_sdp_pcfg_attribute_t*>(attrs->data);
 		auto id = belle_sdp_pcfg_attribute_get_id(lAttribute);
 		auto attr_config = createPConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
-		config[id] = attr_config;
+		if (attr_config.acap.empty() || attr_config.tcap.empty()) {
+			belle_sip_error("Unable to build a potential config for id %0d because no valid list of capacities has been found - acap list is %s tcap list is %s", id, (attr_config.acap.empty() ? "empty " : "not empty "), (attr_config.tcap.empty() ? "empty " : "not empty "));
+		} else {
+			config[id] = attr_config;
+		}
 	}
 
 	pcfg.push_back(config);
@@ -253,13 +261,13 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::processConf
 			auto parsedList = parseIdxList(idxList, mediaAcap);
 			// Add only if list is not empty
 			if (!parsedList.empty()) {
-				attr_config.acap.push_back(parsedList);
+				attr_config.acap.insert(attr_config.acap.end(), parsedList.begin(), parsedList.end());
 			}
 		} else if (cap == bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL) {
 			auto parsedList = parseIdxList(idxList, mediaTcap);
 			// Add only if list is not empty
 			if (!parsedList.empty()) {
-				attr_config.tcap.push_back(parseIdxList(idxList, mediaTcap));
+				attr_config.tcap.insert(attr_config.tcap.end(), parsedList.begin(), parsedList.end());
 			}
 		}
 	}
