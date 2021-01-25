@@ -64,8 +64,8 @@ namespace bellesip {
 		struct config_attribute {
 			// list of list of capabilities
 			// each element of the outer list stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
-			std::list<std::list<config_capability<acapability>>> acap;
-			std::list<std::list<config_capability<capability>>> tcap;
+			std::list<config_capability<acapability>> acap;
+			std::list<config_capability<capability>> tcap;
 			bool delete_media_attributes = false; // Delete SDP media attributes
 			bool delete_session_attributes = false; // Delete SDP session attributes
 		};
@@ -77,7 +77,7 @@ namespace bellesip {
 				using session_description_base_cap = std::vector<media_description_base_cap>;
 				using media_description_acap = std::list<std::shared_ptr<acapability>>;
 				using session_description_acap = std::vector<media_description_acap>;
-				using media_description_config = std::map<unsigned int, config_attribute>;
+				using media_description_config = std::map<unsigned int, std::list<config_attribute>>;
 				using session_description_config = std::vector<media_description_config>;
 
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
@@ -127,10 +127,10 @@ namespace bellesip {
 				void processMediaACfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				void processMediaPCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				// TODO: should attribute have const? belle_sdp_pcfg_attribute_get_configs takes a non const
-				config_attribute createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				media_description_config::mapped_type createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				// TODO: should attribute have const? belle_sdp_acfg_attribute_get_configs takes a non const
-				config_attribute createAConfigFromAttribute(belle_sdp_acfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
-				config_attribute processConfig(const belle_sip_list_t* configList, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap) const;
+				media_description_config::mapped_type createAConfigFromAttribute(belle_sdp_acfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				media_description_config::mapped_type processConfig(const belle_sip_list_t* configList, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap) const;
 				bellesip::SDP::capability_type_t capabilityTypeFromAttrParam(const std::string & attrParam) const;
 				int getElementIdx(const std::string & index) const;
 
