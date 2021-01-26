@@ -108,9 +108,13 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkAcap({capPtr}, 1, expAcapAttrs);
-						BC_ASSERT_TRUE(std::find_if(acapReference.begin(), acapReference.end(), [&capPtr] (const acapCfgParts & part) { return (part.idx == capPtr->index); }) != acapReference.end());
+						const auto & acapRef = std::find_if(acapReference.begin(), acapReference.end(), [&capPtr] (const acapCfgParts & part) { return (part.idx == capPtr->index); });
+						BC_ASSERT_TRUE(acapRef != acapReference.end());
+						if (acapRef != acapReference.end()) {
+							BC_ASSERT_EQUAL(acapRef->idx, capPtr->index, int, "%0d");
+							BC_ASSERT_EQUAL(acapRef->mandatory, acap.mandatory, int, "%0d");
+						}
 					}
-					BC_ASSERT_TRUE(std::find_if(acapReference.begin(), acapReference.end(), [&acap] (const acapCfgParts & part) { return (part.mandatory == acap.mandatory); }) != acapReference.end());
 				}
 			}
 
@@ -124,7 +128,9 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkTcap({capPtr}, 1, expTcapProtos);
-						BC_ASSERT_TRUE(std::find(tcapReference.begin(), tcapReference.end(), capPtr->index) != tcapReference.end());
+
+						const auto & tcapRef = std::find(tcapReference.begin(), tcapReference.end(), capPtr->index);
+						BC_ASSERT_TRUE(tcapRef != tcapReference.end());
 					}
 				}
 			}
@@ -1124,7 +1130,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilities = "v
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=acfg:1475 a=20,[59] t=10\r\n"\
+						"a=acfg:1475 a=[20,59] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1172,7 +1178,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,[59,1001] t=10\r\n"\
+						"a=pcfg:1475 a=[20,59,1001] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1203,7 +1209,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:1 a=1001,[1],20,[59] t=1\r\n"\
-						"a=acfg:1475 a=20,[59] t=10\r\n"\
+						"a=acfg:1475 a=[20,59] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1233,7 +1239,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,[59,1001] t=10\r\n"\
+						"a=pcfg:1475 a=[20,59,1001] t=10\r\n"\
 						"a=pcfg:1 a=1001,[1] t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -1270,7 +1276,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:9 ptime:20\r\n"\
 						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:36825 a=[9] t=1\r\n"\
-						"a=acfg:425 a=10021,8 t=10\r\n"\
+						"a=acfg:425 a=10021,[8] t=10\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
@@ -1280,7 +1286,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:1 a=20,[1,59],1001 t=1\r\n"\
-						"a=acfg:1475 a=20,[59] t=20\r\n"\
+						"a=acfg:1475 a=[20,59] t=20\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
