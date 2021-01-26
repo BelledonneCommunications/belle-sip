@@ -1036,7 +1036,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternativ
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
 						"a=acfg:1 a=1001,1|59 t=49\r\n"\
-						"a=acfg:1475 a=20,59 t=10|1\r\n"\
+						"a=acfg:1475 a=20,59|1001 t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1082,7 +1082,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternativ
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
 						"a=pcfg:1475 a=20,9|10021,8 t=10\r\n"\
-						"a=pcfg:1 a=1001,1|4 t=2|10|19\r\n"\
+						"a=pcfg:1 a=1001,1|4 t=1|19\r\n"\
+						"a=pcfg:2 a=1001,1 t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1126,8 +1127,26 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilities = "v
 						"a=rtpmap:98 H263-1998/90000\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
+static const std::map<int, std::list<int>> expCfgAcapAttrsWithOptionals = {
+	{ 1, {1, 1001, 59, 20} },
+	{ 1475, {20, 59, 1001} },
+	{ 425, {10021, 8} },
+	{ 36825, {4, 9} },
+	{ 999, {10021, 1, 1001} },
+	{ 2, {1001, 1} },
+};
+
+static const std::map<int, std::list<int>> expCfgTcapAttrsWithOptionals = {
+	{ 1, {1, 19} },
+	{ 1475, {10} },
+	{ 425, {10} },
+	{ 36825, {65, 66, 49} },
+	{ 999, {2, 10} },
+	{ 2, {1} },
+};
+
 static void test_with_one_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 1, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1147,7 +1166,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,[59,1] t=10\r\n"\
+						"a=pcfg:1475 a=20,[59,1001] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1157,7 +1176,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 0, 1);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1188,7 +1207,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 7, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1208,7 +1227,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,[59] t=19\r\n"\
+						"a=pcfg:1475 a=20,[59],1001 t=10\r\n"\
 						"a=pcfg:1 a=1001,[1] t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -1219,7 +1238,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1245,7 +1264,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:9 ptime:20\r\n"\
 						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:36825 a=[9] t=1\r\n"\
-						"a=acfg:425 a=20 t=66\r\n"\
+						"a=acfg:425 a=10021,8 t=10\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
@@ -1254,8 +1273,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=acfg:1 a=59 t=49\r\n"\
-						"a=acfg:1475 a=20,[59] t=1\r\n"\
+						"a=acfg:1 a=59,[1,20],1001 t=1\r\n"\
+						"a=acfg:1475 a=20,[59] t=20\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1265,7 +1284,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 2, 3, 2, 3, 1, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1291,7 +1310,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=acap:4 ptime:10\r\n"\
 						"a=acap:9 ptime:20\r\n"\
 						"a=pcfg:36825 a=[9,4] t=49\r\n"\
-						"a=pcfg:425 a=10021,[8] t=1\r\n"\
+						"a=pcfg:425 a=10021,[8] t=20\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
@@ -1300,8 +1319,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,9|10021,8 t=10\r\n"\
-						"a=pcfg:1 a=1001,1|4 t=2|10|19\r\n"\
+						"a=pcfg:1475 a=20,9 t=10\r\n"\
+						"a=pcfg:1 a=1001,1 t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1311,7 +1330,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 2, 3, 2, 3, 0, 1);
 }
 
 static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1341,7 +1360,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAl
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1371,7 +1390,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAl
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1402,7 +1421,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 7, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 7, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1422,8 +1441,8 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=[20,59] t=10|19\r\n"\
-						"a=pcfg:1 a=1001,1 t=1\r\n"\
+						"a=pcfg:1475 a=[20,59] t=10\r\n"\
+						"a=pcfg:1 a=1001,1 t=1|19\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1433,7 +1452,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 1, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1459,7 +1478,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:9 ptime:20\r\n"\
 						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:36825 a=[59,4]|9 t=1\r\n"\
-						"a=acfg:425 a=[10021],8|20 t=66|10\r\n"\
+						"a=acfg:425 a=[10021],8|20 t=10\r\n"\
+						"a=acfg:999 a=[1001],10021|59 t=10\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
@@ -1469,7 +1489,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:1 a=[1001,1,10021]|59 t=49\r\n"\
-						"a=acfg:1475 a=20,59 t=10|1\r\n"\
+						"a=acfg:1475 a=20,59 t=10\r\n"\
+						"a=acfg:999 a=1,1001 t=2|987\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1479,7 +1500,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 2, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1514,8 +1535,9 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=[20,9,10021,8] t=10\r\n"\
-						"a=pcfg:1 a=1001,1|4 t=2|10|19\r\n"\
+						"a=pcfg:1475 a=[20,59,1001] t=10\r\n"\
+						"a=pcfg:1 a=1001,1|4 t=1|19\r\n"\
+						"a=pcfg:999 a=1001,1,1021|9 t=2\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1525,7 +1547,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrsWithOptionals, expCfgTcapAttrsWithOptionals, 1, 1, 2, 3, 2, 3, 0, 3);
 }
 
 test_t potential_configuration_graph_tests[] = {
