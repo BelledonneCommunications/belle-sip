@@ -42,7 +42,7 @@ static std::map<int, std::string> fillTcapMap(const bctbx_list_t* currentTcap, c
 	return protoList;
 }
 
-static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap acap, const int & expNoAcap, std::map<int, acapParts> & expAcapAttrs) {
+static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap acap, const int & expNoAcap, const std::map<int, acapParts> & expAcapAttrs) {
 	BC_ASSERT_EQUAL(acap.size(), expNoAcap, std::size_t, "%0lu");
 	for (const auto & cap : acap) {
 		auto id = cap->index;
@@ -50,11 +50,11 @@ static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 		BC_ASSERT_TRUE(expIt != expAcapAttrs.end());
 		if (expIt != expAcapAttrs.end()) {
 			const auto & value = cap->value;
-			const auto & expValue = expAcapAttrs[id].value;
+			const auto & expValue = expAcapAttrs.at(id).value;
 			BC_ASSERT_STRING_EQUAL(value.c_str(), expValue.c_str());
 
 			const auto & name = cap->name;
-			const auto & expName = expAcapAttrs[id].name;
+			const auto & expName = expAcapAttrs.at(id).name;
 			BC_ASSERT_STRING_EQUAL(name.c_str(), expName.c_str());
 
 		}
@@ -96,12 +96,14 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 			if (expCfgAcap != expCfgAcapAttrs.end()) {
 				// Check acap
 				const auto & acapCfg = cfgAttr.acap;
+				const auto & expectedAcapIndexes = expCfgAcap->second;
 				for (const auto & acap : acapCfg) {
 					// Get shared pointer to capability
 					const auto capPtr = acap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkAcap({capPtr}, 1, expAcapAttrs);
+						BC_ASSERT_TRUE(std::find(expectedAcapIndexes.begin(), expectedAcapIndexes.end(), capPtr->index) != expectedAcapIndexes.end());
 					}
 				}
 			}
@@ -109,12 +111,14 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 			if (expCfgTcap != expCfgTcapAttrs.end()) {
 				// Check acap
 				const auto & tcapCfg = cfgAttr.tcap;
+				const auto & expectedTcapIndexes = expCfgTcap->second;
 				for (const auto & tcap : tcapCfg) {
 					// Get shared pointer to capability
 					const auto capPtr = tcap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkTcap({capPtr}, 1, expTcapProtos);
+						BC_ASSERT_TRUE(std::find(expectedTcapIndexes.begin(), expectedTcapIndexes.end(), capPtr->index) != expectedTcapIndexes.end());
 					}
 				}
 			}
@@ -123,37 +127,12 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
 }
 
-static void base_test_with_potential_config(const char* src, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
+static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<int>> & expCfgAcapAttrs, const std::map<int, std::list<int>> & expCfgTcapAttrs, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
 	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
 
 	bellesip::SDP::SDPPotentialCfgGraph graph(sessionDescription);
-
-	std::map<int, acapParts> expAcapAttrs = {
-		{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
-		{ 20, {"ptime", "30"} },
-		{ 59, {"crypto", "10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4"} },
-		{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
-		{ 1001, {"crypto", "5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4"} },
-		{ 8, {"ptime", "40"} },
-		{ 9, {"ptime", "20"} },
-		{ 4, {"ptime", "10"} },
-	};
-
-	std::map<int, std::list<int>> expCfgAcapAttrs = {
-		{ 1, {1, 1001} },
-		{ 1475, {20, 59} },
-		{ 425, {10021, 8} },
-		{ 36825, {4, 9} },
-	};
-
-	std::map<int, std::list<int>> expCfgTcapAttrs = {
-		{ 1, {1} },
-		{ 1475, {10} },
-		{ 425, {66} },
-		{ 36825, {65} },
-	};
 
 	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
@@ -203,6 +182,32 @@ static void base_test_with_potential_config(const char* src, int expGlobalProtoC
 	}
 }
 
+static const std::map<int, acapParts> expAcapAttrs = {
+	{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
+	{ 20, {"ptime", "30"} },
+	{ 59, {"crypto", "10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+	{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+	{ 1001, {"crypto", "5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4"} },
+	{ 8, {"ptime", "40"} },
+	{ 9, {"ptime", "20"} },
+	{ 4, {"ptime", "10"} },
+};
+
+static const std::map<int, std::list<int>> expCfgAcapAttrs = {
+	{ 1, {1, 1001} },
+	{ 1475, {20, 59} },
+	{ 425, {10021, 8} },
+	{ 36825, {4, 9} },
+};
+
+static const std::map<int, std::list<int>> expCfgTcapAttrs = {
+	{ 1, {1} },
+	{ 1475, {10} },
+	{ 425, {66} },
+	{ 36825, {65} },
+};
+
+
 static const char* simpleSdpWithNoCapabilities = "v=0\r\n"\
 						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
 						"s=SIP Talk\r\n"\
@@ -229,7 +234,7 @@ static const char* simpleSdpWithNoCapabilities = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_no_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithNoCapabilities, 0, 0, 0, 0, 0, 0, 0, 0);
+	base_test_with_potential_config(simpleSdpWithNoCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 static const char* simpleSdpWithSingleCapabilityInSession = "v=0\r\n"\
@@ -260,7 +265,7 @@ static const char* simpleSdpWithSingleCapabilityInSession = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_single_capability_in_session(void) {
-	base_test_with_potential_config(simpleSdpWithSingleCapabilityInSession, 1, 1, 1, 0, 0, 0, 0, 0);
+	base_test_with_potential_config(simpleSdpWithSingleCapabilityInSession, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 0, 0, 0, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleProtosOnSameLineInSession = "v=0\r\n"\
@@ -293,7 +298,7 @@ static const char* simpleSdpWithMultipleProtosOnSameLineInSession = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities_on_same_line_in_session(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLineInSession, 3, 2, 2, 0, 0, 0, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLineInSession, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 3, 2, 2, 0, 0, 0, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleCapabilitiesInSession = "v=0\r\n"\
@@ -327,7 +332,7 @@ static const char* simpleSdpWithMultipleCapabilitiesInSession = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities_in_session(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleCapabilitiesInSession, 2, 2, 3, 0, 0, 0, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleCapabilitiesInSession, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 2, 2, 3, 0, 0, 0, 0, 0);
 }
 
 static const char* simpleSdpWithSingleCapabilityInMedia = "v=0\r\n"\
@@ -351,7 +356,7 @@ static const char* simpleSdpWithSingleCapabilityInMedia = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_single_capability_in_media(void) {
-	base_test_with_potential_config(simpleSdpWithSingleCapabilityInMedia, 0, 0, 0, 1, 1, 1, 0, 0);
+	base_test_with_potential_config(simpleSdpWithSingleCapabilityInMedia, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 0, 1, 1, 1, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleCapabilitiesInMedia = "v=0\r\n"\
@@ -378,7 +383,7 @@ static const char* simpleSdpWithMultipleCapabilitiesInMedia = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities_in_media(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleCapabilitiesInMedia, 0, 0, 0, 2, 2, 3, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleCapabilitiesInMedia, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 0, 2, 2, 3, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleProtosOnSameLineInMedia = "v=0\r\n"\
@@ -404,7 +409,7 @@ static const char* simpleSdpWithMultipleProtosOnSameLineInMedia = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities_on_same_line_in_media(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLineInMedia, 0, 0, 0, 3, 2, 2, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLineInMedia, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 0, 3, 2, 2, 0, 0);
 }
 
 static const char* simpleSdpWithSingleCapability = "v=0\r\n"\
@@ -430,7 +435,7 @@ static const char* simpleSdpWithSingleCapability = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_single_capability(void) {
-	base_test_with_potential_config(simpleSdpWithSingleCapability, 1, 1, 1, 1, 1, 1, 0, 0);
+	base_test_with_potential_config(simpleSdpWithSingleCapability, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 1, 1, 1, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleCapabilities = "v=0\r\n"\
@@ -459,7 +464,7 @@ static const char* simpleSdpWithMultipleCapabilities = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleCapabilities, 1, 1, 1, 2, 2, 3, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 2, 2, 3, 0, 0);
 }
 
 static const char* simpleSdpWithMultipleProtosOnSameLine = "v=0\r\n"\
@@ -487,7 +492,7 @@ static const char* simpleSdpWithMultipleProtosOnSameLine = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_multiple_capabilities_on_same_line(void) {
-	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLine, 1, 1, 1, 3, 2, 2, 0, 0);
+	base_test_with_potential_config(simpleSdpWithMultipleProtosOnSameLine, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 2, 0, 0);
 }
 
 static const char* simpleSdpWithOnePotentialAConfig = "v=0\r\n"\
@@ -517,7 +522,7 @@ static const char* simpleSdpWithOnePotentialAConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_acfg(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfig, 1, 1, 1, 3, 2, 3, 1, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 1, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfig = "v=0\r\n"\
@@ -547,7 +552,7 @@ static const char* simpleSdpWithOnePotentialPConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfig, 1, 1, 1, 3, 2, 3, 0, 1);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 1);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfig = "v=0\r\n"\
@@ -578,7 +583,7 @@ static const char* simpleSdpWithMultiplePotentialAConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfig, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfig = "v=0\r\n"\
@@ -609,7 +614,7 @@ static const char* simpleSdpWithMultiplePotentialPConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfig, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition = "v=0\r\n"\
@@ -640,7 +645,7 @@ static const char* simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition = 
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_capability_referenced_by_acfg_before_defined(void) {
-	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition, 0, 0, 2, 4, 3, 2, 2, 0);
+	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInAConfigBeforeDefinition, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 2, 4, 3, 2, 2, 0);
 }
 
 static const char* simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition = "v=0\r\n"\
@@ -671,7 +676,7 @@ static const char* simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition = 
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_capability_referenced_by_pcfg_before_defined(void) {
-	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition, 0, 0, 2, 4, 3, 2, 0, 2);
+	base_test_with_potential_config(simpleSdpWithCapabilitiesReferredInPConfigBeforeDefinition, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 0, 0, 2, 4, 3, 2, 0, 2);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigInMultipleStreams = "v=0\r\n"\
@@ -717,7 +722,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigInMultipleStreams = "v=0
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_in_multiple_streams(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigInMultipleStreams, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigInMultipleStreams, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigInMultipleStreams = "v=0\r\n"\
@@ -763,7 +768,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigInMultipleStreams = "v=0
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_in_multiple_streams(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigInMultipleStreams, 1, 1, 2, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigInMultipleStreams, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfig = "v=0\r\n"\
@@ -809,7 +814,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfig, 1, 1, 2, 3, 2, 3, 1, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 1, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfig = "v=0\r\n"\
@@ -855,7 +860,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfig = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfig, 1, 1, 2, 3, 2, 3, 0, 1);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 1);
 }
 
 static const char* simpleSdpWithOnePotentialAConfigWithAlternatives = "v=0\r\n"\
@@ -885,7 +890,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithAlternatives = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_acfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfigWithAlternatives = "v=0\r\n"\
@@ -915,7 +920,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithAlternatives = "v=0\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigWithAlternatives = "v=0\r\n"\
@@ -946,7 +951,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithAlternatives = "v=0\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 7, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 7, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigWithAlternatives = "v=0\r\n"\
@@ -977,7 +982,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithAlternatives = "v=0\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithAlternatives, 1, 1, 1, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternatives = "v=0\r\n"\
@@ -1023,7 +1028,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternativ
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternatives, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternatives = "v=0\r\n"\
@@ -1069,7 +1074,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternativ
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternatives, 1, 1, 2, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1099,7 +1104,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilities = "v
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilities, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1129,7 +1134,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilities = "v
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilities, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1160,7 +1165,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities, 1, 1, 1, 3, 2, 3, 7, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 7, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1191,7 +1196,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities, 1, 1, 1, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1237,7 +1242,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg_with_optional_capabilities(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities = "v=0\r\n"\
@@ -1283,8 +1288,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_optional_capabilities(void) {
-
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities, 1, 1, 2, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilities, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1314,7 +1318,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAl
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 1, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1344,7 +1348,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAl
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_one_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 1, 3, 2, 3, 0, 2);
+	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 2);
 }
 
 static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1375,7 +1379,7 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 1, 3, 2, 3, 7, 0);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 7, 0);
 }
 
 static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1406,7 +1410,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_multiple_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 1, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, 3, 2, 3, 0, 3);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1452,7 +1456,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_acfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 2, 3, 2, 3, 2, 0);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 2, 0);
 }
 
 static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives = "v=0\r\n"\
@@ -1498,7 +1502,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
 static void test_with_invalid_reference_to_potential_capability_in_pcfg_with_optional_capabilities_and_alternatives(void) {
-	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives, 1, 1, 2, 3, 2, 3, 0, 3);
+	base_test_with_potential_config(simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCapabilitiesAndAlternatives, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 2, 3, 2, 3, 0, 3);
 }
 
 test_t potential_configuration_graph_tests[] = {
