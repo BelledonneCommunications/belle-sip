@@ -1931,6 +1931,183 @@ static void test_with_multiple_pcfg_with_media_session_delete_attribute(void) {
 	base_test_with_potential_config(simpleSdpWithMediaSessionDeleteAttributeInMultiplePotentialPConfig, expAcapAttrs, expCfgAcapAttrs, expCfgTcapAttrs, 1, 1, 1, {3}, {2}, {3}, {0}, {2}, {true}, {true});
 }
 
+static const char* complexSdpWithMultiplePotentialPConfig = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:91 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:65 RTP/AVP RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:7799 RTP/AVPF\r\n"\
+						"a=acap:8 ptime:40\r\n"\
+						"a=acap:4 ptime:10\r\n"\
+						"a=acap:9 ptime:20\r\n"\
+						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:36825 a=-ms:[9,4] t=66|49|65\r\n"\
+						"a=pcfg:425 a=-ms:10021|[8] t=10\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:97 key-mgmt:mikey RJGGgneojf\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 UDP/TLS/RTP/SAVP RTP/AVP RTP/AVPF RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:1475 a=-m:[20,59]|[1001] t=10\r\n"\
+						"a=pcfg:1 a=-m:[1001,1,59,20] t=1|19\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=pcfg:5761 a=-m:[97],[59],1001,20 t=1|2|3|4|5\r\n"\
+						"a=pcfg:4601 a=-m:[97,59]|10021 t=91|92\r\n"\
+						"m=text 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:9999 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:9799 RTP/AVP\r\n"\
+						"a=tcap:3799 RTP/AVPF\r\n"\
+						"a=acap:89 ptime:40\r\n"\
+						"a=acap:44 ptime:10\r\n"\
+						"a=acap:91 ptime:20\r\n"\
+						"a=tcap:799 UDP/TLS/RTP/SAVP UDP/TLS/RTP/SAVPF\r\n"\
+						"a=pcfg:999 a=-s:10021,[1001]|89 t=9999|799\r\n"\
+						"a=pcfg:2 a=-s:1001,91 t=10000\r\n"\
+						"a=pcfg:1000 a=-s:[44]|89|[91] t=92\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrsComplexSdp = {
+	{ 1, {{1, false}, {1001, false}, {59, false}, {20, false}} },
+	{ 1475, {{20, false}, {59, false}, {1001, false}} },
+	{ 425, {{10021, true}, {8, false}} },
+	{ 36825, {{4, false}, {9, false}} },
+	{ 999, {{10021, true}, {89, true}, {1001, false}} },
+	{ 1000, {{44, false}, {89, true}, {91, false}} },
+	{ 2, {{1001, true}, {91, true}} },
+	{ 5761, {{97, false}, {1001, true}, {59, false}, {20, true}} },
+	{ 4601, {{97, false}, {59, false}, {10021, true}} },
+};
+
+static const std::map<int, std::list<int>> expCfgTcapAttrsComplexSdp = {
+	{ 1, {1, 19} },
+	{ 1475, {10} },
+	{ 425, {10} },
+	{ 36825, {65, 66, 49} },
+	{ 999, {9999, 799} },
+	{ 5761, {1, 2, 3, 4, 5} },
+	{ 4601, {91, 92} },
+	{ 1000, {92} },
+	{ 2, {10000} },
+};
+
+
+static const std::map<int, acapParts> expAcapAttrsComplexSdp = {
+	{ 1, {"key-mgmt", "mikey AQAFgM"} },
+	{ 20, {"ptime", "30"} },
+	{ 59, {"crypto", "10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+	{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
+	{ 1001, {"crypto", "5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4"} },
+	{ 8, {"ptime", "40"} },
+	{ 9, {"ptime", "20"} },
+	{ 4, {"ptime", "10"} },
+	{ 89, {"ptime", "40"} },
+	{ 91, {"ptime", "20"} },
+	{ 44, {"ptime", "10"} },
+	{ 97, {"key-mgmt", "mikey RJGGgneojf"} },
+};
+
+static void test_with_complex_sdp_and_multiple_pcfg(void) {
+	base_test_with_potential_config(complexSdpWithMultiplePotentialPConfig, expAcapAttrsComplexSdp, expCfgAcapAttrsComplexSdp, expCfgTcapAttrsComplexSdp, 3, 2, 2, {5, 6, 6}, {3, 2, 4}, {3, 4, 3}, {0, 0, 0}, {5, 13, 8}, {true, true, false}, {true, false, true});
+}
+
+static const char* complexSdpWithMultiplePotentialAConfig = "v=0\r\n"\
+						"o=jehan-mac 1239 1239 IN IP6 2a01:e35:1387:1020:6233:4bff:fe0b:5663\r\n"\
+						"s=SIP Talk\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"t=0 0\r\n"\
+						"a=ice-pwd:31ec21eb38b2ec6d36e8dc7b\r\n"\
+						"a=acap:1001 crypto:5 AES_CM_192_HMAC_SHA1_32 inline:CY/Dizd1QrlobZtgnigr0hWE+oDSx4S1F51Zpo4aZamN+8ZMdp8|2^20|1:4\r\n"\
+						"a=tcap:91 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:10 UDP/TLS/RTP/SAVP\r\n"\
+						"a=acap:10021 crypto:1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"m=audio 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:65 RTP/AVP RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:7799 RTP/AVPF\r\n"\
+						"a=acap:8 ptime:40\r\n"\
+						"a=acap:4 ptime:10\r\n"\
+						"a=acap:9 ptime:20\r\n"\
+						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:36825 a=-ms:[9,4] t=66|49|65\r\n"\
+						"a=acfg:425 a=-ms:10021|[8] t=10\r\n"\
+						"m=video 8078 RTP/AVP 99 97 98\r\n"\
+						"c=IN IP4 192.168.0.18\r\n"\
+						"b=AS:380\r\n"\
+						"a=acap:1 key-mgmt:mikey AQAFgM\r\n"\
+						"a=acap:97 key-mgmt:mikey RJGGgneojf\r\n"\
+						"a=acap:59 crypto:10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4\r\n"\
+						"a=acap:20 ptime:30\r\n"\
+						"a=tcap:1 UDP/TLS/RTP/SAVP RTP/AVP RTP/AVPF RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:1475 a=-m:[20,59]|[1001] t=10\r\n"\
+						"a=acfg:1 a=-m:[1001,1,59,20] t=1|19\r\n"\
+						"a=rtcp-fb:98 nack rpsi\r\n"\
+						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
+						"a=rtpmap:99 MP4V-ES/90000\r\n"\
+						"a=fmtp:99 profile-level-id=3\r\n"\
+						"a=rtpmap:97 theora/90000\r\n"\
+						"a=rtpmap:98 H263-1998/90000\r\n"\
+						"a=acfg:5761 a=-m:[97],[59],1001,20 t=1|2|3|4|5\r\n"\
+						"a=acfg:4601 a=-m:[97,59]|10021 t=91|92\r\n"\
+						"m=text 7078 RTP/AVP 111 110 3 0 8 101\r\n"\
+						"a=rtpmap:111 speex/16000\r\n"\
+						"a=fmtp:111 vbr=on\r\n"\
+						"a=rtpmap:110 speex/8000\r\n"\
+						"a=fmtp:110 vbr=on\r\n"\
+						"a=rtpmap:101 telephone-event/8000\r\n"\
+						"a=fmtp:101 0-11\r\n"\
+						"a=tcap:9999 RTP/SAVP RTP/SAVPF\r\n"\
+						"a=tcap:9799 RTP/AVP\r\n"\
+						"a=tcap:3799 RTP/AVPF\r\n"\
+						"a=acap:89 ptime:40\r\n"\
+						"a=acap:44 ptime:10\r\n"\
+						"a=acap:91 ptime:20\r\n"\
+						"a=tcap:799 UDP/TLS/RTP/SAVP UDP/TLS/RTP/SAVPF\r\n"\
+						"a=acfg:999 a=-s:10021,[1001]|89 t=9999|799\r\n"\
+						"a=acfg:2 a=-s:1001,91 t=10000\r\n"\
+						"a=acfg:1000 a=-s:[44]|89|[91] t=92\r\n"\
+						"a=fmtp:98 CIF=1;QCIF=1\r\n";
+
+
+static void test_with_complex_sdp_and_multiple_acfg(void) {
+	base_test_with_potential_config(complexSdpWithMultiplePotentialAConfig, expAcapAttrsComplexSdp, expCfgAcapAttrsComplexSdp, expCfgTcapAttrsComplexSdp, 3, 2, 2, {5, 6, 6}, {3, 2, 4}, {3, 4, 3}, {5, 13, 8}, {0, 0, 0}, {true, true, false}, {true, false, true});
+}
+
 test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with no capabilities", test_no_capabilities),
 	TEST_NO_TAG("SDP with single capability in session", test_single_capability_in_session),
@@ -1982,6 +2159,9 @@ test_t potential_configuration_graph_tests[] = {
 	TEST_NO_TAG("SDP with one pcfg with media and session delete attribute", test_with_one_pcfg_with_media_session_delete_attribute),
 	TEST_NO_TAG("SDP with multiple acfg with media and session delete attribute", test_with_multiple_acfg_with_media_session_delete_attribute),
 	TEST_NO_TAG("SDP with multiple pcfg with media and session delete attribute", test_with_multiple_pcfg_with_media_session_delete_attribute),
+	TEST_NO_TAG("SDP with complex SDP and multiple pcfgs", test_with_complex_sdp_and_multiple_pcfg),
+	TEST_NO_TAG("SDP with complex SDP and multiple acfgs", test_with_complex_sdp_and_multiple_acfg),
+
 };
 
 test_suite_t potential_configuration_graph_test_suite = {"Potential configuration graph", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
