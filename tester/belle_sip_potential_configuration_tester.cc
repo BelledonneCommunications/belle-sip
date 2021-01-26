@@ -25,6 +25,11 @@ struct acapParts {
 	const std::string value;
 };
 
+struct acapCfgParts {
+	const int idx;
+	const bool mandatory;
+};
+
 static std::map<int, std::string> fillTcapMap(const bctbx_list_t* currentTcap, const int & expProtoCap) {
 	std::map<int, std::string> protoList;
 	for(auto it = currentTcap; it!=NULL; it=it->next){
@@ -75,7 +80,7 @@ static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<int>> expCfgAcapAttrs, std::map<int, std::list<int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos) {
+static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos) {
 
 	unsigned int noCfg = 0;
 	for (const auto & cfgPair : cfg) {
@@ -96,29 +101,30 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 			if (expCfgAcap != expCfgAcapAttrs.end()) {
 				// Check acap
 				const auto & acapCfg = cfgAttr.acap;
-				const auto & expectedAcapIndexes = expCfgAcap->second;
+				const auto & acapReference = expCfgAcap->second;
 				for (const auto & acap : acapCfg) {
 					// Get shared pointer to capability
 					const auto capPtr = acap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkAcap({capPtr}, 1, expAcapAttrs);
-						BC_ASSERT_TRUE(std::find(expectedAcapIndexes.begin(), expectedAcapIndexes.end(), capPtr->index) != expectedAcapIndexes.end());
+						BC_ASSERT_TRUE(std::find_if(acapReference.begin(), acapReference.end(), [&capPtr] (const acapCfgParts & part) { return (part.idx == capPtr->index); }) != acapReference.end());
 					}
+					BC_ASSERT_TRUE(std::find_if(acapReference.begin(), acapReference.end(), [&acap] (const acapCfgParts & part) { return (part.mandatory == acap.mandatory); }) != acapReference.end());
 				}
 			}
 
 			if (expCfgTcap != expCfgTcapAttrs.end()) {
 				// Check acap
 				const auto & tcapCfg = cfgAttr.tcap;
-				const auto & expectedTcapIndexes = expCfgTcap->second;
+				const auto & tcapReference = expCfgTcap->second;
 				for (const auto & tcap : tcapCfg) {
 					// Get shared pointer to capability
 					const auto capPtr = tcap.cap.lock();
 					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
 					if (capPtr) {
 						checkTcap({capPtr}, 1, expTcapProtos);
-						BC_ASSERT_TRUE(std::find(expectedTcapIndexes.begin(), expectedTcapIndexes.end(), capPtr->index) != expectedTcapIndexes.end());
+						BC_ASSERT_TRUE(std::find(tcapReference.begin(), tcapReference.end(), capPtr->index) != tcapReference.end());
 					}
 				}
 			}
@@ -127,7 +133,7 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
 }
 
-static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<int>> & expCfgAcapAttrs, const std::map<int, std::list<int>> & expCfgTcapAttrs, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
+static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<acapCfgParts>> & expCfgAcapAttrs, const std::map<int, std::list<int>> & expCfgTcapAttrs, int expGlobalProtoCap, int expGlobalTcap, int expGlobalAcap, int expMediaProtoCap, int expMediaTcap, int expMediaAcap, int expAcfg, int expPcfg) {
 	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
@@ -183,7 +189,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 }
 
 static const std::map<int, acapParts> expAcapAttrs = {
-	{ 1, {"key-mgmt" ,"mikey AQAFgM"} },
+	{ 1, {"key-mgmt", "mikey AQAFgM"} },
 	{ 20, {"ptime", "30"} },
 	{ 59, {"crypto", "10 MS_AES_256_SHA1_80 inline:HjdHIU446fe64hnu6K446rkyMjA7fQp9CnVubGVz|2^20|1:4"} },
 	{ 10021, {"crypto", "1 AES_CM_256_HMAC_SHA1_80 inline:WVNfX19zZW1jdGwgKCkgewkyMjA7fQp9CnVubGVz|2^20|1:4"} },
@@ -193,11 +199,11 @@ static const std::map<int, acapParts> expAcapAttrs = {
 	{ 4, {"ptime", "10"} },
 };
 
-static const std::map<int, std::list<int>> expCfgAcapAttrs = {
-	{ 1, {1, 1001} },
-	{ 1475, {20, 59} },
-	{ 425, {10021, 8} },
-	{ 36825, {4, 9} },
+static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs = {
+	{ 1, { {1, true}, {1001, true} } },
+	{ 1475, { {20, true}, {59, true} } },
+	{ 425, { {10021, true}, {8, true} } },
+	{ 36825, { {4, true}, {9, true} } },
 };
 
 static const std::map<int, std::list<int>> expCfgTcapAttrs = {
@@ -888,13 +894,13 @@ static const char* simpleSdpWithOnePotentialAConfigWithAlternatives = "v=0\r\n"\
 						"a=rtpmap:98 H263-1998/90000\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
-static const std::map<int, std::list<int>> expCfgAcapAttrsWithAlternatives = {
-	{ 1, {1, 1001, 59, 20} },
-	{ 1475, {20, 59, 1001} },
-	{ 425, {10021, 8} },
-	{ 36825, {4, 9} },
-	{ 999, {10021, 1, 1001} },
-	{ 2, {1001, 1} },
+static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrsWithAlternatives = {
+	{ 1, { {1, true}, {1001, true}, {59, true}, {20, true}} },
+	{ 1475, { {20, true}, {59, true}, {1001, true} } },
+	{ 425, { {10021, true}, {8, true} } },
+	{ 36825, { {4, true}, {9, true} } },
+	{ 999, { {10021, true}, {1, true}, {1001, true} } },
+	{ 2, { {1001, true}, {1, true} } },
 };
 
 static void test_with_one_acfg_with_alternatives(void) {
@@ -1127,13 +1133,13 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilities = "v
 						"a=rtpmap:98 H263-1998/90000\r\n"\
 						"a=fmtp:98 CIF=1;QCIF=1\r\n";
 
-static const std::map<int, std::list<int>> expCfgAcapAttrsWithOptionals = {
-	{ 1, {1, 1001, 59, 20} },
-	{ 1475, {20, 59, 1001} },
-	{ 425, {10021, 8} },
-	{ 36825, {4, 9} },
-	{ 999, {10021, 1, 1001} },
-	{ 2, {1001, 1} },
+static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrsWithOptionals = {
+	{ 1, {{1, false}, {1001, true}, {59, false}, {20, true}} },
+	{ 1475, {{20, false}, {59, false}, {1001, false}} },
+	{ 425, {{10021, true}, {8, false}} },
+	{ 36825, {{4, false}, {9, false}} },
+	{ 999, {{10021, true}, {1, true}, {1001, false}} },
+	{ 2, {{1001, true}, {1, true}} },
 };
 
 static const std::map<int, std::list<int>> expCfgTcapAttrsWithOptionals = {
@@ -1227,7 +1233,7 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=20,[59],1001 t=10\r\n"\
+						"a=pcfg:1475 a=20,[59,1001] t=10\r\n"\
 						"a=pcfg:1 a=1001,[1] t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -1273,7 +1279,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=acfg:1 a=59,[1,20],1001 t=1\r\n"\
+						"a=acfg:1 a=20,[1,59],1001 t=1\r\n"\
 						"a=acfg:1475 a=20,[59] t=20\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
@@ -1320,7 +1326,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=pcfg:1475 a=20,9 t=10\r\n"\
-						"a=pcfg:1 a=1001,1 t=1\r\n"\
+						"a=pcfg:1 a=1001,[1] t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1350,7 +1356,7 @@ static const char* simpleSdpWithOnePotentialAConfigWithOptionalCapabilitiesAndAl
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=acfg:1475 a=20|[59,1001] t=10\r\n"\
+						"a=acfg:1475 a=[20]|[59,1001] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1380,7 +1386,7 @@ static const char* simpleSdpWithOnePotentialPConfigWithOptionalCapabilitiesAndAl
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=[20,59]|1001 t=10\r\n"\
+						"a=pcfg:1475 a=[1001,59]|[20] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1410,8 +1416,8 @@ static const char* simpleSdpWithMultiplePotentialAConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=acfg:1 a=1001,1|[59]|[20] t=1|19\r\n"\
-						"a=acfg:1475 a=[20,59] t=10\r\n"\
+						"a=acfg:1 a=1001,20|[59]|[1] t=1|19\r\n"\
+						"a=acfg:1475 a=[1001,59] t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1441,8 +1447,8 @@ static const char* simpleSdpWithMultiplePotentialPConfigWithOptionalCapabilities
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=[20,59] t=10\r\n"\
-						"a=pcfg:1 a=1001,1 t=1|19\r\n"\
+						"a=pcfg:1475 a=[1001,59] t=10\r\n"\
+						"a=pcfg:1 a=1001,20 t=1|19\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1478,7 +1484,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=acap:9 ptime:20\r\n"\
 						"a=tcap:49 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:36825 a=[59,4]|9 t=1\r\n"\
-						"a=acfg:425 a=[10021],8|20 t=10\r\n"\
+						"a=acfg:425 a=[8],10021|20 t=10\r\n"\
 						"a=acfg:999 a=[1001],10021|59 t=10\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
@@ -1489,8 +1495,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInAConfigWithOptionalCa
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:1 a=[1001,1,10021]|59 t=49\r\n"\
-						"a=acfg:1475 a=20,59 t=10\r\n"\
-						"a=acfg:999 a=1,1001 t=2|987\r\n"\
+						"a=acfg:1475 a=[20] t=10\r\n"\
+						"a=acfg:999 a=1,10021 t=2|987\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1525,8 +1531,8 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=acap:8 ptime:40\r\n"\
 						"a=acap:4 ptime:10\r\n"\
 						"a=acap:9 ptime:20\r\n"\
-						"a=pcfg:36825 a=9,4|59 t=65|66|49\r\n"\
-						"a=pcfg:425 a=10021,8|[8] t=1\r\n"\
+						"a=pcfg:36825 a=[9,4]|59 t=65|66|49\r\n"\
+						"a=pcfg:425 a=10021,[8]|[8] t=1\r\n"\
 						"m=video 8078 RTP/AVP 99 97 98\r\n"\
 						"c=IN IP4 192.168.0.18\r\n"\
 						"b=AS:380\r\n"\
@@ -1536,7 +1542,7 @@ static const char* simpleSdpWithInvalidPotentialReferenceInPConfigWithOptionalCa
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=pcfg:1475 a=[20,59,1001] t=10\r\n"\
-						"a=pcfg:1 a=1001,1|4 t=1|19\r\n"\
+						"a=pcfg:1 a=1001,[1]|4 t=1|19\r\n"\
 						"a=pcfg:999 a=1001,1,1021|9 t=2\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
