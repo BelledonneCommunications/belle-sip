@@ -1856,7 +1856,7 @@ static const char* simpleSdpWithMediaSessionDeleteAttributeInOnePotentialPConfig
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=-sm:20,59 t=10\r\n"\
+						"a=pcfg:1475 a=-ms:20,59 t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1887,7 +1887,7 @@ static const char* simpleSdpWithMediaSessionDeleteAttributeInMultiplePotentialAC
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
 						"a=acfg:1 a=-ms:1001,1 t=1\r\n"\
-						"a=acfg:1475 a=-sm:20,59 t=10\r\n"\
+						"a=acfg:1475 a=-ms:20,59 t=10\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
 						"a=rtpmap:99 MP4V-ES/90000\r\n"\
@@ -1917,7 +1917,7 @@ static const char* simpleSdpWithMediaSessionDeleteAttributeInMultiplePotentialPC
 						"a=acap:20 ptime:30\r\n"\
 						"a=tcap:1 RTP/SAVP RTP/SAVPF\r\n"\
 						"a=tcap:19 UDP/TLS/RTP/SAVPF\r\n"\
-						"a=pcfg:1475 a=-sm:20,59 t=10\r\n"\
+						"a=pcfg:1475 a=-ms:20,59 t=10\r\n"\
 						"a=pcfg:1 a=-ms:1001,1 t=1\r\n"\
 						"a=rtcp-fb:98 nack rpsi\r\n"\
 						"a=rtcp-xr:rcvr-rtt=all:10\r\n"\
