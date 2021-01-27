@@ -149,10 +149,10 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 	bellesip::SDP::SDPPotentialCfgGraph graph(sessionDescription);
 
-	BC_ASSERT_EQUAL(graph.getAllAcap().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllTcap().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), noMediaDescriptions, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllAcap().size(), expMediaAcap.size(), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllTcap().size(), expMediaTcap.size(), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), expAcfg.size(), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), expPcfg.size(), std::size_t, "%0lu");
 
 	// ACAP 
 	const auto globalAcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap");
@@ -172,26 +172,40 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 		auto mediaDescription = static_cast<belle_sdp_media_description_t*>(bctbx_list_get_data(mediaDescriptionElem));
 
 		// ACAP
-		const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
-		BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
-		const auto acap = graph.getAcapForStream(idx);
-		checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
+		if (idx < expMediaAcap.size()) {
+			const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
+			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
+			if (expMediaAcap.at(idx) != 0) {
+				const auto acap = graph.getAcapForStream(idx);
+				checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
+			}
+		}
 
 		// TCAP
-		const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
-		BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0lu");
-		auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap.at(idx));
-		auto noMediaProtoCap = mediaProtoList.size();
-		protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
+		if (idx < expMediaTcap.size()) {
+			const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
+			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0lu");
+			auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap.at(idx));
+			auto noMediaProtoCap = mediaProtoList.size();
+			protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
 
-		const auto tcap = graph.getTcapForStream(idx);
-		checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
+			if (expMediaTcap.at(idx) != 0) {
+				const auto tcap = graph.getTcapForStream(idx);
+				checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
+			}
+		}
 
-		auto acfg = graph.getAcfgForStream(idx);
-		checkCfg(acfg, expAcfg.at(idx), expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList, expDeleteMediaAttributes.at(idx), expDeleteSessionAttributes.at(idx));
+		// ACFG
+		if ((idx < expAcfg.size()) && (expAcfg.at(idx) != 0)) {
+			auto acfg = graph.getAcfgForStream(idx);
+			checkCfg(acfg, expAcfg.at(idx), expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList, expDeleteMediaAttributes.at(idx), expDeleteSessionAttributes.at(idx));
+		}
 
-		auto pcfg = graph.getPcfgForStream(idx);
-		checkCfg(pcfg, expPcfg.at(idx), expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList, expDeleteMediaAttributes.at(idx), expDeleteSessionAttributes.at(idx));
+		// PCFG
+		if ((idx < expPcfg.size()) && (expPcfg.at(idx) != 0)) {
+			auto pcfg = graph.getPcfgForStream(idx);
+			checkCfg(pcfg, expPcfg.at(idx), expCfgAcapAttrs, expCfgTcapAttrs, expAcapAttrs, protoList, expDeleteMediaAttributes.at(idx), expDeleteSessionAttributes.at(idx));
+		}
 
 		mediaDescriptionElem = mediaDescriptionElem->next;
 	}
