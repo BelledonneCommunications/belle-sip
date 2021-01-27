@@ -74,11 +74,11 @@ namespace bellesip {
 
 			public:
 				using media_description_base_cap = std::list<std::shared_ptr<capability>>;
-				using session_description_base_cap = std::vector<media_description_base_cap>;
+				using session_description_base_cap = std::map<unsigned int, media_description_base_cap>;
 				using media_description_acap = std::list<std::shared_ptr<acapability>>;
-				using session_description_acap = std::vector<media_description_acap>;
+				using session_description_acap = std::map<unsigned int, media_description_acap>;
 				using media_description_config = std::map<unsigned int, std::list<config_attribute>>;
-				using session_description_config = std::vector<media_description_config>;
+				using session_description_config = std::map<unsigned int, media_description_config>;
 
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
 				const session_description_config & getAllAcfg() const;
@@ -109,7 +109,7 @@ namespace bellesip {
 				const belle_sip_list_t * getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap);
 
  				// Media
-				void processMediaDescription(const belle_sdp_media_description_t* media_desc, const media_description_acap & globalAcap, const media_description_base_cap & globalTcap);
+				void processMediaDescription(const int & idx, const belle_sdp_media_description_t* media_desc, const media_description_acap & globalAcap, const media_description_base_cap & globalTcap);
 				const belle_sip_list_t * getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap);
 
  				// Attribute capabilities
@@ -123,9 +123,9 @@ namespace bellesip {
 				media_description_base_cap createTCapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap);
 
 				// Configuration
-				void processMediaCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType);
-				void processMediaACfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
-				void processMediaPCfg(const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				void processMediaCfg(const int & idx, const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType);
+				void processMediaACfg(const int & idx, const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
+				void processMediaPCfg(const int & idx, const belle_sdp_media_description_t* media_desc, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				// TODO: should attribute have const? belle_sdp_pcfg_attribute_get_configs takes a non const
 				media_description_config::mapped_type createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				// TODO: should attribute have const? belle_sdp_acfg_attribute_get_configs takes a non const
