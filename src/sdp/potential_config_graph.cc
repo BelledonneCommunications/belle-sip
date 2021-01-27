@@ -49,9 +49,16 @@ std::string bellesip::SDP::capabilityToAttributeName(const bellesip::SDP::capabi
 void bellesip::SDP::SDPPotentialCfgGraph::processSessionDescription (const belle_sdp_session_description_t* session_desc) {
 	const auto globalAcap = getSessionDescriptionACapabilities(session_desc);
 	const auto globalTcap = getSessionDescriptionTCapabilities(session_desc);
+	int mediaIdx = 0;
 	for ( auto media_desc_it=belle_sdp_session_description_get_media_descriptions ( session_desc ); media_desc_it!=NULL; media_desc_it=media_desc_it->next ) {
 		const belle_sdp_media_description_t* media_desc=BELLE_SDP_MEDIA_DESCRIPTION ( media_desc_it->data );
-		processMediaDescription(media_desc, globalAcap, globalTcap);
+		processMediaDescription(mediaIdx, media_desc, globalAcap, globalTcap);
+		mediaIdx++;
+	}
+
+
+	if (!acfg.empty() && !pcfg.empty()) {
+		belle_sip_error("The provided sdp is not valid because it defines %0u attribute configurations and %0u potential configurations - pcfg attrbutes are allowed in offers and acfg attributes in answers ", static_cast<unsigned int>(acfg.size()), static_cast<unsigned int>(pcfg.size()));
 	}
 }
 
@@ -63,14 +70,16 @@ const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getSessionCapabili
 /*
  * Media
  */
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & globalAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & globalTcap) {
+void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & globalAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & globalTcap) {
 	// ACAP
 	// Get capabilities specific to the media description
 	auto mediaAcap = getMediaDescriptionACapabilities(media_desc);
 	// add global capabilities
 	mediaAcap.insert(mediaAcap.end(), globalAcap.begin(), globalAcap.end());
 	// add all media capabilities to acap vector
-	acap.push_back(mediaAcap);
+	if (!mediaAcap.empty()) {
+	acap[idx] = mediaAcap;
+	}
 
 	// TCAP
 	// Get capabilities specific to the media description
@@ -78,13 +87,15 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const belle_sd
 	// add global capabilities
 	mediaTcap.insert(mediaTcap.end(), globalTcap.begin(), globalTcap.end());
 	// add all media capabilities to tcap vector
-	tcap.push_back(mediaTcap);
+	if (!mediaTcap.empty()) {
+		tcap[idx] = mediaTcap;
+	}
 
 	// ACFG
-	processMediaCfg(media_desc, mediaAcap, mediaTcap, bellesip::SDP::config_type::ACFG);
+	processMediaCfg(idx, media_desc, mediaAcap, mediaTcap, bellesip::SDP::config_type::ACFG);
 
 	// PCFG
-	processMediaCfg(media_desc, mediaAcap, mediaTcap, bellesip::SDP::config_type::PCFG);
+	processMediaCfg(idx, media_desc, mediaAcap, mediaTcap, bellesip::SDP::config_type::PCFG);
 }
 
 const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap) {
@@ -154,18 +165,18 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::S
 	return createTCapabilitiesList(caps_attr, cap);
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType) {
+void bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap, const bellesip::SDP::config_type_t cfgType) {
 	switch (cfgType) {
 		case bellesip::SDP::config_type_t::ACFG:
-			processMediaACfg(media_desc, mediaAcap, mediaTcap);
+			processMediaACfg(idx, media_desc, mediaAcap, mediaTcap);
 			break;
 		case bellesip::SDP::config_type_t::PCFG:
-			processMediaPCfg(media_desc, mediaAcap, mediaTcap);
+			processMediaPCfg(idx, media_desc, mediaAcap, mediaTcap);
 			break;
 	}
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaACfg(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
+void bellesip::SDP::SDPPotentialCfgGraph::processMediaACfg(const int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "acfg");
 	media_description_config config;
 	for(;attrs!=NULL;attrs=attrs->next){
@@ -179,10 +190,12 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaACfg(const belle_sdp_media
 		}
 	}
 
-	acfg.push_back(config);
+	if (!config.empty()) {
+		acfg[idx] = config;
+	}
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaPCfg(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
+void bellesip::SDP::SDPPotentialCfgGraph::processMediaPCfg(const int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "pcfg");
 	media_description_config config;
 	for(;attrs!=NULL;attrs=attrs->next){
@@ -196,7 +209,9 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaPCfg(const belle_sdp_media
 		}
 	}
 
-	pcfg.push_back(config);
+	if (!config.empty()) {
+		pcfg[idx] = config;
+	}
 }
 
 bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type bellesip::SDP::SDPPotentialCfgGraph::createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
@@ -356,14 +371,14 @@ const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap & belles
 }
 
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAcfgForStream(const int & idx) const {
-	return acfg[idx];
+	return acfg.at(idx);
 }
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getPcfgForStream(const int & idx) const {
-	return pcfg[idx];
+	return pcfg.at(idx);
 }
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getAcapForStream(const int & idx) const {
-	return acap[idx];
+	return acap.at(idx);
 }
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getTcapForStream(const int & idx) const {
-	return tcap[idx];
+	return tcap.at(idx);
 }
