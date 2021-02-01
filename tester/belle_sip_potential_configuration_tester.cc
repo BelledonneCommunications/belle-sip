@@ -183,7 +183,9 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 			const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
 			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
 			if (expMediaAcap.at(idx) != 0) {
-				const auto acap = graph.getAcapForStream(idx);
+				const auto mediaAcapSize = graph.getMediaAcapForStream(idx).size();
+				BC_ASSERT_EQUAL(mediaAcapSize, expMediaAcap.at(idx), std::size_t, "%0lu");
+				const auto acap = graph.getAllAcapForStream(idx);
 				checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
 			}
 		}
@@ -197,7 +199,9 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 			protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
 
 			if (expMediaTcap.at(idx) != 0) {
-				const auto tcap = graph.getTcapForStream(idx);
+				const auto mediaTcapSize = graph.getMediaTcapForStream(idx).size();
+				BC_ASSERT_EQUAL(mediaTcapSize, expMediaProtoCap.at(idx), std::size_t, "%0lu");
+				const auto tcap = graph.getAllTcapForStream(idx);
 				checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
 			}
 		}
