@@ -94,6 +94,8 @@ namespace bellesip {
 
 				const media_description_config & getAcfgForStream(const int & idx) const;
 				const media_description_config & getPcfgForStream(const int & idx) const;
+				const media_description_acap & getGlobalAcap() const;
+				const media_description_base_cap & getGlobalTcap() const;
 				const media_description_acap getAcapForStream(const int & idx) const;
 				const media_description_base_cap getTcapForStream(const int & idx) const;
 
