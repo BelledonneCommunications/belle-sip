@@ -161,12 +161,17 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
 	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
 
+	const auto parsedGlobalAcap = graph.getGlobalAcap().size();
+	BC_ASSERT_EQUAL(parsedGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
 
 	// TCAP
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
 	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
 	auto protoList = fillTcapMap(globalTcap, expGlobalProtoCap);
 	auto noGlobalProtoCap = protoList.size();
+
+	const auto parsedGlobalTcap = graph.getGlobalTcap().size();
+	BC_ASSERT_EQUAL(parsedGlobalTcap, expGlobalProtoCap, std::size_t, "%0lu");
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
