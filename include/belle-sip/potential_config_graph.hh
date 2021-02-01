@@ -70,7 +70,7 @@ namespace bellesip {
 			bool delete_session_attributes = false; // Delete SDP session attributes
 		};
 
-		class SDPPotentialCfgGraph {
+		class BELLESIP_EXPORT SDPPotentialCfgGraph {
 
 			public:
 				using media_description_base_cap = std::list<std::shared_ptr<capability>>;
