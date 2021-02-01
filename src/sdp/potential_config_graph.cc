@@ -379,6 +379,12 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getPcfgForStream(const int & idx) const {
 	return pcfg.at(idx);
 }
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getGlobalAcap() const {
+	return globalAcap;
+}
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getGlobalTcap() const {
+	return globalTcap;
+}
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getAcapForStream(const int & idx) const {
 	auto acaps = acap.at(idx);
 	acaps.insert(acaps.end(), globalAcap.begin(), globalAcap.end());
