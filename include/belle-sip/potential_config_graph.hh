@@ -70,9 +70,15 @@ namespace bellesip {
 			bool delete_session_attributes = false; // Delete SDP session attributes
 		};
 
+		#ifdef _WIN32
+			// Disable C4251 triggered by types derived from STL.
+			#pragma warning(push)
+			#pragma warning(disable: 4251)
+		#endif // ifdef _WIN32
 		class BELLESIP_EXPORT SDPPotentialCfgGraph {
 
 			public:
+
 				using media_description_base_cap = std::list<std::shared_ptr<capability>>;
 				using session_description_base_cap = std::map<unsigned int, media_description_base_cap>;
 				using media_description_acap = std::list<std::shared_ptr<acapability>>;
@@ -135,6 +141,10 @@ namespace bellesip {
 				int getElementIdx(const std::string & index) const;
 
 		};
+		
+		#ifdef _WIN32
+			#pragma warning(pop)
+		#endif // ifdef _WIN32
 
 		template<class cap_type>
 		std::list<std::list<config_capability<cap_type>>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
