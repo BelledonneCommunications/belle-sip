@@ -24,7 +24,8 @@
 #include <map>
 #include <list>
 
-#include "belle-sip/cpp_utils.hh"
+#include "bctoolbox/utils.hh"
+
 #include "belle-sip/belle-sdp.h"
 #include "belle-sip/utils.h"
 
@@ -158,7 +159,7 @@ namespace bellesip {
 		template<class cap_type>
 		std::list<std::list<config_capability<cap_type>>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
 			const char configDelim = '|';
-			const auto attrCapList = bellesip::Utils::splitStringToVector(idxList, configDelim);
+			const auto attrCapList = bctoolbox::Utils::split(idxList, configDelim);
 			bool mandatory = true;
 
 			const char startOptDelim = '[';
@@ -166,7 +167,7 @@ namespace bellesip {
 			std::list<std::list<config_capability<cap_type>>> capList;
 			for (const auto & config : attrCapList) {
 				const char capDelim = ',';
-				const auto capIdList = bellesip::Utils::splitStringToVector(config, capDelim);
+				const auto capIdList = bctoolbox::Utils::split(config, capDelim);
 				std::list<config_capability<cap_type>> caps;
 				for (const auto & index : capIdList) {
 					belle_sip_message("configuration is %s index is %s", config.c_str(), index.c_str());
