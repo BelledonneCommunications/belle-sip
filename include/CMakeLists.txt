@@ -50,6 +50,7 @@ set(HEADER_FILES
 	transaction.h
 	types.h
 	utils.h
+	cpp_utils.hh
 	wakelock.h
 	potential_config_graph.hh
 )
