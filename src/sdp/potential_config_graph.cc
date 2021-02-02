@@ -19,8 +19,6 @@
 
 #include <regex>
 
-#include "bctoolbox/utils.hh"
-
 #include "belle-sip/potential_config_graph.hh"
 #include "belle-sip/object.h"
 #include "belle-sip/types.h"
@@ -384,7 +382,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 		const auto & cfg = acfg.at(idx);
 		return cfg;
 	} catch (const std::out_of_range& e) {
-		belle_sip_error("Unable to find attribute configuration at index %0u", idx);
+		belle_sip_error("Exception thrown: %s - Unable to find attribute configuration at index %0u", e.what(), idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -393,7 +391,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 		const auto & cfg = pcfg.at(idx);
 		return cfg;
 	} catch (const std::out_of_range& e) {
-		belle_sip_error("Unable to find potential configuration at index %0u", idx);
+		belle_sip_error("Exception thrown: %s - Unable to find potential configuration at index %0u", e.what(), idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -408,7 +406,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SD
 		const auto & cap = acap.at(idx);
 		return cap;
 	} catch (const std::out_of_range& e) {
-		belle_sip_error("Unable to find capability at index %0u", idx);
+		belle_sip_error("Exception thrown: %s - Unable to find capability at index %0u", e.what(), idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_acap>();
 	}
 }
@@ -417,7 +415,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip
 		const auto & cap = tcap.at(idx);
 		return cap;
 	} catch (const std::out_of_range& e) {
-		belle_sip_error("Unable to find transport capability at index %0u", idx);
+		belle_sip_error("Exception thrown: %s - Unable to find transport capability at index %0u", e.what(), idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap>();
 	}
 }
