@@ -19,8 +19,6 @@
 
 #include <regex>
 
-#include "bctoolbox/utils.hh"
-
 #include "belle-sip/potential_config_graph.hh"
 #include "belle-sip/object.h"
 #include "belle-sip/types.h"

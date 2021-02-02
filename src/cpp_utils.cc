@@ -127,16 +127,3 @@ void belle_sip_main_loop_cpp_do_later(
 		task_name
 	);
 }
-
-std::vector<std::string> bellesip::Utils::splitStringToVector(const std::string & str, const char delim) {
-	std::vector<std::string> splittedStr;
-	std::size_t current, previous = 0;
-	current = str.find(delim);
-	while (current != std::string::npos) {
-		splittedStr.push_back(str.substr(previous, current - previous));
-		previous = current + 1;
-		current = str.find(delim, previous);
-	}
-	splittedStr.push_back(str.substr(previous, current - previous));
-	return splittedStr;
-}
