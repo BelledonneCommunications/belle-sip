@@ -19,6 +19,8 @@
 
 #include <regex>
 
+#include "bctoolbox/utils.hh"
+
 #include "belle-sip/potential_config_graph.hh"
 #include "belle-sip/object.h"
 #include "belle-sip/types.h"
@@ -258,7 +260,7 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 
 		// Split at the = sign
 		const char bodyDelim = '=';
-		const auto bodySplit = bellesip::Utils::splitStringToVector(cfg, bodyDelim);
+		const auto bodySplit = bctoolbox::Utils::split(cfg, bodyDelim);
 
 		if (bodySplit.size() < 2) {
 			belle_sip_error("size of the vector after splitting using delimiter %c is %lu", bodyDelim, bodySplit.size());
@@ -274,7 +276,7 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 		belle_sip_message("configuration type is %s and body is %s", capType.c_str(), attrBody.c_str());
 
 		const char deleteAttrDelim = ':';
-		const auto deleteAttrSplit = bellesip::Utils::splitStringToVector(attrBody, deleteAttrDelim);
+		const auto deleteAttrSplit = bctoolbox::Utils::split(attrBody, deleteAttrDelim);
 
 		// last element is the list of configs
 		auto idxList = deleteAttrSplit.back();
