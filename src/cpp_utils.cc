@@ -22,7 +22,7 @@
 
 #include <belle-sip/mainloop.h>
 #include "bctoolbox/crypto.hh"
-#include "cpp_utils.hh"
+#include "belle-sip/cpp_utils.hh"
 
 /**
  * Write random bytes of supplied size.
