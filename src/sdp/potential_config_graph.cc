@@ -31,6 +31,17 @@ bellesip::SDP::SDPPotentialCfgGraph::SDPPotentialCfgGraph (const belle_sdp_sessi
 	processSessionDescription(session_desc);
 }
 
+bellesip::SDP::SDPPotentialCfgGraph & bellesip::SDP::SDPPotentialCfgGraph::operator= (const bellesip::SDP::SDPPotentialCfgGraph & other) {
+	globalAcap = other.globalAcap;
+	globalTcap = other.globalTcap;
+	acfg = other.acfg;
+	pcfg = other.pcfg;
+	acap = other.acap;
+	tcap = other.tcap;
+
+	return *this;
+}
+
 std::string bellesip::SDP::capabilityToAttributeName(const bellesip::SDP::capability_type_t cap) {
 	std::string cap_name;
 	switch (cap) {
@@ -430,4 +441,170 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::
 	auto globalTcaps = getGlobalTcap();
 	tcaps.insert(tcaps.end(), globalTcaps.begin(), globalTcaps.end());
 	return tcaps;
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalAcap(const int & idx, const std::string & name, const std::string & value) {
+	const auto canAdd = (canFindAcapWithIdx(idx) == false);
+	if (canAdd == true) {
+		std::shared_ptr<acapability> elem = std::make_shared<acapability>();
+		elem->index = idx;
+		elem->name = name;
+		elem->value = value;
+		elem->type = bellesip::SDP::capability_type_t::ATTRIBUTE;
+		globalAcap.push_back(elem);
+	}
+	return canAdd;
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalTcap(const int & idx, const std::string & value) {
+	const auto canAdd = (canFindTcapWithIdx(idx) == false);
+	if (canAdd == true) {
+		std::shared_ptr<capability> elem = std::make_shared<capability>();
+		elem->index = idx;
+		elem->value = value;
+		elem->type = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
+		globalTcap.push_back(elem);
+	}
+	return canAdd;
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::addAcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap::key_type & streamIdx, const int & capIdx, const std::string & capName, const std::string & capValue) {
+	const auto canAdd = (canFindAcapWithIdx(capIdx) == false);
+	if (canAdd == true) {
+		std::shared_ptr<acapability> elem = std::make_shared<acapability>();
+		elem->index = capIdx;
+		elem->name = capName;
+		elem->value = capValue;
+		elem->type = bellesip::SDP::capability_type_t::ATTRIBUTE;
+		acap[streamIdx].push_back(elem);
+	}
+	return canAdd;
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::addTcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap::key_type & streamIdx, const int & capIdx, const std::string & capValue) {
+	const auto canAdd = (canFindTcapWithIdx(capIdx) == false);
+	if (canAdd == true) {
+		std::shared_ptr<capability> elem = std::make_shared<capability>();
+		elem->index = capIdx;
+		elem->value = capValue;
+		elem->type = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
+		tcap[streamIdx].push_back(elem);
+	}
+	return canAdd;
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::canFindAcapWithIdx(const int & index) const {
+	const auto & globalAcaps = getGlobalAcap();
+	const auto globalAcapIt = std::find_if(globalAcaps.cbegin(), globalAcaps.cend(), [&index] (const std::shared_ptr<acapability> & cap) {
+		return (cap->index == index);
+	});
+	const bool foundInGlobalAcap = (globalAcapIt != globalAcap.cend());
+	bool foundInStreamAcap = false;
+	const auto & acaps = getAllAcap();
+	for (const auto & streamAcapPair : acaps) {
+		const auto & acapList = streamAcapPair.second;
+		const auto streamAcapIt = std::find_if(acapList.cbegin(), acapList.cend(), [&index] (const std::shared_ptr<acapability> & cap) {
+			return (cap->index == index);
+		});
+		foundInStreamAcap |= (streamAcapIt != acapList.cend());
+	}
+
+	if (foundInStreamAcap && foundInGlobalAcap) {
+		belle_sip_error("Graph may be corrupted because acap at index %0d has been found in both global and stream attribute capabilities", index);
+	}
+
+	return (foundInStreamAcap || foundInGlobalAcap);
+}
+
+bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const int & index) const {
+	const auto & globalTcaps = getGlobalTcap();
+	const auto globalTcapIt = std::find_if(globalTcaps.cbegin(), globalTcaps.cend(), [&index] (const std::shared_ptr<capability> & cap) {
+		return (cap->index == index);
+	});
+	const bool foundInGlobalTcap = (globalTcapIt != globalTcap.cend());
+	bool foundInStreamTcap = false;
+	const auto & tcaps = getAllTcap();
+	for (const auto & streamTcapPair : tcaps) {
+		const auto & tcapList = streamTcapPair.second;
+		const auto streamTcapIt = std::find_if(tcapList.cbegin(), tcapList.cend(), [&index] (const std::shared_ptr<capability> & cap) {
+			return (cap->index == index);
+		});
+		foundInStreamTcap |= (streamTcapIt != tcapList.cend());
+	}
+
+	if (foundInStreamTcap && foundInGlobalTcap) {
+		belle_sip_error("Graph may be corrupted because tcap at index %0d has been found in both global and stream attribute capabilities", index);
+	}
+
+	return (foundInStreamTcap || foundInGlobalTcap);
+}
+
+void bellesip::SDP::SDPPotentialCfgGraph::addPcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
+
+	bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
+	try {
+		cfg = pcfg.at(streamIdx);
+	} catch (const std::out_of_range& e) {
+		belle_sip_error("Exception thrown: %s - Creating potential configuration for stream at index %0u", e.what(), streamIdx);
+	}
+
+	cfg[cfgIdx].push_back(createCfgAttr(streamIdx, acapIdx, tcapIdx, delete_media_attributes, delete_session_attributes));
+
+	pcfg[streamIdx] = cfg;
+}
+
+void bellesip::SDP::SDPPotentialCfgGraph::addAcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
+
+	bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
+	try {
+		cfg = acfg.at(streamIdx);
+	} catch (const std::out_of_range& e) {
+		belle_sip_error("Exception thrown: %s - Creating attribute configuration for stream at index %0u", e.what(), streamIdx);
+	}
+
+	cfg[cfgIdx].push_back(createCfgAttr(streamIdx, acapIdx, tcapIdx, delete_media_attributes, delete_session_attributes));
+
+	acfg[streamIdx] = cfg;
+}
+
+bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const {
+	bellesip::SDP::config_attribute cfgAttr;
+	cfgAttr.delete_session_attributes = delete_session_attributes;
+	cfgAttr.delete_media_attributes = delete_media_attributes;
+
+	const auto & acaps = getAllAcapForStream(streamIdx);
+	for (const auto & acapPair : acapIdx) {
+		const auto & idx = acapPair.first;
+		const auto & mandatory = acapPair.second;
+		config_capability<acapability> cfgCap;
+		cfgCap.mandatory = mandatory;
+		auto acapIt = std::find_if(acaps.cbegin(), acaps.cend(), [&idx] (const std::shared_ptr<acapability> & cap) {
+			return (cap->index == idx);
+		});
+		if (acapIt == acaps.cend()) {
+			belle_sip_error("Unable to find attribute capability with index %0d - skipping it", idx);
+			break;
+		} else {
+			cfgCap.cap = *acapIt;
+			cfgAttr.acap.push_back(cfgCap);
+		}
+	}
+
+	const auto & tcaps = getAllTcapForStream(streamIdx);
+	for (const auto & idx : tcapIdx) {
+		config_capability<capability> cfgCap;
+		cfgCap.mandatory = false;
+		auto tcapIt = std::find_if(tcaps.cbegin(), tcaps.cend(), [&idx] (const std::shared_ptr<capability> & cap) {
+			return (cap->index == idx);
+		});
+		if (tcapIt == tcaps.cend()) {
+			belle_sip_error("Unable to find transport capability with index %0d - skipping it", idx);
+			break;
+		} else {
+			cfgCap.cap = *tcapIt;
+			cfgAttr.tcap.push_back(cfgCap);
+		}
+	}
+
+	return cfgAttr;
 }
