@@ -92,8 +92,8 @@ namespace bellesip {
 				SDPPotentialCfgGraph & operator= (const SDPPotentialCfgGraph & other);
 				const session_description_config & getAllAcfg() const;
 				const session_description_config & getAllPcfg() const;
-				const session_description_acap & getAllAcap() const;
-				const session_description_base_cap & getAllTcap() const;
+				const session_description_acap & getStreamAcap() const;
+				const session_description_base_cap & getStreamTcap() const;
 
 				const media_description_config & getAcfgForStream(const session_description_config::key_type & idx) const;
 				const media_description_config & getPcfgForStream(const session_description_config::key_type & idx) const;
@@ -119,6 +119,11 @@ namespace bellesip {
 				void addTcapListToPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
 
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
+
+				int getFreeTCapIdx() const;
+				int getFreeACapIdx() const;
+				int getFreeACfgIdx(const session_description_config::key_type & idx) const;
+				int getFreePCfgIdx(const session_description_config::key_type & idx) const;
 
 			protected:
 
@@ -182,6 +187,8 @@ namespace bellesip {
 
 				std::list<config_capability<acapability>> createAcapList(const session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx) const;
 				std::list<config_capability<capability>> createTcapList(const session_description_config::key_type & streamIdx, const std::list<int> & tcapIdx) const;
+
+				int getFreeIdx(const std::list<int> & l) const;
 		};
 		
 		#ifdef _WIN32
