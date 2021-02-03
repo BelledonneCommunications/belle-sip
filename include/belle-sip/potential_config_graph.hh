@@ -89,6 +89,7 @@ namespace bellesip {
 
 				explicit SDPPotentialCfgGraph ();
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
+				SDPPotentialCfgGraph & operator= (const SDPPotentialCfgGraph & other);
 				const session_description_config & getAllAcfg() const;
 				const session_description_config & getAllPcfg() const;
 				const session_description_acap & getAllAcap() const;
@@ -102,6 +103,15 @@ namespace bellesip {
 				const media_description_base_cap & getMediaTcapForStream(const session_description_base_cap::key_type & idx) const;
 				const media_description_acap getAllAcapForStream(const session_description_acap::key_type & idx) const;
 				const media_description_base_cap getAllTcapForStream(const session_description_base_cap::key_type & idx) const;
+
+				bool addGlobalAcap(const int & idx, const std::string & name, const std::string & value);
+				bool addGlobalTcap(const int & idx, const std::string & value);
+
+				bool addAcapToStream(const session_description_acap::key_type & streamIdx, const int & capIdx, const std::string & capName, const std::string & capValue);
+				bool addTcapToStream(const session_description_base_cap::key_type & streamIdx, const int & capIdx, const std::string & capValue);
+
+				void addAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
 
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
 
@@ -150,6 +160,15 @@ namespace bellesip {
 				bellesip::SDP::capability_type_t capabilityTypeFromAttrParam(const std::string & attrParam) const;
 				int getElementIdx(const std::string & index) const;
 
+				// streamIdx -> index of the stream to search for capabilities
+				// acapIdx -> map of attribute capability indexes and mandatory attributes
+				// tcapIdx -> map of transport protocol indexes
+				// delete_media_attributes -> delete media attributes flags
+				// delete_session_attributes -> delete session attributes flags
+				config_attribute createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const;
+
+				bool canFindAcapWithIdx(const int & index) const;
+				bool canFindTcapWithIdx(const int & index) const;
 		};
 		
 		#ifdef _WIN32
