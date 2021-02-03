@@ -65,7 +65,7 @@ namespace bellesip {
 		struct config_attribute {
 			// list of list of capabilities
 			// each element of the outer list stores a list of capabilities (mandatory and optional) to create a media session - in SDP terms, it represent a comma-separated continguous sequence of indexes
-			std::list<config_capability<acapability>> acap;
+			std::list<std::list<config_capability<acapability>>> acap;
 			std::list<config_capability<capability>> tcap;
 			bool delete_media_attributes = false; // Delete SDP media attributes
 			bool delete_session_attributes = false; // Delete SDP session attributes
@@ -84,7 +84,7 @@ namespace bellesip {
 				using session_description_base_cap = std::map<unsigned int, media_description_base_cap>;
 				using media_description_acap = std::list<std::shared_ptr<acapability>>;
 				using session_description_acap = std::map<unsigned int, media_description_acap>;
-				using media_description_config = std::map<unsigned int, std::list<config_attribute>>;
+				using media_description_config = std::map<unsigned int, config_attribute>;
 				using session_description_config = std::map<unsigned int, media_description_config>;
 
 				explicit SDPPotentialCfgGraph ();
@@ -111,7 +111,12 @@ namespace bellesip {
 				bool addTcapToStream(const session_description_base_cap::key_type & streamIdx, const int & capIdx, const std::string & capValue);
 
 				void addAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addAcapListToAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
+				void addTcapListToAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
+
 				void addPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addAcapListToPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
+				void addTcapListToPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
 
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
 
@@ -129,7 +134,7 @@ namespace bellesip {
 				session_description_base_cap tcap;
 
 				template<class cap_type>
-				std::list<std::list<config_capability<cap_type>>> parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const;
+				const std::pair<std::list<std::list<config_capability<cap_type>>>,bool> parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const;
 
  				// Session
 				const belle_sip_list_t * getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap);
@@ -169,6 +174,14 @@ namespace bellesip {
 
 				bool canFindAcapWithIdx(const int & index) const;
 				bool canFindTcapWithIdx(const int & index) const;
+
+				void addCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+
+				void addAcapListToCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
+				void addTcapListToCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
+
+				std::list<config_capability<acapability>> createAcapList(const session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx) const;
+				std::list<config_capability<capability>> createTcapList(const session_description_config::key_type & streamIdx, const std::list<int> & tcapIdx) const;
 		};
 		
 		#ifdef _WIN32
@@ -176,7 +189,7 @@ namespace bellesip {
 		#endif // ifdef _WIN32
 
 		template<class cap_type>
-		std::list<std::list<config_capability<cap_type>>> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
+		const std::pair<std::list<std::list<config_capability<cap_type>>>, bool> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
 			const char configDelim = '|';
 			const auto attrCapList = bctoolbox::Utils::split(idxList, configDelim);
 			bool mandatory = true;
@@ -184,6 +197,7 @@ namespace bellesip {
 			const char startOptDelim = '[';
 			const char endOptDelim = ']';
 			std::list<std::list<config_capability<cap_type>>> capList;
+			bool success = true;
 			for (const auto & config : attrCapList) {
 				const char capDelim = ',';
 				const auto capIdList = bctoolbox::Utils::split(config, capDelim);
@@ -203,7 +217,9 @@ namespace bellesip {
 					});
 					if (capIt == availableCaps.cend()) {
 						belle_sip_error("Unable to find capability with index %d - skipping it", idx);
+						// Configuration is not valid - clear all capabilities
 						caps.clear();
+						success = false;
 						break;
 					} else {
 						cfg.cap = *capIt;
@@ -220,7 +236,7 @@ namespace bellesip {
 				}
 			}
 
-			return capList;
+			return std::make_pair(capList, success);
 		}
 
 	}
