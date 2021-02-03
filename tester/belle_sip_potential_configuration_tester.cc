@@ -155,8 +155,8 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 	auto notZero = [] (const int & val) { return (val != 0); };
 
-	BC_ASSERT_EQUAL(graph.getAllAcap().size(), std::count_if(expMediaAcap.begin(), expMediaAcap.end(), notZero), std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllTcap().size(), std::count_if(expMediaTcap.begin(), expMediaTcap.end(), notZero), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getStreamAcap().size(), std::count_if(expMediaAcap.begin(), expMediaAcap.end(), notZero), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getStreamTcap().size(), std::count_if(expMediaTcap.begin(), expMediaTcap.end(), notZero), std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllAcfg().size(), std::count_if(expAcfg.begin(), expAcfg.end(), notZero), std::size_t, "%0lu");
 	BC_ASSERT_EQUAL(graph.getAllPcfg().size(), std::count_if(expPcfg.begin(), expPcfg.end(), notZero), std::size_t, "%0lu");
 
