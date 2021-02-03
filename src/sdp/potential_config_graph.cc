@@ -409,8 +409,8 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 	try {
 		const auto & cfg = acfg.at(idx);
 		return cfg;
-	} catch (const std::out_of_range& e) {
-		belle_sip_error("Exception thrown: %s - Unable to find attribute configuration at index %0u", e.what(), idx);
+	} catch (std::out_of_range&) {
+		belle_sip_error("Unable to find attribute configuration at index %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -418,8 +418,8 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 	try {
 		const auto & cfg = pcfg.at(idx);
 		return cfg;
-	} catch (const std::out_of_range& e) {
-		belle_sip_error("Exception thrown: %s - Unable to find potential configuration at index %0u", e.what(), idx);
+	} catch (std::out_of_range&) {
+		belle_sip_error("Unable to find potential configuration at index %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -433,8 +433,8 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SD
 	try {
 		const auto & cap = acap.at(idx);
 		return cap;
-	} catch (const std::out_of_range& e) {
-		belle_sip_error("Exception thrown: %s - Unable to find capability at index %0u", e.what(), idx);
+	} catch (std::out_of_range&) {
+		belle_sip_error("Unable to find capability at index %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_acap>();
 	}
 }
@@ -442,8 +442,8 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip
 	try {
 		const auto & cap = tcap.at(idx);
 		return cap;
-	} catch (const std::out_of_range& e) {
-		belle_sip_error("Exception thrown: %s - Unable to find transport capability at index %0u", e.what(), idx);
+	} catch (std::out_of_range&) {
+		belle_sip_error("Unable to find transport capability at index %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap>();
 	}
 }
@@ -569,8 +569,8 @@ void bellesip::SDP::SDPPotentialCfgGraph::addCfg(bellesip::SDP::SDPPotentialCfgG
 	bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 	try {
 		cfg = sessionCfg.at(streamIdx);
-	} catch (const std::out_of_range& e) {
-		belle_sip_error("Exception thrown: %s - Creating attribute configuration for stream at index %0u", e.what(), streamIdx);
+	} catch (std::out_of_range&) {
+		belle_sip_error("Creating attribute configuration for stream at index %0u", streamIdx);
 	}
 
 	cfg[cfgIdx] = createCfgAttr(streamIdx, acapIdx, tcapIdx, delete_media_attributes, delete_session_attributes);
@@ -602,8 +602,8 @@ void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(bellesip::SDP::SDPPot
 		try {
 			cfg = sessionCfg.at(streamIdx);
 			cfgAttr = cfg.at(cfgIdx);
-		} catch (const std::out_of_range& e) {
-			belle_sip_error("Exception thrown: %s - Creating configuration for stream at index %0u", e.what(), streamIdx);
+		} catch (std::out_of_range&) {
+			belle_sip_error("Creating configuration for stream at index %0u", streamIdx);
 			cfgAttr.delete_session_attributes = false;
 			cfgAttr.delete_media_attributes = false;
 		}
@@ -623,8 +623,8 @@ void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(bellesip::SDP::SDPPot
 		try {
 			cfg = sessionCfg.at(streamIdx);
 			cfgAttr = cfg.at(cfgIdx);
-		} catch (const std::out_of_range& e) {
-			belle_sip_error("Exception thrown: %s - Creating configuration for stream at index %0u", e.what(), streamIdx);
+		} catch (std::out_of_range&) {
+			belle_sip_error("Creating configuration for stream at index %0u", streamIdx);
 			cfgAttr.delete_session_attributes = false;
 			cfgAttr.delete_media_attributes = false;
 		}
