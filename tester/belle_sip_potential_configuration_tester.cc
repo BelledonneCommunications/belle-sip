@@ -94,16 +94,14 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 		auto expCfgTcap = expCfgTcapAttrs.find(cfgId);
 		BC_ASSERT_TRUE(expCfgTcap != expCfgTcapAttrs.end());
 
-		for (const auto & cfgAttr : cfgPair.second) {
+		auto cfgAttr = cfgPair.second;
 
-			noCfg++;
+		BC_ASSERT_EQUAL(cfgAttr.delete_media_attributes, expDeleteMediaAttributes, int, "%0d");
+		BC_ASSERT_EQUAL(cfgAttr.delete_session_attributes, expDeleteSessionAttributes, int, "%0d");
 
-			BC_ASSERT_EQUAL(cfgAttr.delete_media_attributes, expDeleteMediaAttributes, int, "%0d");
-			BC_ASSERT_EQUAL(cfgAttr.delete_session_attributes, expDeleteSessionAttributes, int, "%0d");
-
-			if (expCfgAcap != expCfgAcapAttrs.end()) {
+		if (expCfgAcap != expCfgAcapAttrs.end()) {
+			for (const auto & acapCfg : cfgAttr.acap) {
 				// Check acap
-				const auto & acapCfg = cfgAttr.acap;
 				const auto & acapReference = expCfgAcap->second;
 				for (const auto & acap : acapCfg) {
 					// Get shared pointer to capability
@@ -120,24 +118,30 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 					}
 				}
 			}
+		}
 
-			if (expCfgTcap != expCfgTcapAttrs.end()) {
-				// Check acap
-				const auto & tcapCfg = cfgAttr.tcap;
-				const auto & tcapReference = expCfgTcap->second;
-				for (const auto & tcap : tcapCfg) {
-					// Get shared pointer to capability
-					const auto capPtr = tcap.cap.lock();
-					BC_ASSERT_PTR_NOT_NULL(capPtr.get());
-					if (capPtr) {
-						checkTcap({capPtr}, 1, expTcapProtos);
-
-						const auto & tcapRef = std::find(tcapReference.begin(), tcapReference.end(), capPtr->index);
-						BC_ASSERT_TRUE(tcapRef != tcapReference.end());
-					}
+		if (expCfgTcap != expCfgTcapAttrs.end()) {
+			// Check acap
+			const auto & tcapCfg = cfgAttr.tcap;
+			const auto & tcapReference = expCfgTcap->second;
+			for (const auto & tcap : tcapCfg) {
+				// Get shared pointer to capability
+				const auto capPtr = tcap.cap.lock();
+				BC_ASSERT_PTR_NOT_NULL(capPtr.get());
+				if (capPtr) {
+					checkTcap({capPtr}, 1, expTcapProtos);
+					const auto & tcapRef = std::find(tcapReference.begin(), tcapReference.end(), capPtr->index);
+					BC_ASSERT_TRUE(tcapRef != tcapReference.end());
 				}
 			}
 		}
+
+		const auto & acapSize = cfgAttr.acap.size();
+		const auto acapValuesInCfg = (acapSize == 0) ? 1 : acapSize;
+		const auto & tcapSize = cfgAttr.tcap.size();
+		const auto tcapValuesInCfg = (tcapSize == 0) ? 1 : tcapSize;
+		noCfg += (tcapValuesInCfg*acapValuesInCfg);
+
 	}
 	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
 }
