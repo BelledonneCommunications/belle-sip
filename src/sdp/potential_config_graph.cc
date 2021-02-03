@@ -398,10 +398,10 @@ const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip
 const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllPcfg() const {
 	return pcfg;
 }
-const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getAllAcap() const {
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getStreamAcap() const {
 	return acap;
 }
-const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getAllTcap() const {
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap & bellesip::SDP::SDPPotentialCfgGraph::getStreamTcap() const {
 	return tcap;
 }
 
@@ -517,7 +517,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::canFindAcapWithIdx(const int & index) 
 	});
 	const bool foundInGlobalAcap = (globalAcapIt != globalAcap.cend());
 	bool foundInStreamAcap = false;
-	const auto & acaps = getAllAcap();
+	const auto & acaps = getStreamAcap();
 	for (const auto & streamAcapPair : acaps) {
 		const auto & acapList = streamAcapPair.second;
 		const auto streamAcapIt = std::find_if(acapList.cbegin(), acapList.cend(), [&index] (const std::shared_ptr<acapability> & cap) {
@@ -540,7 +540,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const int & index) 
 	});
 	const bool foundInGlobalTcap = (globalTcapIt != globalTcap.cend());
 	bool foundInStreamTcap = false;
-	const auto & tcaps = getAllTcap();
+	const auto & tcaps = getStreamTcap();
 	for (const auto & streamTcapPair : tcaps) {
 		const auto & tcapList = streamTcapPair.second;
 		const auto streamTcapIt = std::find_if(tcapList.cbegin(), tcapList.cend(), [&index] (const std::shared_ptr<capability> & cap) {
@@ -698,3 +698,80 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createCfgAt
 
 	return cfgAttr;
 }
+
+int bellesip::SDP::SDPPotentialCfgGraph::getFreeTCapIdx() const {
+	std::list<int> tcapIndexes;
+	auto addToIndexList = [&tcapIndexes] (const std::shared_ptr<capability> & cap) {
+		tcapIndexes.push_back(cap->index);
+	};
+	const auto & globalTcaps = getGlobalTcap();
+	std::for_each(globalTcaps.begin(), globalTcaps.end(), addToIndexList);
+	const auto & streamTcaps = getStreamTcap();
+	std::for_each(streamTcaps.begin(), streamTcaps.end(), [&tcapIndexes, &addToIndexList] (const std::pair<unsigned int, bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap> & tcapList) {
+		std::for_each(tcapList.second.begin(), tcapList.second.end(), addToIndexList);
+	});
+
+	return getFreeIdx(tcapIndexes);
+}
+
+int bellesip::SDP::SDPPotentialCfgGraph::getFreeACapIdx() const {
+	std::list<int> acapIndexes;
+	auto addToIndexList = [&acapIndexes] (const std::shared_ptr<acapability> & cap) {
+		acapIndexes.push_back(cap->index);
+	};
+	const auto & globalAcaps = getGlobalAcap();
+	std::for_each(globalAcaps.begin(), globalAcaps.end(), addToIndexList);
+	const auto & streamAcaps = getStreamAcap();
+	std::for_each(streamAcaps.begin(), streamAcaps.end(), [&acapIndexes, &addToIndexList] (const std::pair<unsigned int, bellesip::SDP::SDPPotentialCfgGraph::media_description_acap> & acapList) {
+		std::for_each(acapList.second.begin(), acapList.second.end(), addToIndexList);
+	});
+
+	return getFreeIdx(acapIndexes);
+
+}
+
+int bellesip::SDP::SDPPotentialCfgGraph::getFreeACfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
+	std::list<int> acfgIndexes;
+	auto addToIndexList = [&acfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
+		acfgIndexes.push_back(static_cast<int>(cfg.first));
+	};
+	const auto & acfgs = getAcfgForStream(idx);
+	std::for_each(acfgs.begin(), acfgs.end(), addToIndexList);
+
+	return getFreeIdx(acfgIndexes);
+}
+
+int bellesip::SDP::SDPPotentialCfgGraph::getFreePCfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
+	std::list<int> pcfgIndexes;
+	auto addToIndexList = [&pcfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
+		pcfgIndexes.push_back(static_cast<int>(cfg.first));
+	};
+	const auto & pcfgs = getPcfgForStream(idx);
+	std::for_each(pcfgs.begin(), pcfgs.end(), addToIndexList);
+
+	return getFreeIdx(pcfgIndexes);
+}
+
+int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) const {
+	auto lCopy = l;
+	// Sort elements
+	lCopy.sort();
+	// Delete duplicates
+	lCopy.unique();
+	decltype(lCopy) lResult(lCopy.begin(), std::prev(lCopy.end(), 1));
+	// Compute the difference between consecutive elements - if any of them is not equal to 1, then a free index is found
+	std::transform (std::next(lCopy.begin(), 1), lCopy.end(), lResult.begin(), lResult.begin(), std::minus<int>());
+	const auto & gapIt = std::find_if_not(lResult.cbegin(), lResult.cend(), [] (const int & el) { return (el == 1);});
+	if (gapIt == lResult.cend()) {
+		// No gap found - then return max element + 1
+		return *std::max_element(l.cbegin(), l.cend()) + 1;
+	} else {
+		const auto elIdx = std::distance(lResult.cbegin(), gapIt);
+		const int startGap = *(std::next(l.begin(), elIdx));
+		return startGap + 1;
+	}
+
+	return -1;
+}
+
+
