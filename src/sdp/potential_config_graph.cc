@@ -410,7 +410,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 		const auto & cfg = acfg.at(idx);
 		return cfg;
 	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find attribute configuration at index %0u", idx);
+		belle_sip_error("Unable to find attribute configurations for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -419,7 +419,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 		const auto & cfg = pcfg.at(idx);
 		return cfg;
 	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find potential configuration at index %0u", idx);
+		belle_sip_error("Unable to find potential configurations for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -434,7 +434,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SD
 		const auto & cap = acap.at(idx);
 		return cap;
 	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find capability at index %0u", idx);
+		belle_sip_error("Unable to find media attribute capabilities for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_acap>();
 	}
 }
@@ -443,7 +443,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & bellesip
 		const auto & cap = tcap.at(idx);
 		return cap;
 	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find transport capability at index %0u", idx);
+		belle_sip_error("Unable to find media transport capabilities for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap>();
 	}
 }
