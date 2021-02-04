@@ -17,6 +17,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef POTENTIAL_CONFIG_GRAPH_H
+#define POTENTIAL_CONFIG_GRAPH_H
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -249,3 +252,4 @@ namespace bellesip {
 	}
 }
 
+#endif // POTENTIAL_CONFIG_GRAPH_H
