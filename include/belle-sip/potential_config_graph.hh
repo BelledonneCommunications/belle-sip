@@ -113,20 +113,20 @@ namespace bellesip {
 				bool addAcapToStream(const session_description_acap::key_type & streamIdx, const int & capIdx, const std::string & capName, const std::string & capValue);
 				bool addTcapToStream(const session_description_base_cap::key_type & streamIdx, const int & capIdx, const std::string & capValue);
 
-				void addAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
 				void addAcapListToAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
 				void addTcapListToAcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
 
-				void addPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
 				void addAcapListToPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
 				void addTcapListToPcfg(const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
 
 				void processSessionDescription (const belle_sdp_session_description_t* session_desc);
 
-				int getFreeTCapIdx() const;
-				int getFreeACapIdx() const;
-				int getFreeACfgIdx(const session_description_config::key_type & idx) const;
-				int getFreePCfgIdx(const session_description_config::key_type & idx) const;
+				int getFreeTcapIdx() const;
+				int getFreeAcapIdx() const;
+				int getFreeAcfgIdx(const session_description_config::key_type & idx) const;
+				int getFreePcfgIdx(const session_description_config::key_type & idx) const;
 
 			protected:
 
@@ -163,8 +163,8 @@ namespace bellesip {
 
 				// Configuration
 				void processMediaCfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::config_type_t cfgType);
-				void processMediaACfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc);
-				void processMediaPCfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc);
+				void processMediaAcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc);
+				void processMediaPcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc);
 				// TODO: should attribute have const? belle_sdp_pcfg_attribute_get_configs takes a non const
 				media_description_config::mapped_type createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const media_description_acap & mediaAcap, const media_description_base_cap & mediaTcap);
 				// TODO: should attribute have const? belle_sdp_acfg_attribute_get_configs takes a non const
@@ -174,16 +174,16 @@ namespace bellesip {
 				int getElementIdx(const std::string & index) const;
 
 				// streamIdx -> index of the stream to search for capabilities
-				// acapIdx -> map of attribute capability indexes and mandatory attributes
+				// acapIdxs -> list of map of attribute capability indexes and mandatory attributes
 				// tcapIdx -> map of transport protocol indexes
 				// delete_media_attributes -> delete media attributes flags
 				// delete_session_attributes -> delete session attributes flags
-				config_attribute createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const;
+				config_attribute createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const;
 
 				bool canFindAcapWithIdx(const int & index) const;
 				bool canFindTcapWithIdx(const int & index) const;
 
-				void addCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
+				void addCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes);
 
 				void addAcapListToCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx);
 				void addTcapListToCfg(session_description_config & sessionCfg, const session_description_config::key_type & streamIdx, const media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx);
