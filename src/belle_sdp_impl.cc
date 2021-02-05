@@ -367,7 +367,10 @@ static void belle_sdp_acap_attribute_init(belle_sdp_acap_attribute_t* attribute)
 	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "acap");
 }
 
-void belle_sdp_acap_attribute_destroy(belle_sdp_acap_attribute_t* attribute) {}
+void belle_sdp_acap_attribute_destroy(belle_sdp_acap_attribute_t* attribute) {
+	DESTROY_STRING(attribute,name)
+	DESTROY_STRING(attribute,value)
+}
 void belle_sdp_acap_attribute_clone(belle_sdp_acap_attribute_t* attribute, const belle_sdp_acap_attribute_t *orig) {
 	attribute->id = orig->id;
 	belle_sdp_acap_attribute_set_name(attribute, belle_sdp_acap_attribute_get_name(orig));
@@ -404,7 +407,9 @@ static void belle_sdp_acfg_attribute_init(belle_sdp_acfg_attribute_t* attribute)
 	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "acfg");
 }
 
-void belle_sdp_acfg_attribute_destroy(belle_sdp_acfg_attribute_t* attribute) {}
+void belle_sdp_acfg_attribute_destroy(belle_sdp_acfg_attribute_t* attribute) {
+	belle_sip_list_free_with_data(attribute->configs, belle_sip_free);
+}
 void belle_sdp_acfg_attribute_clone(belle_sdp_acfg_attribute_t* attribute, const belle_sdp_acfg_attribute_t *orig) {
 	attribute->id = orig->id;
 	attribute->configs = belle_sip_list_copy_with_data(orig->configs, belle_sip_string_copyfunc);
@@ -457,7 +462,9 @@ static void belle_sdp_pcfg_attribute_init(belle_sdp_pcfg_attribute_t* attribute)
 	belle_sdp_attribute_set_name(BELLE_SDP_ATTRIBUTE(attribute), "pcfg");
 }
 
-void belle_sdp_pcfg_attribute_destroy(belle_sdp_pcfg_attribute_t* attribute) {}
+void belle_sdp_pcfg_attribute_destroy(belle_sdp_pcfg_attribute_t* attribute) {
+	belle_sip_list_free_with_data(attribute->configs, belle_sip_free);
+}
 void belle_sdp_pcfg_attribute_clone(belle_sdp_pcfg_attribute_t* attribute, const belle_sdp_pcfg_attribute_t *orig) {
 	attribute->id = orig->id;
 	attribute->configs = belle_sip_list_copy_with_data(orig->configs, belle_sip_string_copyfunc);
