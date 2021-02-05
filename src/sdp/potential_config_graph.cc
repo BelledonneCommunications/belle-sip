@@ -788,4 +788,6 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) co
 	return -1;
 }
 
-
+bool bellesip::SDP::SDPPotentialCfgGraph::empty() const {
+	return globalAcap.empty() && globalTcap.empty() && acfg.empty() && pcfg.empty() && acap.empty() && tcap.empty();
+}
