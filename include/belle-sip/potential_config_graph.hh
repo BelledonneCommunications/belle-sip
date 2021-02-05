@@ -128,12 +128,12 @@ namespace bellesip {
 				int getFreeAcfgIdx(const session_description_config::key_type & idx) const;
 				int getFreePcfgIdx(const session_description_config::key_type & idx) const;
 
+				bool empty() const;
 			protected:
 
 			private:
 				// configuration list
 				// Each element of the vector is a media session
-
 				media_description_acap globalAcap;
 				media_description_base_cap globalTcap;
 				session_description_config acfg;
