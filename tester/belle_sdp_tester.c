@@ -84,12 +84,16 @@ static void test_csup_attribute(void) {
 	const char* line = "a=csup:cap-v0,foo,bar";
 
 	lAttribute = belle_sdp_csup_attribute_parse(line);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_csup_attribute_t* clone = BELLE_SDP_CSUP_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "csup");
@@ -111,12 +115,16 @@ static void test_creq_attribute(void) {
 	const char* line = "a=creq:cap-v0,foo,bar";
 
 	lAttribute = belle_sdp_creq_attribute_parse(line);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_creq_attribute_t* clone = BELLE_SDP_CREQ_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "creq");
@@ -138,12 +146,16 @@ static void test_tcap_attribute(void) {
 	const char* line = "a=tcap:5 RTP/SAVP RTP/SAVPF";
 
 	lAttribute = belle_sdp_tcap_attribute_parse(line);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_tcap_attribute_t* clone = BELLE_SDP_TCAP_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "tcap");
@@ -164,12 +176,16 @@ static void test_acap_attribute(void) {
 
 	lAttribute = belle_sdp_acap_attribute_parse(line);
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "acap");
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_acap_attribute_t* clone = BELLE_SDP_ACAP_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_EQUAL(belle_sdp_acap_attribute_get_id(lAttribute), 3, int, "%d");
@@ -187,12 +203,16 @@ static void test_acfg_attribute(void) {
 
 	lAttribute = belle_sdp_acfg_attribute_parse(line);
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "acfg");
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_acfg_attribute_t* clone = BELLE_SDP_ACFG_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_EQUAL(belle_sdp_acfg_attribute_get_id(lAttribute), 1, int, "%d");
@@ -214,12 +234,16 @@ static void test_pcfg_attribute(void) {
 
 	lAttribute = belle_sdp_pcfg_attribute_parse(line);
 	BC_ASSERT_STRING_EQUAL(belle_sdp_attribute_get_name(BELLE_SDP_ATTRIBUTE(lAttribute)), "pcfg");
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute)), line);
+	char * obj_string = belle_sip_object_to_string(BELLE_SIP_OBJECT(lAttribute));
+	BC_ASSERT_STRING_EQUAL(obj_string, line);
+	belle_sip_free(obj_string);
 
 	belle_sdp_pcfg_attribute_t* clone = BELLE_SDP_PCFG_ATTRIBUTE(
 		belle_sip_object_clone(BELLE_SIP_OBJECT(lAttribute))
 	);
-	BC_ASSERT_STRING_EQUAL(belle_sip_object_to_string(clone), line);
+	char * clone_obj_string = belle_sip_object_to_string(clone);
+	BC_ASSERT_STRING_EQUAL(clone_obj_string, line);
+	belle_sip_free(clone_obj_string);
 	belle_sip_object_unref(BELLE_SIP_OBJECT(clone));
 
 	BC_ASSERT_EQUAL(belle_sdp_pcfg_attribute_get_id(lAttribute), 1, int, "%d");
@@ -791,6 +815,7 @@ static void test_mime_parameter(void) {
 	belle_sdp_media_description_t* l_media_description_tmp = belle_sdp_media_description_parse(l_src);
 	char* sdp = belle_sip_object_to_string(l_media_description_tmp);
 	belle_sdp_media_description_t* l_media_description = belle_sdp_media_description_parse(sdp);
+	belle_sip_free(sdp);
 	belle_sip_object_unref(l_media_description_tmp);
 
 	mime_parameter_list = belle_sdp_media_description_build_mime_parameters(l_media_description);
@@ -811,9 +836,10 @@ static void test_mime_parameter(void) {
 
 	/*marshal/unmarshal again*/
 	l_media_description_tmp = l_media_description;
-	l_media_description= belle_sdp_media_description_parse(belle_sip_object_to_string(l_media_description));
+	char* media_desc_string = belle_sip_object_to_string(l_media_description);
+	l_media_description= belle_sdp_media_description_parse(media_desc_string);
+	belle_sip_free(media_desc_string);
 	belle_sip_object_unref(l_media_description_tmp);
-	/*belle_sip_message("%s",belle_sip_object_to_string(l_media_description));*/
 	{
 		belle_sip_list_t* attributes=belle_sdp_media_description_get_attributes(l_media_description);
 #ifdef	BELLE_SDP_FORCE_RTP_MAP
