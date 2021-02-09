@@ -34,8 +34,7 @@ bellesip::SDP::SDPPotentialCfgGraph::SDPPotentialCfgGraph (const belle_sdp_sessi
 bellesip::SDP::SDPPotentialCfgGraph & bellesip::SDP::SDPPotentialCfgGraph::operator= (const bellesip::SDP::SDPPotentialCfgGraph & other) {
 	globalAcap = other.globalAcap;
 	globalTcap = other.globalTcap;
-	acfg = other.acfg;
-	pcfg = other.pcfg;
+	cfgs = other.cfgs;
 	acap = other.acap;
 	tcap = other.tcap;
 
@@ -72,9 +71,6 @@ void bellesip::SDP::SDPPotentialCfgGraph::processSessionDescription (const belle
 	}
 
 
-	if (!acfg.empty() && !pcfg.empty()) {
-		belle_sip_error("The provided sdp is not valid because it defines %0u attribute configurations and %0u potential configurations - pcfg attrbutes are allowed in offers and acfg attributes in answers ", static_cast<unsigned int>(acfg.size()), static_cast<unsigned int>(pcfg.size()));
-	}
 }
 
 const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getSessionCapabilityAttributes(const belle_sdp_session_description_t* session_desc, const bellesip::SDP::capability_type_t cap) {
@@ -104,10 +100,14 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaDescription(const unsigned
 	}
 
 	// ACFG
-	processMediaCfg(idx, media_desc, bellesip::SDP::config_type::ACFG);
+	const auto acfgFound = processMediaCfg(idx, media_desc, bellesip::SDP::config_type::ACFG);
 
 	// PCFG
-	processMediaCfg(idx, media_desc, bellesip::SDP::config_type::PCFG);
+	const auto pcfgFound = processMediaCfg(idx, media_desc, bellesip::SDP::config_type::PCFG);
+
+	if (acfgFound && pcfgFound) {
+		belle_sip_error("The provided sdp is not valid because it defines both attribute configurations and potential configurations - pcfg attrbutes are allowed in offers and acfg attributes in answers ");
+	}
 }
 
 const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getMediaCapabilityAttributes(const belle_sdp_media_description_t* media_desc, const bellesip::SDP::capability_type_t cap) {
@@ -177,18 +177,21 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::S
 	return createTCapabilitiesList(caps_attr, cap);
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::config_type_t cfgType) {
+bool bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::config_type_t cfgType) {
+	bool found = false;
 	switch (cfgType) {
 		case bellesip::SDP::config_type_t::ACFG:
-			processMediaAcfg(idx, media_desc);
+			found = processMediaAcfg(idx, media_desc);
 			break;
 		case bellesip::SDP::config_type_t::PCFG:
-			processMediaPcfg(idx, media_desc);
+			found = processMediaPcfg(idx, media_desc);
 			break;
 	}
+
+	return found;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
+bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "acfg");
 	media_description_config config;
 	const auto mediaAcap = getAllAcapForStream(idx);
@@ -205,12 +208,15 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 		}
 	}
 
+	bool found = false;
 	if (!config.empty()) {
-		acfg[idx] = config;
+		found = true;
+		cfgs[idx] = config;
 	}
+	return found;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
+bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "pcfg");
 	media_description_config config;
 	for(;attrs!=NULL;attrs=attrs->next){
@@ -227,9 +233,12 @@ void bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 		}
 	}
 
+	bool found = false;
 	if (!config.empty()) {
-		pcfg[idx] = config;
+		found = true;
+		cfgs[idx] = config;
 	}
+	return found;
 }
 
 bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type bellesip::SDP::SDPPotentialCfgGraph::createPConfigFromAttribute(belle_sdp_pcfg_attribute_t* attribute, const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & mediaAcap, const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap & mediaTcap) {
@@ -392,11 +401,8 @@ int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index
 	return std::stoi(match.str());
 }
 
-const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllAcfg() const {
-	return acfg;
-}
-const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllPcfg() const {
-	return pcfg;
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllCfg() const {
+	return cfgs;
 }
 const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getStreamAcap() const {
 	return acap;
@@ -405,21 +411,12 @@ const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap & belles
 	return tcap;
 }
 
-const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAcfgForStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getCfgForStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
 	try {
-		const auto & cfg = acfg.at(idx);
+		const auto & cfg = cfgs.at(idx);
 		return cfg;
 	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find attribute configurations for stream %0u", idx);
-		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
-	}
-}
-const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::SDP::SDPPotentialCfgGraph::getPcfgForStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
-	try {
-		const auto & cfg = pcfg.at(idx);
-		return cfg;
-	} catch (std::out_of_range&) {
-		belle_sip_error("Unable to find potential configurations for stream %0u", idx);
+		belle_sip_error("Unable to find configuration for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
 	}
 }
@@ -556,51 +553,27 @@ bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const int & index) 
 	return (foundInStreamTcap || foundInGlobalTcap);
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addPcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
-	addCfg(pcfg, streamIdx, cfgIdx, acapIdxs, tcapIdx, delete_media_attributes, delete_session_attributes);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addAcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
-	addCfg(acfg, streamIdx, cfgIdx, acapIdxs, tcapIdx, delete_media_attributes, delete_session_attributes);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addCfg(bellesip::SDP::SDPPotentialCfgGraph::session_description_config & sessionCfg, const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
+void bellesip::SDP::SDPPotentialCfgGraph::addCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
 
 	bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 	try {
-		cfg = sessionCfg.at(streamIdx);
+		cfg = cfgs.at(streamIdx);
 	} catch (std::out_of_range&) {
 		belle_sip_error("Creating attribute configuration for stream at index %0u", streamIdx);
 	}
 
 	cfg[cfgIdx] = createCfgAttr(streamIdx, acapIdxs, tcapIdx, delete_media_attributes, delete_session_attributes);
 
-	sessionCfg[streamIdx] = cfg;
+	cfgs[streamIdx] = cfg;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToAcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx) {
-	addAcapListToCfg(acfg, streamIdx, cfgIdx, acapIdx);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToAcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx) {
-	addTcapListToCfg(acfg, streamIdx, cfgIdx, tcapIdx);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToPcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx) {
-	addAcapListToCfg(acfg, streamIdx, cfgIdx, acapIdx);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToPcfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx) {
-	addTcapListToCfg(acfg, streamIdx, cfgIdx, tcapIdx);
-}
-
-void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(bellesip::SDP::SDPPotentialCfgGraph::session_description_config & sessionCfg, const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx) {
+void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx) {
 
 	if (!acapIdx.empty()) {
 		bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 		bellesip::SDP::config_attribute cfgAttr;
 		try {
-			cfg = sessionCfg.at(streamIdx);
+			cfg = cfgs.at(streamIdx);
 			cfgAttr = cfg.at(cfgIdx);
 		} catch (std::out_of_range&) {
 			belle_sip_error("Creating configuration for stream at index %0u", streamIdx);
@@ -611,17 +584,17 @@ void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(bellesip::SDP::SDPPot
 		cfgAttr.acap.push_back(createAcapList(streamIdx, acapIdx));
 		cfg[cfgIdx] = cfgAttr;
 
-		sessionCfg[streamIdx] = cfg;
+		cfgs[streamIdx] = cfg;
 	}
 
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(bellesip::SDP::SDPPotentialCfgGraph::session_description_config & sessionCfg, const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx) {
+void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx) {
 	if (!tcapIdx.empty()) {
 		bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 		bellesip::SDP::config_attribute cfgAttr;
 		try {
-			cfg = sessionCfg.at(streamIdx);
+			cfg = cfgs.at(streamIdx);
 			cfgAttr = cfg.at(cfgIdx);
 		} catch (std::out_of_range&) {
 			belle_sip_error("Creating configuration for stream at index %0u", streamIdx);
@@ -633,7 +606,7 @@ void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(bellesip::SDP::SDPPot
 		cfgAttr.tcap.insert(cfgAttr.tcap.begin(), tcapList.begin(), tcapList.end());
 		cfg[cfgIdx] = cfgAttr;
 
-		sessionCfg[streamIdx] = cfg;
+		cfgs[streamIdx] = cfg;
 	}
 }
 
@@ -744,26 +717,15 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
 
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
-	std::list<int> acfgIndexes;
-	auto addToIndexList = [&acfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
-		acfgIndexes.push_back(static_cast<int>(cfg.first));
+int bellesip::SDP::SDPPotentialCfgGraph::getFreeCfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
+	std::list<int> cfgIndexes;
+	auto addToIndexList = [&cfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
+		cfgIndexes.push_back(static_cast<int>(cfg.first));
 	};
-	const auto & acfgs = getAcfgForStream(idx);
-	std::for_each(acfgs.begin(), acfgs.end(), addToIndexList);
+	const auto & streamCfgs = getCfgForStream(idx);
+	std::for_each(streamCfgs.begin(), streamCfgs.end(), addToIndexList);
 
-	return getFreeIdx(acfgIndexes);
-}
-
-int bellesip::SDP::SDPPotentialCfgGraph::getFreePcfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
-	std::list<int> pcfgIndexes;
-	auto addToIndexList = [&pcfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
-		pcfgIndexes.push_back(static_cast<int>(cfg.first));
-	};
-	const auto & pcfgs = getPcfgForStream(idx);
-	std::for_each(pcfgs.begin(), pcfgs.end(), addToIndexList);
-
-	return getFreeIdx(pcfgIndexes);
+	return getFreeIdx(cfgIndexes);
 }
 
 int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) const {
@@ -789,5 +751,5 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) co
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::empty() const {
-	return globalAcap.empty() && globalTcap.empty() && acfg.empty() && pcfg.empty() && acap.empty() && tcap.empty();
+	return globalAcap.empty() && globalTcap.empty() && cfgs.empty() && acap.empty() && tcap.empty();
 }
