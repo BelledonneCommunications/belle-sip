@@ -26,7 +26,7 @@ struct acapParts {
 };
 
 struct acapCfgParts {
-	const int idx;
+	const unsigned int idx;
 	const bool mandatory;
 };
 
@@ -80,7 +80,7 @@ static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
+static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<unsigned int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
 
 	unsigned int noCfg = 0;
 	for (const auto & cfgPair : cfg) {
@@ -146,7 +146,7 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
 }
 
-static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<acapCfgParts>> & expCfgAcapAttrs, const std::map<int, std::list<int>> & expCfgTcapAttrs, const int expGlobalProtoCap, const int expGlobalTcap, const int expGlobalAcap, const std::vector<int> expMediaProtoCap, const std::vector<int> expMediaTcap, const std::vector<int> expMediaAcap, const std::vector<int> expCfg, const std::vector<bool> expDeleteMediaAttributes, const std::vector<bool> expDeleteSessionAttributes) {
+static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<acapCfgParts>> & expCfgAcapAttrs, const std::map<int, std::list<unsigned int>> & expCfgTcapAttrs, const int expGlobalProtoCap, const int expGlobalTcap, const int expGlobalAcap, const std::vector<int> expMediaProtoCap, const std::vector<int> expMediaTcap, const std::vector<int> expMediaAcap, const std::vector<int> expCfg, const std::vector<bool> expDeleteMediaAttributes, const std::vector<bool> expDeleteSessionAttributes) {
 	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
@@ -237,7 +237,7 @@ static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs = {
 	{ 36825, { {4, true}, {9, true} } },
 };
 
-static const std::map<int, std::list<int>> expCfgTcapAttrs = {
+static const std::map<int, std::list<unsigned int>> expCfgTcapAttrs = {
 	{ 1, {1} },
 	{ 1475, {10} },
 	{ 425, {66} },
@@ -968,7 +968,7 @@ static void test_with_one_pcfg_with_alternatives(void) {
 	base_test_with_potential_config(simpleSdpWithOnePotentialPConfigWithAlternatives, expAcapAttrs, expCfgAcapAttrsWithAlternatives, expCfgTcapAttrs, 1, 1, 1, {3}, {2}, {3}, {2}, {false}, {false});
 }
 
-static const std::map<int, std::list<int>> expCfgTcapAttrsWithAlternatives = {
+static const std::map<int, std::list<unsigned int>> expCfgTcapAttrsWithAlternatives = {
 	{ 1, {1, 19} },
 	{ 1475, {10} },
 	{ 425, {10} },
@@ -1173,7 +1173,7 @@ static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrsWithOptionals
 	{ 2, {{1001, true}, {1, true}} },
 };
 
-static const std::map<int, std::list<int>> expCfgTcapAttrsWithOptionals = {
+static const std::map<int, std::list<unsigned int>> expCfgTcapAttrsWithOptionals = {
 	{ 1, {1, 19} },
 	{ 1475, {10} },
 	{ 425, {10} },
@@ -2029,7 +2029,7 @@ static const std::map<int, std::list<acapCfgParts>> expCfgAcapAttrsComplexSdp = 
 	{ 4601, {{97, false}, {59, false}, {10021, true}} },
 };
 
-static const std::map<int, std::list<int>> expCfgTcapAttrsComplexSdp = {
+static const std::map<int, std::list<unsigned int>> expCfgTcapAttrsComplexSdp = {
 	{ 1, {1, 19} },
 	{ 1475, {10} },
 	{ 425, {10} },

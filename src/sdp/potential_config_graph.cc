@@ -383,7 +383,7 @@ bellesip::SDP::capability_type_t bellesip::SDP::SDPPotentialCfgGraph::capability
 	return bellesip::SDP::capability_type_t::EXTENDED;
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index) const {
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index) const {
 	std::regex indexRegex("(\\d+)");
 	auto indexBegin = std::sregex_iterator(index.begin(), index.end(), indexRegex);
 	auto indexEnd = std::sregex_iterator();
@@ -398,7 +398,7 @@ int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::string & index
 	}
 
 	std::smatch match = *indexBegin;
-	return std::stoi(match.str());
+	return static_cast<unsigned int>(std::stoi(match.str()));
 }
 
 const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllCfg() const {
@@ -457,7 +457,7 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::
 	return tcaps;
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalAcap(const int & idx, const std::string & name, const std::string & value) {
+bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalAcap(const unsigned int & idx, const std::string & name, const std::string & value) {
 	const auto canAdd = (canFindAcapWithIdx(idx) == false);
 	if (canAdd == true) {
 		std::shared_ptr<acapability> elem = std::make_shared<acapability>();
@@ -470,7 +470,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalAcap(const int & idx, const s
 	return canAdd;
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalTcap(const int & idx, const std::string & value) {
+bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalTcap(const unsigned int & idx, const std::string & value) {
 	const auto canAdd = (canFindTcapWithIdx(idx) == false);
 	if (canAdd == true) {
 		std::shared_ptr<capability> elem = std::make_shared<capability>();
@@ -482,7 +482,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::addGlobalTcap(const int & idx, const s
 	return canAdd;
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::addAcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap::key_type & streamIdx, const int & capIdx, const std::string & capName, const std::string & capValue) {
+bool bellesip::SDP::SDPPotentialCfgGraph::addAcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap::key_type & streamIdx, const unsigned int & capIdx, const std::string & capName, const std::string & capValue) {
 	const auto canAdd = (canFindAcapWithIdx(capIdx) == false);
 	if (canAdd == true) {
 		std::shared_ptr<acapability> elem = std::make_shared<acapability>();
@@ -495,7 +495,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::addAcapToStream(const bellesip::SDP::S
 	return canAdd;
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::addTcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap::key_type & streamIdx, const int & capIdx, const std::string & capValue) {
+bool bellesip::SDP::SDPPotentialCfgGraph::addTcapToStream(const bellesip::SDP::SDPPotentialCfgGraph::session_description_base_cap::key_type & streamIdx, const unsigned int & capIdx, const std::string & capValue) {
 	const auto canAdd = (canFindTcapWithIdx(capIdx) == false);
 	if (canAdd == true) {
 		std::shared_ptr<capability> elem = std::make_shared<capability>();
@@ -507,7 +507,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::addTcapToStream(const bellesip::SDP::S
 	return canAdd;
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::canFindAcapWithIdx(const int & index) const {
+bool bellesip::SDP::SDPPotentialCfgGraph::canFindAcapWithIdx(const unsigned int & index) const {
 	const auto & globalAcaps = getGlobalAcap();
 	const auto globalAcapIt = std::find_if(globalAcaps.cbegin(), globalAcaps.cend(), [&index] (const std::shared_ptr<acapability> & cap) {
 		return (cap->index == index);
@@ -530,7 +530,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::canFindAcapWithIdx(const int & index) 
 	return (foundInStreamAcap || foundInGlobalAcap);
 }
 
-bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const int & index) const {
+bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const unsigned int & index) const {
 	const auto & globalTcaps = getGlobalTcap();
 	const auto globalTcapIt = std::find_if(globalTcaps.cbegin(), globalTcaps.cend(), [&index] (const std::shared_ptr<capability> & cap) {
 		return (cap->index == index);
@@ -553,7 +553,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::canFindTcapWithIdx(const int & index) 
 	return (foundInStreamTcap || foundInGlobalTcap);
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
+void bellesip::SDP::SDPPotentialCfgGraph::addCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::list<std::map<unsigned int, bool>> & acapIdxs, std::list<unsigned int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) {
 
 	bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 	try {
@@ -567,7 +567,7 @@ void bellesip::SDP::SDPPotentialCfgGraph::addCfg(const bellesip::SDP::SDPPotenti
 	cfgs[streamIdx] = cfg;
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<int, bool> & acapIdx) {
+void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, const std::map<unsigned int, bool> & acapIdx) {
 
 	if (!acapIdx.empty()) {
 		bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
@@ -589,7 +589,7 @@ void bellesip::SDP::SDPPotentialCfgGraph::addAcapListToCfg(const bellesip::SDP::
 
 }
 
-void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<int> & tcapIdx) {
+void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const bellesip::SDP::SDPPotentialCfgGraph::media_description_config::key_type & cfgIdx, std::list<unsigned int> & tcapIdx) {
 	if (!tcapIdx.empty()) {
 		bellesip::SDP::SDPPotentialCfgGraph::media_description_config cfg;
 		bellesip::SDP::config_attribute cfgAttr;
@@ -610,7 +610,7 @@ void bellesip::SDP::SDPPotentialCfgGraph::addTcapListToCfg(const bellesip::SDP::
 	}
 }
 
-std::list<bellesip::SDP::config_capability<bellesip::SDP::acapability>> bellesip::SDP::SDPPotentialCfgGraph::createAcapList(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::map<int, bool> & acapIdx) const {
+std::list<bellesip::SDP::config_capability<bellesip::SDP::acapability>> bellesip::SDP::SDPPotentialCfgGraph::createAcapList(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::map<unsigned int, bool> & acapIdx) const {
 	std::list<bellesip::SDP::config_capability<bellesip::SDP::acapability>> acapList;
 
 	const auto & acaps = getAllAcapForStream(streamIdx);
@@ -634,7 +634,7 @@ std::list<bellesip::SDP::config_capability<bellesip::SDP::acapability>> bellesip
 	return acapList;
 }
 
-std::list<bellesip::SDP::config_capability<bellesip::SDP::capability>> bellesip::SDP::SDPPotentialCfgGraph::createTcapList(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<int> & tcapIdx) const {
+std::list<bellesip::SDP::config_capability<bellesip::SDP::capability>> bellesip::SDP::SDPPotentialCfgGraph::createTcapList(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<unsigned int> & tcapIdx) const {
 	std::list<bellesip::SDP::config_capability<bellesip::SDP::capability>> tcapList;
 	const auto & tcaps = getAllTcapForStream(streamIdx);
 	for (const auto & idx : tcapIdx) {
@@ -655,7 +655,7 @@ std::list<bellesip::SDP::config_capability<bellesip::SDP::capability>> bellesip:
 	return tcapList;
 }
 
-bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<std::map<int, bool>> & acapIdxs, std::list<int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const {
+bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<std::map<unsigned int, bool>> & acapIdxs, std::list<unsigned int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const {
 	bellesip::SDP::config_attribute cfgAttr;
 	cfgAttr.delete_session_attributes = delete_session_attributes;
 	cfgAttr.delete_media_attributes = delete_media_attributes;
@@ -672,8 +672,8 @@ bellesip::SDP::config_attribute bellesip::SDP::SDPPotentialCfgGraph::createCfgAt
 	return cfgAttr;
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getFreeTcapIdx() const {
-	std::list<int> tcapIndexes;
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeTcapIdx() const {
+	std::list<unsigned int> tcapIndexes;
 	auto addToIndexList = [&tcapIndexes] (const std::shared_ptr<capability> & cap) {
 		tcapIndexes.push_back(cap->index);
 	};
@@ -694,8 +694,8 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeTcapIdx() const {
 	return getFreeIdx(tcapIndexes);
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
-	std::list<int> acapIndexes;
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
+	std::list<unsigned int> acapIndexes;
 	auto addToIndexList = [&acapIndexes] (const std::shared_ptr<acapability> & cap) {
 		acapIndexes.push_back(cap->index);
 	};
@@ -717,10 +717,10 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
 
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getFreeCfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
-	std::list<int> cfgIndexes;
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeCfgIdx(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & idx) const {
+	std::list<unsigned int> cfgIndexes;
 	auto addToIndexList = [&cfgIndexes] (const std::pair<unsigned int, bellesip::SDP::config_attribute> & cfg) {
-		cfgIndexes.push_back(static_cast<int>(cfg.first));
+		cfgIndexes.push_back(cfg.first);
 	};
 	const auto & streamCfgs = getCfgForStream(idx);
 	std::for_each(streamCfgs.begin(), streamCfgs.end(), addToIndexList);
@@ -728,7 +728,7 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeCfgIdx(const bellesip::SDP::SDPP
 	return getFreeIdx(cfgIndexes);
 }
 
-int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) const {
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<unsigned int> & l) const {
 	auto lCopy = l;
 	// Sort elements
 	lCopy.sort();
@@ -737,7 +737,7 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) co
 	decltype(lCopy) lResult(lCopy.begin(), std::prev(lCopy.end(), 1));
 	// Compute the difference between consecutive elements - if any of them is not equal to 1, then a free index is found
 	std::transform (std::next(lCopy.begin(), 1), lCopy.end(), lResult.begin(), lResult.begin(), std::minus<int>());
-	const auto & gapIt = std::find_if_not(lResult.cbegin(), lResult.cend(), [] (const int & el) { return (el == 1);});
+	const auto & gapIt = std::find_if_not(lResult.cbegin(), lResult.cend(), [] (const unsigned int & el) { return (el == 1);});
 	if (gapIt == lResult.cend()) {
 		// No gap found - then return max element + 1
 		return *std::max_element(l.cbegin(), l.cend()) + 1;
@@ -747,7 +747,7 @@ int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<int> & l) co
 		return startGap + 1;
 	}
 
-	return -1;
+	return 0;
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::empty() const {
