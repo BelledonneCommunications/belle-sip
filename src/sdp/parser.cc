@@ -58,7 +58,7 @@ bellesip::SDP::Parser::Parser() {
            ->setCollector("option-tag", make_fn(&belle_sdp_csup_attribute_add_option_tag));
 
     _parser->setHandler("creq-attribute", make_fn(&belle_sdp_creq_attribute_new))
-           ->setCollector("option-tag", make_fn(&belle_sdp_csup_attribute_add_option_tag));
+           ->setCollector("option-tag", make_fn(&belle_sdp_creq_attribute_add_option_tag));
 
     _parser->setHandler("tcap-attribute", make_fn(&belle_sdp_tcap_attribute_new))
            ->setCollector("trpr-cap-num", make_fn(&belle_sdp_tcap_attribute_set_id))
@@ -119,7 +119,7 @@ bellesip::SDP::Parser::Parser() {
     _parser->setHandler("attribute", make_fn(&belle_sdp_attribute_holder_new))
            ->setCollector("acfg-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
            ->setCollector("creq-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
-           ->setCollector("creq-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
+           ->setCollector("csup-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
            ->setCollector("pcfg-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
            ->setCollector("tcap-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
            ->setCollector("acap-attribute", make_fn(&belle_sdp_attribute_holder_set_attribute))
