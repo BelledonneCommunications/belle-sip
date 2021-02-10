@@ -147,7 +147,7 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 }
 
 static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<acapCfgParts>> & expCfgAcapAttrs, const std::map<int, std::list<unsigned int>> & expCfgTcapAttrs, const int expGlobalProtoCap, const int expGlobalTcap, const int expGlobalAcap, const std::vector<int> expMediaProtoCap, const std::vector<int> expMediaTcap, const std::vector<int> expMediaAcap, const std::vector<int> expCfg, const std::vector<bool> expDeleteMediaAttributes, const std::vector<bool> expDeleteSessionAttributes) {
-	const belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
+	belle_sdp_session_description_t* sessionDescription = belle_sdp_session_description_parse(src);
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
 
@@ -162,6 +162,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 	// ACAP 
 	const auto globalAcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap");
 	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(globalAcap), (void (*)(void*))belle_sip_object_unref);
 	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
 
 	const auto parsedGlobalAcap = graph.getGlobalAcap().size();
@@ -171,6 +172,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
 	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
 	auto protoList = fillTcapMap(globalTcap, expGlobalProtoCap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(globalTcap), (void (*)(void*))belle_sip_object_unref);
 	auto noGlobalProtoCap = protoList.size();
 
 	const auto parsedGlobalTcap = graph.getGlobalTcap().size();
@@ -183,7 +185,9 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 		// ACAP
 		if (idx < expMediaAcap.size()) {
-			const auto noMediaAcap = belle_sip_list_size(belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap"));
+			const auto mediaAcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap");
+			const auto noMediaAcap = belle_sip_list_size(mediaAcap);
+			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaAcap), (void (*)(void*))belle_sip_object_unref);
 			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
 			if (expMediaAcap.at(idx) != 0) {
 				const auto mediaAcapSize = graph.getMediaAcapForStream(idx).size();
@@ -198,6 +202,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 			const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
 			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0lu");
 			auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap.at(idx));
+			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaTcap), (void (*)(void*))belle_sip_object_unref);
 			auto noMediaProtoCap = mediaProtoList.size();
 			protoList.insert(mediaProtoList.begin(), mediaProtoList.end());
 
@@ -217,6 +222,8 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 		mediaDescriptionElem = mediaDescriptionElem->next;
 	}
+
+	belle_sip_object_unref(sessionDescription);
 }
 
 static const std::map<int, acapParts> expAcapAttrs = {
