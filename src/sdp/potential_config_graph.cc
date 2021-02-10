@@ -121,7 +121,9 @@ const belle_sip_list_t * bellesip::SDP::SDPPotentialCfgGraph::getMediaCapability
 bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getSessionDescriptionACapabilities (const belle_sdp_session_description_t* session_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::ATTRIBUTE;
 	const belle_sip_list_t * caps_attr = getSessionCapabilityAttributes(session_desc, cap);
-	return createACapabilitiesList(caps_attr, cap);
+	auto capList = createACapabilitiesList(caps_attr, cap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(caps_attr), (void (*)(void*))belle_sip_object_unref);
+	return capList;
 }
 
 bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPotentialCfgGraph::createACapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap) {
@@ -141,7 +143,9 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPo
 bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPotentialCfgGraph::getMediaDescriptionACapabilities (const belle_sdp_media_description_t* media_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::ATTRIBUTE;
 	const belle_sip_list_t * caps_attr = getMediaCapabilityAttributes(media_desc, cap);
-	return createACapabilitiesList(caps_attr, cap);
+	auto capList = createACapabilitiesList(caps_attr, cap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(caps_attr), (void (*)(void*))belle_sip_object_unref);
+	return capList;
 }
 
 /*
@@ -150,7 +154,9 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_acap bellesip::SDP::SDPPo
 bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::getSessionDescriptionTCapabilities (const belle_sdp_session_description_t* session_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
 	const belle_sip_list_t * caps_attr = getSessionCapabilityAttributes(session_desc, cap);
-	return createTCapabilitiesList(caps_attr, cap);
+	auto capList = createTCapabilitiesList(caps_attr, cap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(caps_attr), (void (*)(void*))belle_sip_object_unref);
+	return capList;
 }
 
 bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::createTCapabilitiesList (const belle_sip_list_t * caps_attr, const bellesip::SDP::capability_type_t cap) {
@@ -174,7 +180,9 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::S
 bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap bellesip::SDP::SDPPotentialCfgGraph::getMediaDescriptionTCapabilities (const belle_sdp_media_description_t* media_desc) {
 	const bellesip::SDP::capability_type_t cap = bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL;
 	const belle_sip_list_t * caps_attr = getMediaCapabilityAttributes(media_desc, cap);
-	return createTCapabilitiesList(caps_attr, cap);
+	auto capList = createTCapabilitiesList(caps_attr, cap);
+	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(caps_attr), (void (*)(void*))belle_sip_object_unref);
+	return capList;
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc, const bellesip::SDP::config_type_t cfgType) {
@@ -196,8 +204,8 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 	media_description_config config;
 	const auto mediaAcap = getAllAcapForStream(idx);
 	const auto mediaTcap = getAllTcapForStream(idx);
-	for(;attrs!=NULL;attrs=attrs->next){
-		belle_sdp_acfg_attribute_t* lAttribute = static_cast<belle_sdp_acfg_attribute_t*>(attrs->data);
+	for(belle_sip_list_t * attr = attrs;attr!=NULL;attr=attr->next){
+		belle_sdp_acfg_attribute_t* lAttribute = static_cast<belle_sdp_acfg_attribute_t*>(attr->data);
 		auto id = belle_sdp_acfg_attribute_get_id(lAttribute);
 
 		auto attr_configs = createAConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
@@ -207,6 +215,8 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 			config[id] = attr_configs;
 		}
 	}
+
+	belle_sip_list_free_with_data(attrs, (void (*)(void*))belle_sip_object_unref);
 
 	bool found = false;
 	if (!config.empty()) {
@@ -219,8 +229,8 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "pcfg");
 	media_description_config config;
-	for(;attrs!=NULL;attrs=attrs->next){
-		belle_sdp_pcfg_attribute_t* lAttribute = static_cast<belle_sdp_pcfg_attribute_t*>(attrs->data);
+	for(belle_sip_list_t * attr = attrs;attr!=NULL;attr=attr->next){
+		belle_sdp_pcfg_attribute_t* lAttribute = static_cast<belle_sdp_pcfg_attribute_t*>(attr->data);
 		auto id = belle_sdp_pcfg_attribute_get_id(lAttribute);
 
 		const auto mediaAcap = getAllAcapForStream(idx);
@@ -232,6 +242,8 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 			config[id] = attr_configs;
 		}
 	}
+
+	belle_sip_list_free_with_data(attrs, (void (*)(void*))belle_sip_object_unref);
 
 	bool found = false;
 	if (!config.empty()) {
