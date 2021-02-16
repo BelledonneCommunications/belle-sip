@@ -201,6 +201,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaCfg(const unsigned int & i
 
 bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "acfg");
+	media_description_unparsed_config unparsed_config;
 	media_description_config config;
 	const auto mediaAcap = getAllAcapForStream(idx);
 	const auto mediaTcap = getAllTcapForStream(idx);
@@ -211,6 +212,10 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 		auto attr_configs = createAConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
 		if (attr_configs.acap.empty() && attr_configs.tcap.empty()) {
 			belle_sip_error("Unable to build a potential config for id %0d because lists of attribute and transport capabilities are empty", id);
+			
+			char * attrString = belle_sip_object_to_string(lAttribute);
+			unparsed_config[id] = attrString;
+			belle_sip_free(attrString);
 		} else {
 			config[id] = attr_configs;
 		}
@@ -223,11 +228,15 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 		found = true;
 		cfgs[idx] = config;
 	}
+	if (!unparsed_config.empty()) {
+		unparsed_cfgs[idx] = unparsed_config;
+	}
 	return found;
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & idx, const belle_sdp_media_description_t* media_desc) {
 	belle_sip_list_t * attrs = belle_sdp_media_description_find_attributes_with_name(media_desc, "pcfg");
+	media_description_unparsed_config unparsed_config;
 	media_description_config config;
 	for(belle_sip_list_t * attr = attrs;attr!=NULL;attr=attr->next){
 		belle_sdp_pcfg_attribute_t* lAttribute = static_cast<belle_sdp_pcfg_attribute_t*>(attr->data);
@@ -238,6 +247,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 		auto attr_configs = createPConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
 		if (attr_configs.acap.empty() && attr_configs.tcap.empty()) {
 			belle_sip_error("Unable to build a potential config for id %0d", id);
+			unparsed_config[idx] = belle_sip_object_to_string(lAttribute);
 		} else {
 			config[id] = attr_configs;
 		}
@@ -249,6 +259,9 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 	if (!config.empty()) {
 		found = true;
 		cfgs[idx] = config;
+	}
+	if (!unparsed_config.empty()) {
+		unparsed_cfgs[idx] = unparsed_config;
 	}
 	return found;
 }
@@ -282,10 +295,10 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 	// acap list will have 2 elements: 1,5 and 3
 	// tcap list will have 2 elements: 1 and 4
 	// The configuration has therefore 4 possible pairs:
-	// a=1,5 ad t=1
-	// a=1,5 ad t=4
-	// a=3 ad t=1
-	// a=3 ad t=4
+	// a=1,5 and t=1
+	// a=1,5 and t=4
+	// a=3 and t=1
+	// a=3 and t=4
 	for(;list!=NULL;list=list->next){
 		std::string cfg = static_cast<const char*>(list->data);
 		belle_sip_message("configuration is %s", cfg.c_str());
@@ -416,6 +429,10 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::strin
 const bellesip::SDP::SDPPotentialCfgGraph::session_description_config & bellesip::SDP::SDPPotentialCfgGraph::getAllCfg() const {
 	return cfgs;
 }
+
+const bellesip::SDP::SDPPotentialCfgGraph::session_description_unparsed_config & bellesip::SDP::SDPPotentialCfgGraph::getUnparsedCfgs() const {
+	return unparsed_cfgs;
+}
 const bellesip::SDP::SDPPotentialCfgGraph::session_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getStreamAcap() const {
 	return acap;
 }
@@ -430,6 +447,16 @@ const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & bellesip::
 	} catch (std::out_of_range&) {
 		belle_sip_error("Unable to find configuration for stream %0u", idx);
 		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::media_description_config>();
+	}
+}
+
+const bellesip::SDP::SDPPotentialCfgGraph::media_description_unparsed_config & bellesip::SDP::SDPPotentialCfgGraph::getUnparsedCfgForStream(const session_description_unparsed_config::key_type & idx) const {
+	try {
+		const auto & cfg = unparsed_cfgs.at(idx);
+		return cfg;
+	} catch (std::out_of_range&) {
+		belle_sip_error("Unable to find unparsed configurations for stream %0u", idx);
+		return bctoolbox::Utils::getEmptyConstRefObject<bellesip::SDP::SDPPotentialCfgGraph::session_description_unparsed_config::mapped_type>();
 	}
 }
 const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap & bellesip::SDP::SDPPotentialCfgGraph::getGlobalAcap() const {
@@ -763,5 +790,5 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<uns
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::empty() const {
-	return globalAcap.empty() && globalTcap.empty() && cfgs.empty() && acap.empty() && tcap.empty();
+	return globalAcap.empty() && globalTcap.empty() && cfgs.empty() && acap.empty() && tcap.empty() && unparsed_cfgs.empty();
 }
