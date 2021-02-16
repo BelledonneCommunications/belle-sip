@@ -89,15 +89,19 @@ namespace bellesip {
 				using session_description_acap = std::map<unsigned int, media_description_acap>;
 				using media_description_config = std::map<unsigned int, config_attribute>;
 				using session_description_config = std::map<unsigned int, media_description_config>;
+				using media_description_unparsed_config = std::map<unsigned int, std::string>;
+				using session_description_unparsed_config = std::map<unsigned int, media_description_unparsed_config>;
 
 				explicit SDPPotentialCfgGraph ();
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
 				SDPPotentialCfgGraph & operator= (const SDPPotentialCfgGraph & other);
 				const session_description_config & getAllCfg() const;
+				const session_description_unparsed_config & getUnparsedCfgs() const;
 				const session_description_acap & getStreamAcap() const;
 				const session_description_base_cap & getStreamTcap() const;
 
 				const media_description_config & getCfgForStream(const session_description_config::key_type & idx) const;
+				const media_description_unparsed_config & getUnparsedCfgForStream(const session_description_unparsed_config::key_type & idx) const;
 				const media_description_acap & getGlobalAcap() const;
 				const media_description_base_cap & getGlobalTcap() const;
 				const media_description_acap & getMediaAcapForStream(const session_description_acap::key_type & idx) const;
@@ -128,6 +132,7 @@ namespace bellesip {
 				media_description_acap globalAcap;
 				media_description_base_cap globalTcap;
 				session_description_config cfgs;
+				session_description_unparsed_config unparsed_cfgs;
 				session_description_acap acap;
 				session_description_base_cap tcap;
 
