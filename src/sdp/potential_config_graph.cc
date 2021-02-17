@@ -312,7 +312,7 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 		const auto bodySplit = bctoolbox::Utils::split(cfg, bodyDelim);
 
 		if (bodySplit.size() < 2) {
-			belle_sip_error("size of the vector after splitting using delimiter %c is %lu", bodyDelim, bodySplit.size());
+			belle_sip_error("size of the vector after splitting using delimiter %c is %0zu", bodyDelim, bodySplit.size());
 			return attr_configs;
 		}
 
@@ -355,7 +355,7 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 					delete_session_attributes = false;
 				}
 			} else {
-				belle_sip_error("Ignoring second attribute configuration list %s has been found in the configuration because already %0ld elements have been collected", cfg.c_str(), acapCfgList.size());
+				belle_sip_error("Ignoring second attribute configuration list %s has been found in the configuration because already %0zu elements have been collected", cfg.c_str(), acapCfgList.size());
 			}
 		} else if (cap == bellesip::SDP::capability_type_t::TRANSPORT_PROTOCOL) {
 			if (tcapCfgList.empty()) {
@@ -372,14 +372,14 @@ bellesip::SDP::SDPPotentialCfgGraph::media_description_config::mapped_type belle
 					for (const auto & tcapCfg : parsedList) {
 						const auto & tcapCfgSize = tcapCfg.size();
 						if (tcapCfgSize > 1) {
-							belle_sip_error("Found %0ld transport protocols for a configuration. Ignoring it.", tcapCfgSize);
+							belle_sip_error("Found %0zu transport protocols for a configuration. Ignoring it.", tcapCfgSize);
 						} else {
 							tcapCfgList.push_back(tcapCfg.front());
 						}
 					}
 				}
 			} else {
-				belle_sip_error("Ignoring second transport configuration list %s has been found in the configuration because already %0ld elements have been collected", cfg.c_str(), tcapCfgList.size());
+				belle_sip_error("Ignoring second transport configuration list %s has been found in the configuration because already %0zu elements have been collected", cfg.c_str(), tcapCfgList.size());
 			}
 		}
 	}
@@ -419,7 +419,7 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getElementIdx(const std::strin
 
 	auto noMatches = std::distance(indexBegin, indexEnd);
 	if (noMatches > 1) {
-		belle_sip_error("Expected one match but found %0ld instead - only first match will be honored", noMatches);
+		belle_sip_error("Expected one match but found %0td instead - only first match will be honored", noMatches);
 	}
 
 	std::smatch match = *indexBegin;
