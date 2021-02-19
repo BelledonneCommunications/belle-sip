@@ -43,12 +43,12 @@ static std::map<int, std::string> fillTcapMap(const bctbx_list_t* currentTcap, c
 			protoId++;
 		}
 	}
-	BC_ASSERT_EQUAL(protoList.size(), expProtoCap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(protoList.size(), expProtoCap, std::size_t, "%0zu");
 	return protoList;
 }
 
-static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap acap, const int & expNoAcap, const std::map<int, acapParts> & expAcapAttrs) {
-	BC_ASSERT_EQUAL(acap.size(), expNoAcap, std::size_t, "%0lu");
+static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap acap, const std::size_t & expNoAcap, const std::map<int, acapParts> & expAcapAttrs) {
+	BC_ASSERT_EQUAL(acap.size(), expNoAcap, std::size_t, "%0zu");
 	for (const auto & cap : acap) {
 		auto id = cap->index;
 		auto expIt = expAcapAttrs.find(id);
@@ -66,8 +66,8 @@ static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap tcap, const int & expNoTcap, std::map<int, std::string> & expTcapProtos) {
-	BC_ASSERT_EQUAL(tcap.size(), expNoTcap, std::size_t, "%0lu");
+static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap tcap, const std::size_t & expNoTcap, std::map<int, std::string> & expTcapProtos) {
+	BC_ASSERT_EQUAL(tcap.size(), expNoTcap, std::size_t, "%0zu");
 	for (const auto & cap : tcap) {
 		auto id = cap->index;
 		auto expIt = expTcapProtos.find(id);
@@ -80,7 +80,7 @@ static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const int & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<unsigned int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
+static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const std::size_t & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<unsigned int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
 
 	unsigned int noCfg = 0;
 	for (const auto & cfgPair : cfg) {
@@ -143,7 +143,7 @@ static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_descriptio
 		noCfg += (tcapValuesInCfg*acapValuesInCfg);
 
 	}
-	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(noCfg, expNoCfg, std::size_t, "%0zu");
 }
 
 static void base_test_with_potential_config(const char* src, const std::map<int, acapParts> & expAcapAttrs, const std::map<int, std::list<acapCfgParts>> & expCfgAcapAttrs, const std::map<int, std::list<unsigned int>> & expCfgTcapAttrs, const int expGlobalProtoCap, const int expGlobalTcap, const int expGlobalAcap, const std::vector<int> expMediaProtoCap, const std::vector<int> expMediaTcap, const std::vector<int> expMediaAcap, const std::vector<int> expCfg, const std::vector<bool> expDeleteMediaAttributes, const std::vector<bool> expDeleteSessionAttributes) {
@@ -155,28 +155,28 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 	auto notZero = [] (const int & val) { return (val != 0); };
 
-	BC_ASSERT_EQUAL(graph.getStreamAcap().size(), std::count_if(expMediaAcap.begin(), expMediaAcap.end(), notZero), std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getStreamTcap().size(), std::count_if(expMediaTcap.begin(), expMediaTcap.end(), notZero), std::size_t, "%0lu");
-	BC_ASSERT_EQUAL(graph.getAllCfg().size(), std::count_if(expCfg.begin(), expCfg.end(), notZero), std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(graph.getStreamAcap().size(), std::count_if(expMediaAcap.begin(), expMediaAcap.end(), notZero), std::size_t, "%0zu");
+	BC_ASSERT_EQUAL(graph.getStreamTcap().size(), std::count_if(expMediaTcap.begin(), expMediaTcap.end(), notZero), std::size_t, "%0zu");
+	BC_ASSERT_EQUAL(graph.getAllCfg().size(), std::count_if(expCfg.begin(), expCfg.end(), notZero), std::size_t, "%0zu");
 
 	// ACAP 
 	const auto globalAcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "acap");
 	const auto noGlobalAcap = belle_sip_list_size(globalAcap);
 	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(globalAcap), (void (*)(void*))belle_sip_object_unref);
-	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(noGlobalAcap, expGlobalAcap, std::size_t, "%0zu");
 
 	const auto parsedGlobalAcap = graph.getGlobalAcap().size();
-	BC_ASSERT_EQUAL(parsedGlobalAcap, expGlobalAcap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(parsedGlobalAcap, expGlobalAcap, std::size_t, "%0zu");
 
 	// TCAP
 	const auto globalTcap = belle_sdp_session_description_find_attributes_with_name(sessionDescription, "tcap");
-	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(belle_sip_list_size(globalTcap), expGlobalTcap, std::size_t, "%0zu");
 	auto protoList = fillTcapMap(globalTcap, expGlobalProtoCap);
 	belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(globalTcap), (void (*)(void*))belle_sip_object_unref);
 	auto noGlobalProtoCap = protoList.size();
 
 	const auto parsedGlobalTcap = graph.getGlobalTcap().size();
-	BC_ASSERT_EQUAL(parsedGlobalTcap, expGlobalProtoCap, std::size_t, "%0lu");
+	BC_ASSERT_EQUAL(parsedGlobalTcap, expGlobalProtoCap, std::size_t, "%0zu");
 
 	auto mediaDescriptionElem = mediaDescriptions;
 	for (std::size_t idx = 0; idx < noMediaDescriptions; idx++) {
@@ -188,10 +188,10 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 			const auto mediaAcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap");
 			const auto noMediaAcap = belle_sip_list_size(mediaAcap);
 			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaAcap), (void (*)(void*))belle_sip_object_unref);
-			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
+			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0zu");
 			if (expMediaAcap.at(idx) != 0) {
 				const auto mediaAcapSize = graph.getMediaAcapForStream(idx).size();
-				BC_ASSERT_EQUAL(mediaAcapSize, expMediaAcap.at(idx), std::size_t, "%0lu");
+				BC_ASSERT_EQUAL(mediaAcapSize, expMediaAcap.at(idx), std::size_t, "%0zu");
 				const auto acap = graph.getAllAcapForStream(idx);
 				checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
 			}
@@ -200,7 +200,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 		// TCAP
 		if (idx < expMediaTcap.size()) {
 			const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
-			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0lu");
+			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0zu");
 			auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap.at(idx));
 			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaTcap), (void (*)(void*))belle_sip_object_unref);
 			auto noMediaProtoCap = mediaProtoList.size();
@@ -208,7 +208,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 			if (expMediaTcap.at(idx) != 0) {
 				const auto mediaTcapSize = graph.getMediaTcapForStream(idx).size();
-				BC_ASSERT_EQUAL(mediaTcapSize, expMediaProtoCap.at(idx), std::size_t, "%0lu");
+				BC_ASSERT_EQUAL(mediaTcapSize, expMediaProtoCap.at(idx), std::size_t, "%0zu");
 				const auto tcap = graph.getAllTcapForStream(idx);
 				checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
 			}
