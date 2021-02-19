@@ -730,7 +730,7 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeTcapIdx() const {
 #pragma clang diagnostic pop
 #endif
 
-	return getFreeIdx(tcapIndexes);
+	return bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(tcapIndexes);
 }
 
 unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
@@ -752,7 +752,7 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeAcapIdx() const {
 #if __clang__
 #pragma clang diagnostic pop
 #endif
-	return getFreeIdx(acapIndexes);
+	return bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(acapIndexes);
 
 }
 
@@ -764,29 +764,41 @@ unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeCfgIdx(const bellesip::
 	const auto & streamCfgs = getCfgForStream(idx);
 	std::for_each(streamCfgs.begin(), streamCfgs.end(), addToIndexList);
 
-	return getFreeIdx(cfgIndexes);
+	return bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(cfgIndexes);
 }
 
-unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<unsigned int> & l) const {
-	auto lCopy = l;
-	// Sort elements
-	lCopy.sort();
-	// Delete duplicates
-	lCopy.unique();
-	decltype(lCopy) lResult(lCopy.begin(), std::prev(lCopy.end(), 1));
-	// Compute the difference between consecutive elements - if any of them is not equal to 1, then a free index is found
-	std::transform (std::next(lCopy.begin(), 1), lCopy.end(), lResult.begin(), lResult.begin(), std::minus<int>());
-	const auto & gapIt = std::find_if_not(lResult.cbegin(), lResult.cend(), [] (const unsigned int & el) { return (el == 1);});
-	if (gapIt == lResult.cend()) {
-		// No gap found - then return max element + 1
-		return *std::max_element(l.cbegin(), l.cend()) + 1;
+unsigned int bellesip::SDP::SDPPotentialCfgGraph::getFreeIdx(const std::list<unsigned int> & l) {
+	unsigned int freeIdx = 0;
+	if (l.empty()) {
+		// If list is empty, then the first valid index is 1
+		freeIdx = 1;
 	} else {
-		const auto elIdx = std::distance(lResult.cbegin(), gapIt);
-		const int startGap = *(std::next(l.begin(), elIdx));
-		return startGap + 1;
+		auto lCopy = l;
+		// Sort elements
+		lCopy.sort();
+		// Delete duplicates
+		lCopy.unique();
+		decltype(lCopy) lResult(lCopy.begin(), std::prev(lCopy.end(), 1));
+		// Compute the difference between consecutive elements - if any of them is not equal to 1, then a free index is found
+		std::transform (std::next(lCopy.begin(), 1), lCopy.end(), lResult.begin(), lResult.begin(), std::minus<int>());
+		const auto & gapIt = std::find_if_not(lResult.cbegin(), lResult.cend(), [] (const unsigned int & el) { return (el == 1);});
+		if (gapIt == lResult.cend()) {
+			const auto listMinEl = *std::min_element(l.cbegin(), l.cend());
+			if (listMinEl > 1) {
+				// If smaller element in the list is greater than 1, we can fill low index capabilities
+				freeIdx = (listMinEl - 1);
+			} else {
+			// No gap found - then return max element + 1
+				freeIdx = *std::max_element(l.cbegin(), l.cend()) + 1;
+			}
+		} else {
+			const auto elIdx = std::distance(lResult.cbegin(), gapIt);
+			const auto startGap = *(std::next(l.begin(), static_cast<int>(elIdx)));
+			freeIdx = startGap + 1;
+		}
 	}
 
-	return 0;
+	return freeIdx;
 }
 
 bool bellesip::SDP::SDPPotentialCfgGraph::empty() const {
