@@ -188,10 +188,10 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 			const auto mediaAcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "acap");
 			const auto noMediaAcap = belle_sip_list_size(mediaAcap);
 			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaAcap), (void (*)(void*))belle_sip_object_unref);
-			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0lu");
+			BC_ASSERT_EQUAL(noMediaAcap, expMediaAcap.at(idx), std::size_t, "%0zu");
 			if (expMediaAcap.at(idx) != 0) {
 				const auto mediaAcapSize = graph.getMediaAcapForStream(idx).size();
-				BC_ASSERT_EQUAL(mediaAcapSize, expMediaAcap.at(idx), std::size_t, "%0lu");
+				BC_ASSERT_EQUAL(mediaAcapSize, expMediaAcap.at(idx), std::size_t, "%0zu");
 				const auto acap = graph.getAllAcapForStream(idx);
 				checkAcap(acap, (noGlobalAcap+noMediaAcap), expAcapAttrs);
 			}
@@ -200,7 +200,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 		// TCAP
 		if (idx < expMediaTcap.size()) {
 			const auto mediaTcap = belle_sdp_media_description_find_attributes_with_name(mediaDescription, "tcap");
-			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0lu");
+			BC_ASSERT_EQUAL(belle_sip_list_size(mediaTcap), expMediaTcap.at(idx), std::size_t, "%0zu");
 			auto mediaProtoList = fillTcapMap(mediaTcap, expMediaProtoCap.at(idx));
 			belle_sip_list_free_with_data(const_cast<belle_sip_list_t *>(mediaTcap), (void (*)(void*))belle_sip_object_unref);
 			auto noMediaProtoCap = mediaProtoList.size();
@@ -208,7 +208,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 
 			if (expMediaTcap.at(idx) != 0) {
 				const auto mediaTcapSize = graph.getMediaTcapForStream(idx).size();
-				BC_ASSERT_EQUAL(mediaTcapSize, expMediaProtoCap.at(idx), std::size_t, "%0lu");
+				BC_ASSERT_EQUAL(mediaTcapSize, expMediaProtoCap.at(idx), std::size_t, "%0zu");
 				const auto tcap = graph.getAllTcapForStream(idx);
 				checkTcap(tcap, (noGlobalProtoCap+noMediaProtoCap), protoList);
 			}
