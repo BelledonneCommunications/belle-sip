@@ -92,6 +92,8 @@ namespace bellesip {
 				using media_description_unparsed_config = std::map<unsigned int, std::string>;
 				using session_description_unparsed_config = std::map<unsigned int, media_description_unparsed_config>;
 
+				static unsigned int getFreeIdx(const std::list<unsigned int> & l);
+
 				explicit SDPPotentialCfgGraph ();
 				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
 				SDPPotentialCfgGraph & operator= (const SDPPotentialCfgGraph & other);
@@ -184,7 +186,6 @@ namespace bellesip {
 				std::list<config_capability<acapability>> createAcapList(const session_description_config::key_type & streamIdx, const std::map<unsigned int, bool> & acapIdx) const;
 				std::list<config_capability<capability>> createTcapList(const session_description_config::key_type & streamIdx, const std::list<unsigned int> & tcapIdx) const;
 
-				unsigned int getFreeIdx(const std::list<unsigned int> & l) const;
 		};
 		
 		#ifdef _WIN32
