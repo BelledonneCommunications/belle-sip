@@ -19,7 +19,7 @@
 
 #include "belle-sip/belle-sip.h"
 #include "belle_sip_tester.h"
-#include <belle_sip_internal.h>
+#include <belle_sip_internal.hh>
 
 typedef struct http_counters{
 	int response_headers_count;
