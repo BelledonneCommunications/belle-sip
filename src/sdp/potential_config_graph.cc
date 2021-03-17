@@ -247,7 +247,7 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 		auto attr_configs = createPConfigFromAttribute(lAttribute, mediaAcap, mediaTcap);
 		if (attr_configs.acap.empty() && attr_configs.tcap.empty()) {
 			belle_sip_error("Unable to build a potential config for id %0d", id);
-			unparsed_config[idx] = belle_sip_object_to_string(lAttribute);
+			unparsed_config[id] = belle_sip_object_to_string(lAttribute);
 		} else {
 			config[id] = attr_configs;
 		}
