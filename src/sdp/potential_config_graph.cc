@@ -228,9 +228,14 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaAcfg(const unsigned int & 
 		found = true;
 		cfgs[idx] = config;
 	}
-	if (!unparsed_config.empty()) {
-		unparsed_cfgs[idx] = unparsed_config;
+	auto cfgsIt = unparsed_cfgs.find(idx);
+	if (cfgsIt != unparsed_cfgs.cend()) {
+		auto cfgs = cfgsIt->second;
+		for (const auto & cfg : cfgs) {
+			unparsed_config[cfg.first] = cfg.second;
+		}
 	}
+	unparsed_cfgs[idx] = unparsed_config;
 	return found;
 }
 
@@ -260,9 +265,14 @@ bool bellesip::SDP::SDPPotentialCfgGraph::processMediaPcfg(const unsigned int & 
 		found = true;
 		cfgs[idx] = config;
 	}
-	if (!unparsed_config.empty()) {
-		unparsed_cfgs[idx] = unparsed_config;
+	auto cfgsIt = unparsed_cfgs.find(idx);
+	if (cfgsIt != unparsed_cfgs.cend()) {
+		auto cfgs = cfgsIt->second;
+		for (const auto & cfg : cfgs) {
+			unparsed_config[cfg.first] = cfg.second;
+		}
 	}
+	unparsed_cfgs[idx] = unparsed_config;
 	return found;
 }
 
