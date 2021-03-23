@@ -47,7 +47,7 @@ static std::map<int, std::string> fillTcapMap(const bctbx_list_t* currentTcap, c
 	return protoList;
 }
 
-static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_acap acap, const std::size_t & expNoAcap, const std::map<int, acapParts> & expAcapAttrs) {
+static void checkAcap(const bellesip::SDP::PotentialCfgGraph::media_description_acap acap, const std::size_t & expNoAcap, const std::map<int, acapParts> & expAcapAttrs) {
 	BC_ASSERT_EQUAL(acap.size(), expNoAcap, std::size_t, "%0zu");
 	for (const auto & cap : acap) {
 		auto id = cap->index;
@@ -66,7 +66,7 @@ static void checkAcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_description_base_cap tcap, const std::size_t & expNoTcap, std::map<int, std::string> & expTcapProtos) {
+static void checkTcap(const bellesip::SDP::PotentialCfgGraph::media_description_base_cap tcap, const std::size_t & expNoTcap, std::map<int, std::string> & expTcapProtos) {
 	BC_ASSERT_EQUAL(tcap.size(), expNoTcap, std::size_t, "%0zu");
 	for (const auto & cap : tcap) {
 		auto id = cap->index;
@@ -80,7 +80,7 @@ static void checkTcap(const bellesip::SDP::SDPPotentialCfgGraph::media_descripti
 	}
 }
 
-static void checkCfg(const bellesip::SDP::SDPPotentialCfgGraph::media_description_config & cfg, const std::size_t & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<unsigned int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
+static void checkCfg(const bellesip::SDP::PotentialCfgGraph::media_description_config & cfg, const std::size_t & expNoCfg, std::map<int, std::list<acapCfgParts>> expCfgAcapAttrs, std::map<int, std::list<unsigned int>> expCfgTcapAttrs, std::map<int, acapParts> expAcapAttrs, std::map<int, std::string> & expTcapProtos, const bool expDeleteMediaAttributes, const bool expDeleteSessionAttributes) {
 
 	unsigned int noCfg = 0;
 	for (const auto & cfgPair : cfg) {
@@ -151,7 +151,7 @@ static void base_test_with_potential_config(const char* src, const std::map<int,
 	const auto mediaDescriptions = belle_sdp_session_description_get_media_descriptions(sessionDescription);
 	const auto noMediaDescriptions = belle_sip_list_size(mediaDescriptions);
 
-	bellesip::SDP::SDPPotentialCfgGraph graph(sessionDescription);
+	bellesip::SDP::PotentialCfgGraph graph(sessionDescription);
 
 	auto notZero = [] (const int & val) { return (val != 0); };
 
