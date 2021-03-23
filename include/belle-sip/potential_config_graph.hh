@@ -79,7 +79,7 @@ namespace bellesip {
 			#pragma warning(push)
 			#pragma warning(disable: 4251)
 		#endif // ifdef _WIN32
-		class BELLESIP_EXPORT SDPPotentialCfgGraph {
+		class BELLESIP_EXPORT PotentialCfgGraph {
 
 			public:
 
@@ -94,9 +94,9 @@ namespace bellesip {
 
 				static unsigned int getFreeIdx(const std::list<unsigned int> & l);
 
-				explicit SDPPotentialCfgGraph ();
-				explicit SDPPotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
-				SDPPotentialCfgGraph & operator= (const SDPPotentialCfgGraph & other);
+				explicit PotentialCfgGraph ();
+				explicit PotentialCfgGraph (const belle_sdp_session_description_t* session_desc);
+				PotentialCfgGraph & operator= (const PotentialCfgGraph & other);
 				const session_description_config & getAllCfg() const;
 				const session_description_unparsed_config & getUnparsedCfgs() const;
 				const session_description_acap & getStreamAcap() const;
@@ -175,7 +175,7 @@ namespace bellesip {
 				// tcapIdx -> map of transport protocol indexes
 				// delete_media_attributes -> delete media attributes flags
 				// delete_session_attributes -> delete session attributes flags
-				config_attribute createCfgAttr(const bellesip::SDP::SDPPotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<std::map<unsigned int, bool>> & acapIdxs, std::list<unsigned int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const;
+				config_attribute createCfgAttr(const bellesip::SDP::PotentialCfgGraph::session_description_config::key_type & streamIdx, const std::list<std::map<unsigned int, bool>> & acapIdxs, std::list<unsigned int> & tcapIdx, const bool delete_media_attributes, const bool delete_session_attributes) const;
 
 				bool canFindAcapWithIdx(const unsigned int & index) const;
 				bool canFindTcapWithIdx(const unsigned int & index) const;
@@ -193,7 +193,7 @@ namespace bellesip {
 		#endif // ifdef _WIN32
 
 		template<class cap_type>
-		const std::pair<std::list<std::list<config_capability<cap_type>>>, bool> bellesip::SDP::SDPPotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
+		const std::pair<std::list<std::list<config_capability<cap_type>>>, bool> bellesip::SDP::PotentialCfgGraph::parseIdxList(const std::string & idxList, const std::list<std::shared_ptr<cap_type>> & availableCaps) const {
 			const char configDelim = '|';
 			const auto attrCapList = bctoolbox::Utils::split(idxList, configDelim);
 			bool mandatory = true;
