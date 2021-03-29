@@ -136,6 +136,8 @@ static int http_channel_context_handle_authentication(belle_http_channel_context
 	}
 	belle_sip_list_free(authenticate_lst);
 
+	belle_sip_list_free(authenticate_lst);
+
 	if (ha1) {
 		belle_http_header_authorization_t* authorization;
 		req->auth_attempt_count++;
