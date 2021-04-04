@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static int on_new_connection(void *userdata, unsigned int events);
 
