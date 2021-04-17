@@ -19,7 +19,7 @@
 
 #include "belle-sip/belle-sip.h"
 #include "belle-sip/parameters.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "belle-sip/headers.h"
 
 void belle_sip_parameters_init(belle_sip_parameters_t *obj){

@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static void _belle_sip_object_pool_remove_from_stack(belle_sip_object_pool_t *pool);
 
