@@ -23,7 +23,7 @@
 
 #include <bctoolbox/defs.h>
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 static void nist_on_terminate(belle_sip_nist_t *obj){
 	belle_sip_transaction_t *base=(belle_sip_transaction_t*)obj;

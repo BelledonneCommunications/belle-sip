@@ -23,7 +23,7 @@
 
 #include <bctoolbox/defs.h>
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 
 static void on_ict_terminate(belle_sip_ict_t *obj){
