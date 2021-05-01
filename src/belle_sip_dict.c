@@ -20,7 +20,7 @@
 #include "belle-sip/dict.h"
 #include "belle-sip/object.h"
 #include "belle-sip/belle-sip.h"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 #define BELLE_SIP_DICT(obj) BELLE_SIP_CAST(obj,belle_sip_dict_t)
 
