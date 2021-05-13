@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include "listeningpoint_internal.h"
 #include "md5.h"
 #include "belle-sip/message.h"
@@ -1393,4 +1393,3 @@ void belle_sip_provider_enable_unconditional_answer(belle_sip_provider_t *prov, 
 void belle_sip_provider_set_unconditional_answer(belle_sip_provider_t *prov, unsigned short code) {
 	prov->unconditional_answer=code;
 }
-
