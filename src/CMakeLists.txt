@@ -70,6 +70,8 @@ if(WIN32)
 	list(APPEND LIBS ws2_32)
 endif()
 
+list(APPEND LIBS belr)
+
 set(SDP_GENERATED_SOURCE_FILES_C
 	grammars/belle_sdpLexer.c
 	grammars/belle_sdpLexer.h
@@ -99,10 +101,8 @@ add_subdirectory(antlr3c)
 set(BELLE_SIP_SOURCE_FILES_C
 	auth_event.c
 	auth_helper.c
-	belle_sdp_impl.c
 	belle_sip_dict.c
 	belle_sip_headers_impl.c
-	belle_sip_internal.h
 	belle_sip_loop.c
 	belle_sip_mdns_register.c
 	belle_sip_object.c
@@ -158,11 +158,19 @@ add_definitions(
 if(ANDROID)
 	list(APPEND BELLE_SIP_SOURCE_FILES_C wakelock.c)
 endif()
+
 set(BELLE_SIP_SOURCE_FILES_CXX
 	${TUNNEL_SOURCE_FILES_CXX}
 	object++.cc
 	cpp_utils.cc
+	belle_sdp_impl.cc
+	#belle_sip_internal.hh
+	sdp/parser.cc
 )
+set(GRAMMAR_FILES
+	sdp/sdp_grammar
+)
+
 if(APPLE)
 	set(BELLE_SIP_SOURCE_FILES_OBJC
 		backgroundtask.mm
@@ -193,7 +201,7 @@ endif()
 
 string(REPLACE ";" " " LINK_FLAGS_STR "${LINK_FLAGS}")
 if(ENABLE_STATIC)
-	add_library(bellesip-static STATIC ${BELLE_SIP_HEADER_FILES} ${BELLE_SIP_SOURCE_FILES_C} ${BELLE_SIP_SOURCE_FILES_CXX} ${BELLE_SIP_SOURCE_FILES_OBJC} ${ANTLR3C_SOURCE_FILES})
+	add_library(bellesip-static STATIC ${BELLE_SIP_HEADER_FILES} ${BELLE_SIP_SOURCE_FILES_C} ${BELLE_SIP_SOURCE_FILES_CXX} ${BELLE_SIP_SOURCE_FILES_OBJC} ${ANTLR3C_SOURCE_FILES} ${GRAMMAR_FILES})
 	set_target_properties(bellesip-static PROPERTIES OUTPUT_NAME bellesip)
 	set_target_properties(bellesip-static PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
 	target_include_directories(bellesip-static INTERFACE ${PUBLIC_INCLUDE_DIRS} PRIVATE ${PRIVATE_INCLUDE_DIRS})
@@ -208,7 +216,7 @@ if(ENABLE_STATIC)
 	)
 endif()
 if(ENABLE_SHARED)
-	add_library(bellesip SHARED ${BELLE_SIP_HEADER_FILES} ${BELLE_SIP_SOURCE_FILES_C} ${BELLE_SIP_SOURCE_FILES_CXX} ${BELLE_SIP_SOURCE_FILES_OBJC} ${ANTLR3C_SOURCE_FILES})
+	add_library(bellesip SHARED ${BELLE_SIP_HEADER_FILES} ${BELLE_SIP_SOURCE_FILES_C} ${BELLE_SIP_SOURCE_FILES_CXX} ${BELLE_SIP_SOURCE_FILES_OBJC} ${ANTLR3C_SOURCE_FILES} ${GRAMMAR_FILES})
 	set_target_properties(bellesip PROPERTIES SOVERSION ${BELLESIP_SO_VERSION})
 	set_target_properties(bellesip PROPERTIES LINKER_LANGUAGE CXX)
 	set_target_properties(bellesip PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
@@ -262,3 +270,7 @@ endif()
 if (ENABLE_SHARED AND ENABLE_STATIC)
 	add_dependencies(bellesip-static bellesip)
 endif()
+
+install(FILES ${GRAMMAR_FILES}
+	DESTINATION "${CMAKE_INSTALL_DATADIR}/belr/grammars"
+)

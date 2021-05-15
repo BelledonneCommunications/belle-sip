@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 #include <bctoolbox/defs.h>
 
 #ifdef HAVE_MDNS
@@ -1493,7 +1493,7 @@ static void simple_resolver_context_cancel(belle_sip_resolver_context_t *obj) {
 static void combined_resolver_context_cancel(belle_sip_resolver_context_t *obj) {
 	belle_sip_combined_resolver_context_t *ctx = BELLE_SIP_COMBINED_RESOLVER_CONTEXT(obj);
 	bctbx_list_t *elem;
-	
+
 	for(elem=ctx->srv_results;elem!=NULL;elem=elem->next){
 		belle_sip_dns_srv_t *srv=(belle_sip_dns_srv_t*)elem->data;
 		if (srv->a_resolver){
@@ -1656,16 +1656,16 @@ static void process_a_fallback_result(void *data, belle_sip_resolver_results_t *
 	results->ai_list = NULL;
 	ctx->a_fallback_ttl = results->ttl;
 	ctx->a_fallback_completed = TRUE;
-	
-	/* 
+
+	/*
 	* Start a global timer in order to workaround buggy home routers that don't respond to SRV requests.
 	* If A fallback response arrived, SRV shall not take a lot longer.
 	*/
 	belle_sip_message("resolver[%p]: starting SRV timeout since A/AAAA fallback response is received.", ctx);
-	belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)combined_resolver_srv_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT, 
+	belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)combined_resolver_srv_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT,
 			belle_sip_srv_timeout_after_a_received);
 	belle_sip_main_loop_add_source(ctx->base.stack->ml, (belle_sip_source_t*)ctx);
-	
+
 	combined_resolver_context_check_finished(ctx, ctx->base.min_ttl);
 }
 
@@ -1695,13 +1695,13 @@ static void srv_resolve_a(belle_sip_combined_resolver_context_t *obj, belle_sip_
 static void process_srv_results(void *data, const char *name, belle_sip_list_t *srv_results, uint32_t ttl){
 	belle_sip_combined_resolver_context_t *ctx=(belle_sip_combined_resolver_context_t *)data;
 	/*take a ref here, because the A resolution might succeed synchronously and terminate the context before exiting this function*/
-	
+
 	if (ctx->base.stack->simulate_non_working_srv) {
 		belle_sip_list_free_with_data(srv_results, belle_sip_object_unref);
 		belle_sip_message("SRV results ignored for testing.");
 		return;
 	}
-	
+
 	belle_sip_object_ref(ctx);
 	if (ttl < BELLE_SIP_RESOLVER_CONTEXT(data)->min_ttl) BELLE_SIP_RESOLVER_CONTEXT(data)->min_ttl = ttl;
 	if (srv_results){
@@ -1839,12 +1839,12 @@ static void on_ipv4_results(void *data, belle_sip_resolver_results_t *results) {
 	ctx->a_notified = TRUE;
 
 	if (!ctx->aaaa_notified && ctx->a_results && belle_sip_aaaa_timeout_after_a_received > 0){
-		/* 
-		 * Start a global timer in order to workaround buggy home routers that don't respond to AAAA requests when there is no 
+		/*
+		 * Start a global timer in order to workaround buggy home routers that don't respond to AAAA requests when there is no
 		 * corresponding AAAA record for the queried domain. It is only started if we have a A result.
 		 */
 		belle_sip_message("resolver[%p]: starting aaaa timeout since A response is received.", ctx);
-		belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)dual_resolver_aaaa_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT, 
+		belle_sip_socket_source_init((belle_sip_source_t*)ctx, (belle_sip_source_func_t)dual_resolver_aaaa_timeout, ctx, -1 , BELLE_SIP_EVENT_TIMEOUT,
 				belle_sip_aaaa_timeout_after_a_received);
 		belle_sip_main_loop_add_source(ctx->base.stack->ml, (belle_sip_source_t*)ctx);
 	}

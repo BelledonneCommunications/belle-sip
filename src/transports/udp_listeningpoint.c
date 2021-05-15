@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 struct belle_sip_udp_listening_point{
 	belle_sip_listening_point_t base;
