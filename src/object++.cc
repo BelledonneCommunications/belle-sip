@@ -136,6 +136,10 @@ const Object *Object::getCppObject(const void *ptr){
 	return Object::getCppObject((void*)ptr);
 }
 
+std::ostream &operator<< (std::ostream &stream, const Object & obj) {
+	return stream << obj.toString();
+}
+
 }//end of namespace
 
 void belle_sip_cpp_object_delete(belle_sip_object_t *obj){
