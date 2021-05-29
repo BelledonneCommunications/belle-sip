@@ -18,7 +18,7 @@
  */
 
 #include "belle-sip/object++.hh"
-#include "belle_sip_internal.h"
+#include "belle_sip_internal.hh"
 
 #ifdef __GNUC__
 #include <cxxabi.h>
