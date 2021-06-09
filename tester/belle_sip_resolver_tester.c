@@ -504,6 +504,7 @@ static void ipv6_dns_server(void) {
 	endpoint_t *client;
 	const char *nameservers[]={
 		"2001:4860:4860::8888",
+		NULL,
 		NULL
 	};
 
