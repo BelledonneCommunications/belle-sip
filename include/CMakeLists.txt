@@ -51,6 +51,7 @@ set(HEADER_FILES
 	types.h
 	utils.h
 	wakelock.h
+	potential_config_graph.hh
 )
 
 set(BELLE_SIP_HEADER_FILES )
