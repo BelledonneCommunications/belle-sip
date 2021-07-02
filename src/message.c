@@ -838,6 +838,7 @@ belle_sip_response_t *belle_sip_response_create_from_request(belle_sip_request_t
 	belle_sip_header_t *h;
 	belle_sip_header_to_t *to;
 	const belle_sip_list_t *vias;
+	const belle_sip_list_t *record_routes;
 
 	belle_sip_response_init_default(resp,status_code,NULL);
 	if (status_code==100 && (h=belle_sip_message_get_header((belle_sip_message_t*)req,"timestamp"))){
@@ -845,6 +846,8 @@ belle_sip_response_t *belle_sip_response_create_from_request(belle_sip_request_t
 	}
 	vias=belle_sip_message_get_headers ((belle_sip_message_t*)req,"via");
 	belle_sip_message_add_headers((belle_sip_message_t*)resp,vias);
+	record_routes=belle_sip_message_get_headers ((belle_sip_message_t*)req,"record-route");
+	if (record_routes) belle_sip_message_add_headers((belle_sip_message_t*)resp,record_routes);
 	h=belle_sip_message_get_header((belle_sip_message_t*)req,"from");
 	if (h) belle_sip_message_add_header((belle_sip_message_t*)resp,h);
 	h=belle_sip_message_get_header((belle_sip_message_t*)req,"to");
