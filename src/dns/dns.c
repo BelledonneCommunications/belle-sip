@@ -7827,22 +7827,6 @@ exec:
 			dgoto(R->sp, DNS_R_CNAME0_A);
 		}
 
-		/*
-		 * XXX: The condition here should probably check whether
-		 * R->sp == 0, because DNS_R_SEARCH runs regardless of
-		 * options.recurse. See DNS_R_BIND.
-		 */
-		if (!R->resconf->options.recurse) {
-			/* Make first answer our tentative answer */
-			if (!R->nodata)
-				dns_p_movptr(&R->nodata, &F->answer);
-
-			if (R->search_enabled)
-				dgoto(R->sp, DNS_R_SEARCH);
-			else
-				dgoto(R->sp, DNS_R_FINISH);
-		}
-
 		dns_rr_foreach(&rr, F->answer, .section = DNS_S_NS, .type = DNS_T_NS) {
 			dns_p_movptr(&F->hints, &F->answer);
 
