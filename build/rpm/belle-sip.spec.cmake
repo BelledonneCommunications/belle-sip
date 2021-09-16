@@ -77,6 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %doc AUTHORS.md CHANGELOG.md LICENSE.txt README.md
+%{_datadir}/belr/grammars/sdp_grammar
 %{_libdir}/*.so.*
 
 %files devel
