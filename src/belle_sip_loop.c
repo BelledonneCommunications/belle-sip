@@ -21,6 +21,7 @@
 #include "belle_sip_internal.h"
 #include "bctoolbox/map.h"
 #include <limits.h>
+#include <inttypes.h>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -690,7 +691,7 @@ static void belle_sip_main_loop_iterate(belle_sip_main_loop_t *ml){
 			if (belle_sip_log_level_enabled(BELLE_SIP_LOG_DEBUG)) {
 				/*to avoid too many traces*/
 				char *objdesc=belle_sip_object_to_string((belle_sip_object_t*)s);
-				belle_sip_debug("source %s notified revents=%u, timeout=%i",objdesc,s->revents,(int)s->timeout);
+				belle_sip_debug("source %s notified revents=%u, timeout=%" PRId64,objdesc,s->revents,s->timeout);
 				belle_sip_free(objdesc);
 			}
 
