@@ -49,8 +49,11 @@ set(HEADER_FILES
 	transaction.h
 	types.h
 	utils.h
-	wakelock.h
 )
+
+if(ANDROID)
+    list(APPEND HEADER_FILES wakelock.h)
+endif()
 
 set(BELLE_SIP_HEADER_FILES )
 foreach(HEADER_FILE ${HEADER_FILES})
