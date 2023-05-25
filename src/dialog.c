@@ -1306,30 +1306,11 @@ If an initial SUBSCRIBE is sent on a pre-existing dialog, a matching
    */
 
 int belle_sip_dialog_can_accept_request(const belle_sip_dialog_t *dialog, belle_sip_request_t *req) {
-	const char *method = belle_sip_request_get_method(req);
 	if (belle_sip_dialog_request_pending(dialog)){
-		const char* last_transaction_request;
-		if (strcasecmp(method,"BYE")==0)
-			return TRUE; /*don't reject a BYE*/
-
-		last_transaction_request = belle_sip_request_get_method(belle_sip_transaction_get_request(dialog->last_transaction));
-		if (BELLE_SIP_OBJECT_IS_INSTANCE_OF(dialog->last_transaction,belle_sip_client_transaction_t)){
-			if (strcmp(last_transaction_request,"SUBSCRIBE")==0 && strcmp(method,"NOTIFY")==0){
-				/*stupid as it may sound, you have to accept a NOTIFY for a SUBSCRIBE for which no answer is received yet.*/
-				return TRUE;
-			}else if (strcmp(last_transaction_request, "NOTIFY") == 0 && strcmp(method, "SUBSCRIBE") == 0){
-				belle_sip_header_expires_t *expire = belle_sip_message_get_header_by_type((belle_sip_message_t*)req, belle_sip_header_expires_t);
-				if (expire && belle_sip_header_expires_get_expires(expire) == 0){
-					/* Accept to receive an unSUBSCRIBE even if we have an outgoing pending NOTIFY */
-					return TRUE;
-				}
-			}
-		}
-		if (strcmp(last_transaction_request,"INVITE")==0 && (strcmp(method,"PRACK")==0 || strcmp(method,"UPDATE")==0)){
-			/*PRACK /UPDATE needs to be sent or received during reINVITEs.*/
-			return TRUE;
-		}
-		return FALSE;
+		const char *method = belle_sip_request_get_method(req);
+		const char* last_transaction_request = belle_sip_request_get_method(belle_sip_transaction_get_request(dialog->last_transaction));
+		// Back to back INVITES must be processed in order and one at a time
+		return !((strcmp(last_transaction_request,"INVITE")==0) && (strcmp(method,"INVITE")==0));
 	} else {
 		return TRUE;
 	}
