@@ -123,7 +123,7 @@ belle_sip_message_t* belle_sip_message_parse (const char* value) {
 	return belle_sip_message_parse_raw(value,strlen(value),&message_length);
 }
 
-belle_sip_message_t* belle_sip_message_parse_raw (const char* buff, size_t buff_length,size_t* message_length ) { \
+belle_sip_message_t* belle_sip_message_parse_raw (const char* buff, size_t buff_length, size_t* message_length ) {
 	pANTLR3_INPUT_STREAM           input;
 	pbelle_sip_messageLexer               lex;
 	pANTLR3_COMMON_TOKEN_STREAM    tokens;
