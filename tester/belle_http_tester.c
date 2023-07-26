@@ -353,10 +353,59 @@ static void http_get_long_user_body(void){
 	if (resp){
 		bh=belle_sip_message_get_body_handler((belle_sip_message_t*)resp);
 		BC_ASSERT_GREATER_STRICT((unsigned int)belle_sip_body_handler_get_size(bh),0,unsigned int,"%u");
+		/* FIXME: we should wait the body to be received entirely before closing the file and exiting */
 	}
 	belle_sip_object_unref(req);
 	belle_sip_object_unref(l);
 	if (outfile) fclose(outfile);
+}
+
+
+static void http_redirect_to_https(void){
+	belle_http_request_listener_callbacks_t cbs={0};
+	belle_http_request_listener_t *l;
+	belle_generic_uri_t *uri;
+	belle_http_request_t *req;
+	http_counters_t counters={0};
+	const char *url="http://www.linphone.org/remote_provisioning.xml";
+	belle_sip_body_handler_t *bh;
+	belle_http_response_t *resp;
+	FILE *outfile=fopen("provisioning.xml","w");
+
+	uri=belle_generic_uri_parse(url);
+
+	req=belle_http_request_create("GET",
+				uri,
+				belle_sip_header_create("User-Agent","belle-sip/" PACKAGE_VERSION),
+				NULL);
+	cbs.process_response_headers=process_response_headers;
+	cbs.process_response=process_response;
+	cbs.process_io_error=process_io_error;
+	cbs.process_auth_requested=process_auth_requested;
+	l=belle_http_request_listener_create_from_callbacks(&cbs,&counters);
+	belle_sip_object_ref(req);
+	belle_sip_object_data_set(BELLE_SIP_OBJECT(req),"file",outfile,NULL);
+	belle_http_provider_send_request(prov,req,l);
+	BC_ASSERT_TRUE(wait_for(stack,&counters.two_hundred,1,20000));
+	BC_ASSERT_EQUAL(counters.response_headers_count,1,int,"%d");
+	resp=belle_http_request_get_response(req);
+	BC_ASSERT_PTR_NOT_NULL(resp);
+	if (outfile) fclose(outfile);
+	if (resp){
+		bh=belle_sip_message_get_body_handler((belle_sip_message_t*)resp);
+		BC_ASSERT_GREATER_STRICT((unsigned int)belle_sip_body_handler_get_size(bh),0,unsigned int,"%u");
+		FILE *body = fopen("provisioning.xml", "r");
+		/* Assert that we apparently received the body */
+		if (BC_ASSERT_PTR_NOT_NULL(body)){
+			char tmp[512] = {0};
+			BC_ASSERT_TRUE( fread(tmp, sizeof(tmp)-1, 1, body) > 0);
+			BC_ASSERT_TRUE(strstr(tmp, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"") != NULL);
+		}
+		fclose(body);
+	}
+	belle_sip_object_unref(req);
+	belle_sip_object_unref(l);
+
 }
 
 extern const char *test_http_proxy_addr;
@@ -391,6 +440,7 @@ test_t http_tests[] = {
 	TEST_NO_TAG("https POST with long body", https_post_long_body),
 	TEST_NO_TAG("http GET with long user body", http_get_long_user_body),
 	TEST_NO_TAG("https only", one_https_only_get),
+	TEST_NO_TAG("http redirect to https", http_redirect_to_https)
 };
 
 test_suite_t http_test_suite = {"HTTP stack", http_before_all, http_after_all, NULL,
