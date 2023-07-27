@@ -428,4 +428,4 @@ test_t dialog_tests[] = {
 
 test_suite_t dialog_test_suite = {"Dialog", register_before_all, register_after_all, belle_sip_tester_before_each,
 								  belle_sip_tester_after_each, sizeof(dialog_tests) / sizeof(dialog_tests[0]),
-								  dialog_tests};
+								  dialog_tests, 0};

@@ -27,4 +27,4 @@
 
 
 test_suite_t sip_uri_test_suite = {"SIP URI", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
-	sizeof(uri_tests) / sizeof(uri_tests[0]), uri_tests};
+	sizeof(uri_tests) / sizeof(uri_tests[0]), uri_tests, 0};

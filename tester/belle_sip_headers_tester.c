@@ -1498,4 +1498,4 @@ test_t headers_tests[] = {
 };
 
 test_suite_t headers_test_suite = {"Headers", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
-								   sizeof(headers_tests) / sizeof(headers_tests[0]), headers_tests};
+								   sizeof(headers_tests) / sizeof(headers_tests[0]), headers_tests, 0};

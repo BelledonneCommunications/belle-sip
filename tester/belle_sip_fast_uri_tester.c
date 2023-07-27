@@ -57,7 +57,7 @@ static test_t tests[] ={TEST_NO_TAG("perf", perf)};
 
 
 test_suite_t fast_sip_uri_test_suite = {"FAST SIP URI", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
-	sizeof(uri_tests) / sizeof(uri_tests[0]), uri_tests};
+	sizeof(uri_tests) / sizeof(uri_tests[0]), uri_tests, 0};
 
 test_suite_t perf_sip_uri_test_suite = {"FAST SIP URI 2", NULL, NULL, belle_sip_tester_before_each, belle_sip_tester_after_each,
-	sizeof(tests) / sizeof(tests[0]), tests};
+	sizeof(tests) / sizeof(tests[0]), tests, 0};

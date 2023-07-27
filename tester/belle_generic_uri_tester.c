@@ -141,4 +141,4 @@ static test_t tests[] = {
 };
 
 test_suite_t generic_uri_test_suite = {"Generic uri", NULL, NULL, belle_sip_tester_before_each,
-									   belle_sip_tester_after_each, sizeof(tests) / sizeof(tests[0]), tests};
+									   belle_sip_tester_after_each, sizeof(tests) / sizeof(tests[0]), tests, 0};
