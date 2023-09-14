@@ -62,6 +62,11 @@ typedef enum {
 	BELLE_SIP_OK = 0
 } belle_sip_error_code;
 
+typedef enum{
+	BELLE_SIP_DIRECTION_RECV,
+	BELLE_SIP_DIRECTION_SEND
+}belle_sip_direction_t;
+
 
 #ifdef __GNUC__
 #define BELLE_SIP_CHECK_FORMAT_ARGS(m,n) __attribute__((format(printf,m,n)))
