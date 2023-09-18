@@ -25,7 +25,6 @@
 #include "bctoolbox/parser.h"
 #include "bctoolbox/crypto.h"
 
-#include "clock_gettime.h" /*for apple*/
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -84,72 +83,13 @@ static int belle_sip_gettimeofday (struct timeval *tv, void* tz)
 #endif
 
 
-
-#ifndef _WIN32
-
-static int find_best_clock_id (void) {
-#if 0
-	struct timespec ts;
-	static int clock_id=-1;
-#ifndef __ANDROID__
-#define DEFAULT_CLOCK_MODE CLOCK_MONOTONIC
-#else
-#define DEFAULT_CLOCK_MODE CLOCK_REALTIME /*monotonic clock stop during sleep mode*/
-#endif
-	if (clock_id==-1) {
-		if (clock_gettime(DEFAULT_CLOCK_MODE,&ts)!=1){
-			clock_id=DEFAULT_CLOCK_MODE;
-		} else if (clock_gettime(CLOCK_REALTIME,&ts)!=1){
-			clock_id=CLOCK_REALTIME;
-		} else {
-			belle_sip_fatal("Cannot find suitable clock mode");
-		}
-	}
-	return clock_id;
-#else
-	/* Tt seems that both Linux, iOS, and MacOS stop incrementing the CLOCK_MONOTONIC during sleep time.
-	 * This is a real problem, because all refreshable requests (SUBSCRIBE, REGISTER, PUBLISH) won't be sent on time due to
-	 * system going to sleep. Let's take an example: a REGISTER is sent at T0 with expire 3600, then the macbook suspends at T0+60s.
-	 * When the macbook resumes at T0+8000, nothing happens. The REGISTER refresh will be sent at T0+8000+3600-60.
-	 * The only reason for seeing the register is if the network address has changed, in which case it will trigger a shutdown of all sockets.
-	 * As a result, we fallback to CLOCK_REALTIME until the OS correctly implement CLOCK_MONOTONIC according to POSIX specifications
-	 */
-#ifdef __APPLE__
-	#ifdef CLOCK_REALTIME
-		#undef CLOCK_REALTIME
-	#endif
-	#define CLOCK_REALTIME BC_CLOCK_REALTIME
-#endif
-	return CLOCK_REALTIME;
-#endif
-}
 uint64_t belle_sip_time_ms(void){
-#ifdef __APPLE__
-#define clock_gettime bc_clock_gettime
-#endif
-
-	struct timespec ts;
-	if (clock_gettime(find_best_clock_id(),&ts)==-1){
-		belle_sip_error("clock_gettime() error for clock_id=%i: %s",find_best_clock_id(),strerror(errno));
-		return 0;
-	}
-	return (ts.tv_sec*1000LL) + (ts.tv_nsec/1000000LL);
+	return bctbx_get_cur_time_ms();
 }
-#else
-uint64_t belle_sip_time_ms(void){
-#ifdef BELLE_SIP_WINDOWS_DESKTOP
-	return GetTickCount();
-#else
-	return GetTickCount64();
-#endif
-}
-#endif
 
 /**
  * parser parameter pair
  */
-
-
 
 belle_sip_param_pair_t* belle_sip_param_pair_new(const char* name,const char* value) {
 	belle_sip_param_pair_t* lPair = (belle_sip_param_pair_t*)belle_sip_new0(belle_sip_param_pair_t);
