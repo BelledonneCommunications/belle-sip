@@ -1113,6 +1113,10 @@ static void belle_sip_multipart_body_handler_parse_final(belle_sip_multipart_bod
 	size_t expected_size = obj_multipart->base.expected_size; /* Save expected size. Indeed add_parts() plays with it
 	* for the composing process. For parsing process we actually don't need this, so the correct size will be restored at the end.*/
 	
+	if (strncmp((char *)cursor, "\r\n", 2) == 0) {
+		cursor += 2;
+	}
+
 	if (strncmp((char *)cursor, dash_boundary, strlen(dash_boundary))) {
 		belle_sip_warning("belle_sip_multipart_body_handler [%p]: body not starting by specified boundary '%s'", obj_multipart, obj_multipart->boundary);
 		belle_sip_free(dash_boundary);
