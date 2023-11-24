@@ -1129,6 +1129,13 @@ belle_sip_header_route_t* belle_sip_header_route_create(const belle_sip_header_a
 	return header;
 }
 
+int belle_sip_header_route_equals(const belle_sip_header_route_t *route_a, const belle_sip_header_route_t *route_b) {
+	// Routes are not identical if either is NULL
+	if (!route_a | !route_b) {
+		return -1;
+	}
+	return belle_sip_header_address_equals(&route_a->address, &route_b->address);
+}
 /**************************
  * Record route header object inherit from header_address
  ***************************/

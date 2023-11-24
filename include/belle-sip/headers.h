@@ -415,6 +415,12 @@ BELLESIP_EXPORT belle_sip_header_route_t* belle_sip_header_route_new(void);
 BELLESIP_EXPORT belle_sip_header_route_t* belle_sip_header_route_parse (const char* route) ;
 BELLESIP_EXPORT belle_sip_header_route_t* belle_sip_header_route_create(const belle_sip_header_address_t* route);
 
+/**
+ * returns 0 if the header route are identical, -1 otherwise.
+ */
+BELLESIP_EXPORT int belle_sip_header_route_equals(const belle_sip_header_route_t *route_a,
+												  const belle_sip_header_route_t *route_b);
+
 #define BELLE_SIP_HEADER_ROUTE(t) BELLE_SIP_CAST(t,belle_sip_header_route_t)
 #define BELLE_SIP_ROUTE "Route"
 
