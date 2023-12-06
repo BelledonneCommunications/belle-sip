@@ -245,9 +245,14 @@ int belle_sip_socket_set_dscp(belle_sip_socket_t sock, int ai_family, int dscp){
 			belle_sip_error("Cannot set DSCP because socket family is unspecified.");
 			return -1;
 	}
-	retval = bctbx_setsockopt(sock, proto, value_type, (const char*)&tos, sizeof(tos));
-	if (retval==-1)
-		belle_sip_error("Fail to set DSCP value on socket: %s",belle_sip_get_socket_error_string());
+	retval = bctbx_setsockopt(sock, proto, value_type, (const char *)&tos, sizeof(tos));
+	if (retval == -1) belle_sip_error("Fail to set DSCP value on socket: %s", belle_sip_get_socket_error_string());
+#ifdef __linux__
+	if (ai_family == AF_INET6) {
+		belle_sip_warning("belle_sip_socket_set_dscp(): We are in the regret to inform that the linux kernel is "
+		                  "unlikely to honor the DSCP fields for dual-stack sockets.");
+	}
+#endif
 	return retval;
 }
 

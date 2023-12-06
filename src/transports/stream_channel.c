@@ -156,8 +156,13 @@ int stream_channel_connect(belle_sip_stream_channel_t *obj, const struct addrinf
 		belle_sip_error("bctbx_setsockopt TCP_NODELAY failed: [%s]",belle_sip_get_socket_error_string());
 	}
 	belle_sip_socket_set_nonblocking(sock);
-	if (ai->ai_family==AF_INET6 && stack->test_bind_port == 0){
-		belle_sip_socket_enable_dual_stack(sock);
+	if (ai->ai_family == AF_INET6 && stack->test_bind_port == 0) {
+                belle_sip_socket_enable_dual_stack(sock);
+        }
+	if (obj->base.stack->dscp && obj->base.lp) {
+		/*apply dscp only to channel belonging to a SIP listening point*/
+		belle_sip_message("DSCP value [%i] requested for this connection.", obj->base.stack->dscp);
+		belle_sip_socket_set_dscp(sock, obj->base.ai_family, obj->base.stack->dscp);
 	}
 
 	err = bctbx_connect(sock,ai->ai_addr,(socklen_t)ai->ai_addrlen);
