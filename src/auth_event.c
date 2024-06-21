@@ -40,6 +40,9 @@ belle_sip_auth_event_create(belle_sip_object_t *source, const char *realm, const
 		belle_sip_auth_event_set_username(result, belle_sip_uri_get_user(from_uri));
 		belle_sip_auth_event_set_domain(result, belle_sip_uri_get_host(from_uri));
 	}
+
+	result->cert = NULL;
+	result->key = NULL;
 	return result;
 }
 

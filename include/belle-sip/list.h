@@ -31,6 +31,7 @@ typedef struct _bctbx_list belle_sip_list_t;
 #define belle_sip_list_free bctbx_list_free
 #define belle_sip_list_concat bctbx_list_concat
 #define belle_sip_list_remove bctbx_list_remove
+#define belle_sip_list_remove_with_data bctbx_list_remove_with_data
 #define belle_sip_list_pop_front bctbx_list_pop_front
 #define belle_sip_list_size bctbx_list_size
 #define belle_sip_list_for_each bctbx_list_for_each

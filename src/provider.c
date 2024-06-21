@@ -1234,7 +1234,7 @@ end:
  * Insert auth_event into a list of belle_sip_auth_event_t avoiding duplicates and loss of password or ha1.
  */
 static belle_sip_list_t *update_auth_event_list(belle_sip_list_t *auth_event_list, belle_sip_auth_event_t *auth_event) {
-	belle_sip_list_t *elem;
+	belle_sip_list_t *elem = NULL;
 	belle_sip_auth_event_t *ev = NULL;
 
 	for (elem = auth_event_list; elem != NULL; elem = elem->next) {
@@ -1246,10 +1246,12 @@ static belle_sip_list_t *update_auth_event_list(belle_sip_list_t *auth_event_lis
 	if (ev) {
 		if ((ev->passwd == NULL && ev->ha1 == NULL) || (auth_event->passwd || auth_event->ha1)) {
 			/* drop the old auth_event if new one has a password/ha1 or if previous one did not have */
-			auth_event_list = belle_sip_list_delete_link(auth_event_list, elem);
-			belle_sip_auth_event_destroy(ev);
+			auth_event_list =
+			    belle_sip_list_remove_with_data(auth_event_list, ev, (void (*)(void *))belle_sip_auth_event_destroy);
 			auth_event_list = belle_sip_list_append(auth_event_list, auth_event);
-		} else belle_sip_auth_event_destroy(auth_event);
+		} else {
+			belle_sip_auth_event_destroy(auth_event);
+		}
 	} else {
 		auth_event_list = belle_sip_list_append(auth_event_list, auth_event);
 	}
