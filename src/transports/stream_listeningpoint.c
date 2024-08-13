@@ -66,7 +66,11 @@ BELLE_SIP_INSTANCIATE_CUSTOM_VPTR_BEGIN(belle_sip_stream_listening_point_t){
 	snprintf(portnum, sizeof(portnum), "%i", *port);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
+	#ifdef IPPROTO_MPTCP
+	hints.ai_protocol = IPPROTO_MPTCP;
+	#else
 	hints.ai_protocol = IPPROTO_TCP;
+	#endif
 	hints.ai_flags = AI_NUMERICSERV;
 	err = getaddrinfo(addr, portnum, &hints, &res);
 	if (err != 0) {
