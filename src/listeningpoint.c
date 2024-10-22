@@ -193,7 +193,7 @@ static void set_error_and_close(belle_sip_channel_t *channel) {
 }
 
 void belle_sip_listening_point_send_keep_alive(belle_sip_listening_point_t *lp) {
-	struct keep_alive_context ctx = {NULL, FALSE};
+	struct keep_alive_context ctx = {NULL, TRUE};
 
 	belle_sip_channel_bank_for_each(lp->channels, send_keep_alive, &ctx);
 	bctbx_list_free_with_data(ctx.to_be_closed, (bctbx_list_free_func)set_error_and_close);
