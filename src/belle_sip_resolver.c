@@ -831,7 +831,11 @@ static void *_resolver_getaddrinfo_thread(void *ptr) {
 	snprintf(serv, sizeof(serv), "%i", ctx->port);
 	hints.ai_family = ctx->family;
 	hints.ai_flags = AI_NUMERICSERV;
+	#ifdef IPPROTO_MPTCP
+	hints.ai_protocol = strstr(ctx->name, "udp") ? IPPROTO_UDP : IPPROTO_MPTCP;
+	#else
 	hints.ai_protocol = strstr(ctx->name, "udp") ? IPPROTO_UDP : IPPROTO_TCP;
+	#endif
 	err = getaddrinfo(ctx->name, serv, &hints, &res);
 	if (err != 0) {
 		belle_sip_error("getaddrinfo DNS resolution of %s failed: %s", ctx->name, gai_strerror(err));

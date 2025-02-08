@@ -127,7 +127,15 @@ int stream_channel_connect(belle_sip_stream_channel_t *obj, const struct addrinf
 	tmp = 1;
 
 	obj->base.ai_family = ai->ai_family;
+	#ifdef IPPROTO_MPTCP
+	sock = bctbx_socket(ai->ai_family, SOCK_STREAM, IPPROTO_MPTCP);
+	if (sock == (belle_sip_socket_t)-1) {
+		// fallback to TCP if MPTCP encounter an error
+		sock = bctbx_socket(ai->ai_family, SOCK_STREAM, IPPROTO_TCP);
+	}
+	#else
 	sock = bctbx_socket(ai->ai_family, SOCK_STREAM, IPPROTO_TCP);
+	#endif
 
 	if (sock == (belle_sip_socket_t)-1) {
 		belle_sip_error("Could not create socket: %s", belle_sip_get_socket_error_string());
